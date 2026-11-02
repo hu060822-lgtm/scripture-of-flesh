@@ -68,8 +68,12 @@ func test_catalog_cues_are_valid() -> void:
 			assert_true(cues.has(name), "director uses unknown cue %s" % name)
 
 func test_placeholder_cue_is_recorded_silently_with_cooldown() -> void:
-	assert_true(am.cues[&"sever"].is_placeholder(), "no audio files yet")
+	# 音檔已由 A2 放入；這裡暫時清空 sever 的變體，模擬沒有音檔的【暫代】cue。
+	var saved: Array[AudioStream] = am.cues[&"sever"].streams
+	am.cues[&"sever"].streams = [] as Array[AudioStream]
+	assert_true(am.cues[&"sever"].is_placeholder(), "no audio files")
 	assert_eq(am.play(&"sever"), null)
+	am.cues[&"sever"].streams = saved
 	assert_eq(am.last_played(), [&"sever"])
 	assert_true(am.history[-1].silent)
 	am.play(&"sever")
