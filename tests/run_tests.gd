@@ -5,7 +5,17 @@ extends SceneTree
 
 const TEST_DIR := "res://tests/unit"
 
-func _init() -> void:
+var _started := false
+
+## 等到第一個 frame 才執行，確保加入場景樹的節點會正常收到 _ready。
+func _process(_delta: float) -> bool:
+	if _started:
+		return false
+	_started = true
+	_run_all()
+	return false
+
+func _run_all() -> void:
 	var total := 0
 	var failed := 0
 	var files := DirAccess.get_files_at(TEST_DIR)
@@ -25,8 +35,15 @@ func _init() -> void:
 			total += 1
 			var inst: TestCase = script.new()
 			inst._current = name
+			inst.tree = self
+			var existing := root.get_children()
 			inst.before_each()
 			inst.call(name)
+			# 清除測試加入場景樹的節點（autoload 不受影響）
+			for c in root.get_children():
+				if not c in existing:
+					root.remove_child(c)
+					c.free()
 			if inst.failures.is_empty():
 				print("PASS   %s::%s" % [f, name])
 			else:
