@@ -15,6 +15,7 @@ run/main_scene="res://scenes/sandbox/combat_sandbox.tscn"
 
 EventBus="*res://core/event_bus.gd"
 TimeScale="*res://core/time_scale_service.gd"
+GameState="*res://core/game_state.gd"
 
 [rendering]
 
