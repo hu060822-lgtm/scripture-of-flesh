@@ -213,6 +213,9 @@ func _build_ui() -> void:
 		(a as StitchingAltar).surgery_requested.connect(func(pl): transplant.open(pl))
 	body_menu = BodyMenu.new()
 	add_child(body_menu)
+	var ai_debug := AiDebugOverlay.new()
+	ai_debug.name = "AiDebugOverlay"
+	add_child(ai_debug)
 	dialogue = DialogueBox.new()
 	add_child(dialogue)
 	dialogue.action_requested.connect(_on_dialogue_action)

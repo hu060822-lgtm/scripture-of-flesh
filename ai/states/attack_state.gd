@@ -18,7 +18,8 @@ func enter(ai: EnemyAI) -> void:
 		aim = ai.body().global_position + off
 	ai.face(aim)
 	AttackTokens.request(ai, t)  # 通常已由 chase 取得；直接進入攻擊狀態時補拿
-	var a := AttackSelector.select_for(ai, ai.distance_to(t))
+	var boss := _boss(ai)
+	var a := boss.choose_attack(ai.distance_to(t)) if boss != null else AttackSelector.select_for(ai, ai.distance_to(t))
 	if a != null:
 		var part := PartTargeting.pick(t, a, ai.definition.injured_target_bias, ai.rng, ai.definition.preferred_target_parts, ai.definition.visual_scale)
 		ai.combat.try_attack(a, part)
@@ -31,5 +32,17 @@ func exit(ai: EnemyAI) -> void:
 func update(ai: EnemyAI, _delta: float) -> StringName:
 	ai.stop()
 	if ai.combat.action == CombatComponent.Action.IDLE:
+		# AI-4：Boss 連段，下一招可用就直接接上
+		var boss := _boss(ai)
+		var t := ai.runtime.target
+		if boss != null and t != null and not t.is_dead():
+			var nxt := boss.next_combo_attack(ai.distance_to(t))
+			if nxt != null:
+				ai.face(t.body().global_position)
+				if ai.combat.try_attack(nxt):
+					return &""
 		return &"chase"
 	return &""
+
+func _boss(ai: EnemyAI) -> BossPhaseComponent:
+	return ai.body().get_node_or_null("BossPhase") as BossPhaseComponent
