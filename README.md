@@ -18,6 +18,16 @@
 - 按鍵：F1 效果開關（對照）、F2 解析度、F3 抖色、F4 頂點抖動、F5 重置、F6 敵人 AI、Esc 主選單。
 - 截圖：`xvfb-run -s "-screen 0 1280x720x24" godot --rendering-driver opengl3 --path . -s tests/sim/art_shots.gd -- <資料夾>`
 
+## 聲音（A1：架構）
+
+- `AudioManager`（autoload）：匯流排 Master ← Music／Ambience／SFX／UI／Voice（SFX 與 Ambience 預留低通濾波，A4 低血量悶聲用；Master 有限幅器）。
+  `play(cue_id, at)` 會隨機選變體與音高，並處理冷卻、同一 cue 的發聲上限，以及 3D 定位。
+- `SoundCatalog`：cue 定義表。音檔放到 `audio/sfx/<cue_id>/` 就會自動載入，不需要改程式。**目前還沒有音檔**，所有 cue 都是【暫代】靜音。
+- `AudioDirector`：監聽場景樹，自動接上戰鬥、解剖、Boss、縫合、移植、祭壇、拾取、門、按鈕的 signal，不必修改那些系統。腳步聲依移動距離觸發。
+  音樂狀態依序判斷：結局 > 死亡 > Boss（boss_1／boss_2）> 戰鬥 > 緊張 > 探索 > 主選單。戰鬥結束後戰鬥音樂會再維持 4 秒。實際的分層音樂在 A3 加入。
+- 主選單 →「聲音設定」：六條音量滑桿，設定存在 `user://settings.cfg`。
+- 素材來源與授權見 `audio/SOURCES.md`。
+
 ## 序章流程
 
 白色產房醒來（赤手）→ 與助產修女阿格妮絲對話，以「手還記得什麼」選擇職業（取得職業武器與縫合包）
