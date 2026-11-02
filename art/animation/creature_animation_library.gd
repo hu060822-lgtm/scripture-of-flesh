@@ -301,6 +301,29 @@ func base_clips() -> Array:
 	for h in heads: duck[h] = Vector3(15.0, 0, 0)
 	duck["$pos"] = Vector3(0, -0.3, 0)
 	out.append([&"dodge", _clip(1.0, false, [[0.0, neutral], [0.2, duck], [0.7, duck], [1.0, neutral]])])
+	# 登場（Boss）：從蜷伏中站起、仰頭張口尖叫。劇本演出用（CreatureAnimator.play_override）。
+	var curl := {"$pos": Vector3(0, -_height() * 0.25, 0)}
+	if root_id != &"": curl[root_id] = Vector3(45.0, 0, 0)
+	for h in heads: curl[h] = Vector3(30.0, 0, 0)
+	for a in arms + cradles: curl[a] = Vector3(60.0, -20.0, 0)
+	for l in legs: curl[l] = Vector3(-10.0, 0, 0)
+	var rise := {"$pos": Vector3.ZERO}
+	if root_id != &"": rise[root_id] = Vector3(-15.0, 0, 0)
+	for h in heads: rise[h] = Vector3(-45.0, 0, 0)
+	for a in arms + cradles: rise[a] = Vector3(40.0, 70.0, 0)
+	if jaw != &"": rise[jaw] = Vector3(55.0, 0, 0)
+	_sway(rise, 0.5, 18.0)
+	var settle := rise.duplicate()
+	for h in heads: settle[h] = Vector3(-10.0, 0, 0)
+	for a in arms + cradles: settle[a] = Vector3(10.0, 15.0, 0)
+	out.append([&"intro", _clip(3.0, false, [[0.0, curl], [0.8, curl], [1.8, rise], [2.6, rise], [3.0, settle]])])
+	# 跪伏（Boss 第二階段）：失去支撐後前傾、手撐地
+	var slump := {}
+	if root_id != &"": slump[root_id] = Vector3(25.0, 10.0, 0)
+	for h in heads: slump[h] = Vector3(20.0, 0, 15.0)
+	for a in arms: slump[a] = Vector3(35.0, 25.0, 0)
+	for c in cradles: slump[c] = Vector3(70.0, -10.0, 0)
+	out.append([&"kneel", _clip(1.0, false, [[0.0, neutral], [0.25, shock], [0.6, slump], [1.0, slump]])])
 	# 死亡：往後倒地（整個骨架旋轉，受擊區域與網格一起倒下），停在最後一格
 	var fall := {}
 	for h in heads: fall[h] = Vector3(-30.0, 0, 20.0)

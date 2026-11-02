@@ -22,6 +22,8 @@ const LOOKS := {
 	&"reverse_legged": {"skin": [Color("8f7a74"), "skin"], "cloth": [Color("2a2725"), "cloth"], "trim": Color("6e1f19"), "gaunt": true},
 	&"faceless_watcher": {"skin": [Color("e8e2d6"), "skin"], "cloth": [Color("e8e2d6"), "cloth"], "trim": Color("a8863f"), "clothed": true, "robe": true},
 	&"unborn": {"skin": [Color("c8a09a"), "flesh"], "cloth": [Color("efe2b0"), "cloth"], "trim": Color("6e1f19"), "fetal": true},
+	# 阿格妮絲：產房的修女兼接生者。奶油黃頭巾、煤灰黑修女服、陳舊金念珠。
+	&"agnes": {"skin": [Color("d6bfb6"), "skin"], "cloth": [Color("2a2725"), "cloth"], "hood_cloth": [Color("e2d4a4"), "cloth"], "trim": Color("a8863f"), "clothed": true, "hood": true},
 	&"walking_mother": {"skin": [Color("e8e2d6"), "skin"], "cloth": [Color("efe2b0"), "cloth"], "trim": Color("a8863f"), "veil": true},
 }
 
@@ -372,7 +374,8 @@ static func _head(r: float, lk: Dictionary, look: StringName) -> Array:
 		var hk := MeshKit.new()
 		# 兜帽往後偏，臉從前緣露出來
 		hk.lathe([Vector2(0.0, r * 1.25), Vector2(r * 0.9, r * 1.0), Vector2(r * 1.05, r * 0.2), Vector2(r * 1.0, -r * 0.9)], 7, MeshKit.at(Vector3(0, r * 0.05, r * 0.5)), Vector2(1.05, 0.9), false)
-		dets.append(_det(hk.commit(), _cloth(lk), Vector3.ZERO, Vector3.ZERO, "Hood"))
+		var hood_mat := S.material(lk["hood_cloth"][0], lk["hood_cloth"][1]) if lk.has("hood_cloth") else _cloth(lk)
+		dets.append(_det(hk.commit(), hood_mat, Vector3.ZERO, Vector3.ZERO, "Hood"))
 	if lk.get("sutures", false):
 		# 頭皮上一圈縫合、兩根固定針
 		dets.append(_det(S.cylinder(r * 0.97, r * 0.97, r * 0.08, 7), S.material(S.DRIED_RED, "flesh"), Vector3(0, r * 0.55, 0), Vector3(12, 0, 0), "ScalpSeam"))
@@ -433,6 +436,24 @@ static func _womb(r: float, exposed: bool) -> Array:
 	else:
 		dets.append(_det(S.box(Vector3(r * 0.1, r * 1.6, r * 0.1)), S.material(S.OLD_GOLD, "metal"), Vector3(0, 0, -r * 0.98), Vector3.ZERO, "Seam"))
 	return [k.commit(), flesh, dets]
+
+## 半身像（對話立繪用）：胸、頸、頭、眼、下顎，位置與遊戲中的模型相同。
+static func bust(look: StringName) -> Node3D:
+	var profile: AnatomyProfile = load("res://content/anatomy/walking_mother.tres" if look == &"walking_mother" else "res://content/anatomy/humanoid.tres")
+	var lk: Dictionary = LOOKS.get(look, LOOKS[&"humanoid"])
+	var root := Node3D.new()
+	root.name = "Bust_%s" % look
+	var frames := PlaceholderBodyBuilder.part_frames(profile)
+	for d in profile.parts:
+		var id := String(d.id)
+		if d.is_internal or not (id in ["chest", "torso", "neck", "head", "eye_l", "eye_r", "jaw"]):
+			continue
+		var seg := MeshInstance3D.new()
+		seg.name = String(d.mesh_segment)
+		root.add_child(seg)
+		seg.position = frames[d.id]["center"]
+		build_segment(seg, d, profile, look, lk, &"")
+	return root
 
 ## 一個生物外觀的總三角形數（測試用：確認仍是低多邊形）。
 static func triangle_count(creature: Node) -> int:
