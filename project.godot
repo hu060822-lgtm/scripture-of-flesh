@@ -1,0 +1,18 @@
+; Engine configuration file.
+; Godot 4.3
+
+config_version=5
+
+[application]
+
+config/name="The Scripture of Flesh"
+config/description="肉身聖典 — 2.5D dark fantasy RPG (vertical slice)"
+config/features=PackedStringArray("4.3", "Forward Plus")
+
+[autoload]
+
+EventBus="*res://core/event_bus.gd"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
