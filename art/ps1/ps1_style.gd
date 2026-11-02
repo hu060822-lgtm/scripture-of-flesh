@@ -1,11 +1,7 @@
 class_name PS1Style
 extends RefCounted
-## PS1 低多邊形風格工具：色盤、程序生成的低解析度貼圖（32–64px、點取樣）、PS1 材質，
-## 以及把暫代生物「低多邊形化」的 stylize()。
-##
-## stylize() 只替換網格參數與材質，不改節點名稱與階層，因此斷肢命名慣例
-## （mesh_segment、hurt_<id>、stump_<id>、grip_<id>）與 DismembermentController 的修復複本都不受影響。
-## 必須在生物加入場景樹「之前」呼叫，讓修復用的分段複本也是風格化後的版本。
+## PS1 低多邊形風格工具：色盤、程序生成的低解析度貼圖（32–64px、點取樣）、PS1 材質、基本形狀與斷面。
+## 生物的具象外觀見 CreatureModels（M10，取代原本的 stylize()）。
 ##
 ## 【美術測試】所有貼圖都是程式產生的測試貼圖，用來確認方向；確認後才製作正式資產。
 
@@ -114,24 +110,6 @@ static func refresh_all() -> void:
 
 # ---------- 低多邊形網格 ----------
 
-static func low_poly_copy(mesh: Mesh) -> Mesh:
-	if mesh is CapsuleMesh:
-		var c := (mesh as CapsuleMesh).duplicate() as CapsuleMesh
-		c.radial_segments = 6
-		c.rings = 1
-		return c
-	if mesh is SphereMesh:
-		var s := (mesh as SphereMesh).duplicate() as SphereMesh
-		s.radial_segments = 6
-		s.rings = 3
-		return s
-	if mesh is CylinderMesh:
-		var y := (mesh as CylinderMesh).duplicate() as CylinderMesh
-		y.radial_segments = 6
-		y.rings = 0
-		return y
-	return mesh
-
 static func box(size: Vector3) -> BoxMesh:
 	var b := BoxMesh.new()
 	b.size = size
@@ -164,49 +142,6 @@ static func mesh_node(parent: Node3D, mesh: Mesh, mat: Material, pos: Vector3 = 
 	mi.rotation_degrees = rot_deg
 	parent.add_child(mi)
 	return mi
-
-# ---------- 生物風格化 ----------
-
-## palette：part_id 前綴 -> [顏色, 貼圖種類]，例如 {"chest": [SOOT_BLACK, "cloth"]}。
-## weak_points：要自發光標示的部位前綴（眼、眼柄、臍帶等）—— 美術指導第 9 點：弱點必須可辨識。
-static func stylize(creature: Node3D, palette: Dictionary, weak_points: Array = [], default: Array = [BONE_WHITE, "skin"]) -> void:
-	var anatomy: AnatomyComponent = creature.get_node_or_null("AnatomyComponent")
-	var profile := anatomy.profile if anatomy != null else null
-	if profile == null:
-		return
-	for d in profile.parts:
-		var seg := creature.find_child(String(d.mesh_segment), true, false) as MeshInstance3D
-		if seg == null:
-			continue
-		var pid := String(d.id)
-		var look: Array = default
-		for prefix in palette:
-			if pid.begins_with(prefix):
-				look = palette[prefix]
-				break
-		var weak := weak_points.any(func(w): return pid.begins_with(w))
-		seg.mesh = low_poly_copy(seg.mesh)
-		var emis: Color = OLD_GOLD if weak else Color.BLACK
-		seg.material_override = material(look[0], look[1], emis, 1.6 if weak else 0.0)
-		# 手臂：換成「上臂＋前臂＋手」的低多邊形組合（全部掛在同一個分段節點下，斷臂時一起飛出）
-		if d.functions.has("arm") and seg.mesh is CapsuleMesh:
-			_compose_arm(seg, look, (seg.mesh as CapsuleMesh).height, (seg.mesh as CapsuleMesh).radius)
-
-## 把一個膠囊手臂分段改為上臂、手肘、前臂、手掌與手指。原本的膠囊隱藏（仍保留節點以符合命名慣例）。
-static func _compose_arm(seg: MeshInstance3D, look: Array, h: float, r: float) -> void:
-	var skin := material(look[0], look[1])
-	var hand_mat := material(GREY_PINK, "skin")
-	seg.mesh = null
-	var upper := h * 0.42
-	var fore := h * 0.40
-	mesh_node(seg, cylinder(r * 1.05, r * 0.9, upper), skin, Vector3(0, h * 0.5 - upper * 0.5, 0), Vector3.ZERO, "UpperArm")
-	mesh_node(seg, sphere(r * 0.95, 5, 2), skin, Vector3(0, h * 0.5 - upper, 0), Vector3.ZERO, "Elbow")
-	mesh_node(seg, cylinder(r * 0.9, r * 0.7, fore), skin, Vector3(0, h * 0.5 - upper - fore * 0.5, 0), Vector3.ZERO, "Forearm")
-	var hand_y := -h * 0.5 + h * 0.09
-	mesh_node(seg, box(Vector3(r * 1.6, h * 0.12, r * 0.8)), hand_mat, Vector3(0, hand_y, 0), Vector3.ZERO, "Hand")
-	for i in 3:
-		mesh_node(seg, box(Vector3(r * 0.35, h * 0.09, r * 0.35)), hand_mat,
-			Vector3((float(i) - 1.0) * r * 0.55, hand_y - h * 0.1, 0), Vector3.ZERO, "Finger%d" % i)
 
 ## 斷面：外圈皮膚、乾涸紅的肉、突出的骨瓷白骨頭（DismembermentController.cap_builder 使用）。
 ## 以 +Y 為「朝外」方向建立；DismembermentController 會把 +Y 對齊關節朝外的方向。

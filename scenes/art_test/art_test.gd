@@ -42,23 +42,14 @@ func reset() -> void:
 	var w := screen.world
 	GothicOperatingRoom.environment(w)
 	GothicOperatingRoom.build(w)
-	# 玩家：煤灰黑的修道外衣、灰粉色皮膚
+	# 外觀由工廠套用（CreatureModels）：玩家煤灰黑兜帽外衣、縫屍者的縫線皮膚與皮圍裙、
+	# 無面觀察者的骨瓷白法衣與發光眼柄（弱點）
 	player = PlayerFactory.create(["res://content/weapons/bone_saw_cleaver.tres"], PlayerFactory.DEFAULT_CLASS)
-	S.stylize(player, {
-		"chest": [S.SOOT_BLACK, "cloth"], "abdomen": [S.SOOT_BLACK, "cloth"], "leg": [S.SOOT_BLACK.lightened(0.1), "cloth"],
-		"arm": [S.SOOT_BLACK.lightened(0.05), "cloth"], "neck": [S.GREY_PINK, "skin"], "head": [S.GREY_PINK, "skin"],
-		"jaw": [S.GREY_PINK, "skin"], "eye": [S.SOOT_BLACK, "plain"]})
 	_finish_creature(player, Vector3(0.3, 0, 2.6), 0.0)
-	# 人形敵人：縫屍者，皮膚上有乾涸紅的縫線
 	var stitcher := EnemyFactory.create(load("res://content/enemies/stitcher.tres"), &"stitcher")
-	S.stylize(stitcher, {"eye": [S.SOOT_BLACK, "plain"], "jaw": [S.GREY_PINK.darkened(0.2), "stitched"]},
-		[], [S.GREY_PINK.darkened(0.1), "stitched"])
 	_finish_creature(stitcher, Vector3(-2.0, 0, 1.5), PI)
 	enemies.append(stitcher)
-	# 特殊解剖怪物：無面觀察者，四根眼柄以陳舊金自發光標示為弱點
 	var watcher := EnemyFactory.create(load("res://content/enemies/faceless_watcher.tres"), &"watcher")
-	S.stylize(watcher, {"chest": [S.BONE_WHITE, "skin"], "arm": [S.BONE_WHITE.darkened(0.1), "skin"],
-		"leg": [S.SOOT_BLACK, "cloth"], "abdomen": [S.SOOT_BLACK, "cloth"]}, ["stalk_"], [S.BONE_WHITE, "skin"])
 	_finish_creature(watcher, Vector3(2.8, 0, -3.5), PI)
 	enemies.append(watcher)
 	for e in enemies:
@@ -85,7 +76,6 @@ func _finish_creature(c: CharacterBody3D, pos: Vector3, yaw: float) -> void:
 	c.position = pos
 	c.rotation.y = yaw
 	screen.world.add_child(c)
-	(c.get_node("DismembermentController") as DismembermentController).cap_builder = PS1Style.build_stump_cap
 
 func _set_ai(e: Node, on: bool) -> void:
 	var ai := e.get_node_or_null("EnemyAI")

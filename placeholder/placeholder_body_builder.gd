@@ -30,6 +30,14 @@ const LAYOUT := {
 
 ## 非人形生物的專屬暫代配置（以 AnatomyProfile.id 為鍵），優先於 LAYOUT。
 const PROFILE_LAYOUTS := {
+	# 未生者：胎兒比例，頭特別大，沒有腿（EnemyDefinition.visual_scale 再縮小）。
+	&"unborn": {
+		&"chest": {"pos": Vector3(0, 0.95, 0), "shape": "capsule", "r": 0.22, "h": 0.55},
+		&"head":  {"pos": Vector3(0, 1.45, 0.02), "shape": "sphere", "r": 0.25},
+		&"jaw":   {"pos": Vector3(0, 1.27, 0.14), "shape": "capsule", "r": 0.06, "h": 0.14},
+		&"arm_l": {"pos": Vector3(0.28, 0.92, 0.04), "shape": "capsule", "r": 0.05, "h": 0.5},
+		&"arm_r": {"pos": Vector3(-0.28, 0.92, 0.04), "shape": "capsule", "r": 0.05, "h": 0.5},
+	},
 	# 行走的母親（Boss）：四根高蹺腿撐起的巨大身軀，臍帶從子宮垂到地面。
 	&"walking_mother": {
 		&"torso":    {"pos": Vector3(0, 2.90, 0), "shape": "capsule", "r": 0.36, "h": 0.95},
@@ -93,6 +101,9 @@ static func build_creature(profile: AnatomyProfile, creature_id: StringName,
 	combat.natural_attacks = natural_attacks
 	combat.faction = faction
 	root.add_child(combat)
+
+	# 具象低多邊形外觀（依身體模板的通用外觀；工廠可再以專屬外觀覆蓋）
+	CreatureModels.apply(root, profile.id)
 
 	var animator := CreatureAnimator.new()
 	animator.name = "CreatureAnimator"

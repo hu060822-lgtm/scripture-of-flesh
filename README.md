@@ -3,7 +3,7 @@
 2.5D 日式黑暗奇幻 RPG。Godot **4.3** / GDScript，目標平台 PC。
 
 > 目前階段：**M7 序章（垂直切片）＋ 美術方向測試**。主場景是主選單：新遊戲／繼續／戰鬥沙盒／離開。
-> 所有畫面仍是【暫代】灰盒；美術方向（PS1 低多邊形哥德身體恐怖）待美術測試場景確認後才製作正式資產。
+> 角色、敵人、Boss 與武器是程序生成的低多邊形模型（M10），動畫是程序生成的關鍵格（M9）。關卡仍是【暫代】灰盒。
 
 ## 美術測試場景（主選單 → 美術測試）
 
@@ -140,13 +140,21 @@ DamagePacket ─▶ DamageResolver.resolve()（不修改狀態）─▶ DamageRe
 - `CreatureAnimator`：每個生物自動加上。建立 AnimationTree（狀態機 → TimeScale），依戰鬥狀態、速度與 `AnimationSet` 切換；攻擊片段長度 1 秒，依資料的階段秒數縮放，出手姿勢與命中判定同一刻。以戰術時間倍率推進、12fps 逐格更新（PS1 低幀數）。
 - 動作截圖：`tests/sim/anim_shots.gd`（需要 xvfb 與 opengl3）。
 
+## 模型（M10）
+
+- `MeshKit`：SurfaceTool 組合工具（車床體、盒、錐），產生圓柱 UV 與朝外法線。
+- `CreatureModels`：每個分段換成具象低多邊形造型，包括有手指的手臂、腳掌、反關節腿、肋骨、衣物、兜帽、五官、牙齒、縫線、眼柄、臍帶、子宮、高蹺、抱嬰的搖籃臂。外觀主題有 player、stitcher、many_hands、reverse_legged、faceless_watcher、unborn、walking_mother，其他身體用通用人形。節點名稱、位置與受擊區域不變。弱點（眼柄、臍帶、移植的眼）以陳舊金或乾涸紅自發光標示。
+- `ModelSkinner`：器官移植（鐵臂、縫合臂、反關節腿、觀察者之眼）與 Boss 第二階段（子宮裂開）會換掉該部位的外觀，斷肢修復後保留。
+- 工廠自動套用：`build_creature` 用身體模板的通用外觀，`PlayerFactory` 與 `EnemyFactory` 再套專屬外觀。
+- 截圖：`tests/sim/model_shots.gd`。
+
 ## 暫代與未實作（明確標示）
 
 - 人形是程序生成的膠囊體（`placeholder/`），每段是用 BoneAttachment3D 掛在骨骼上的剛體網格，不是蒙皮網格。
   正式模型只要遵守 `PlaceholderBodyBuilder` 註解中的命名慣例即可直接替換。
 - 動畫是【程序生成】的關鍵格（`CreatureAnimationLibrary`），不是手工動畫；手肘、手指、脊椎沒有獨立骨骼（每個部位一根骨骼）。
 - 器官移植演出是暫代的紅色閃光；正式的移植演出需要動畫。
-- 移植後的部位外觀沿用原本的膠囊體（只有資料、能力與名稱改變）。
+- 移植後的部位外觀會改變，但心臟等內部器官（多手人之心）沒有外觀。異化階段（骨刺等）還沒有外觀變化。
 - 敵人移動是直線前進，沒有尋路（NavigationAgent3D 在 M7 視關卡需要加入）。
 - 飛撲的位移仍由 AI 直接移動身體；動畫只提供蓄力與撲出的姿勢。
 - 武器是程序生成的低多邊形模型（`WeaponModels`）。手臂「功能失效」（未斷）時武器仍握在手上，但雙手武器在可用的手不足時無法揮動。
