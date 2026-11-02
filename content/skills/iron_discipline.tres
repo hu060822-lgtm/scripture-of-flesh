@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://progression/skill_definition.gd" id="1_0mjvd"]
+
+[resource]
+script = ExtResource("1_0mjvd")
+id = &"iron_discipline"
+display_name = "鐵之紀律"
+description = "異化抗性 +10%。"
+cost = 1
+prerequisites = Array[StringName]([])
+effects = {
+"mutation_resist": 0.1
+}

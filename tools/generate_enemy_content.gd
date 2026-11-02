@@ -4,13 +4,13 @@ extends SceneTree
 
 func _init() -> void:
 	_save(_def(&"stitcher", "縫屍者", "stitcher", ["claw", "grab_tear", "bite"],
-		{"hp": 85, "speed": 2.4, "range": 1.1, "defend": 0.1, "dodge": 0.0, "special": &"restitch", "sight": 8.0}))
+		{"hp": 85, "speed": 2.4, "range": 1.1, "defend": 0.1, "dodge": 0.0, "special": &"restitch", "sight": 8.0, "xp": 40, "organs": ["stitched_arm"]}))
 	_save(_def(&"reverse_legged", "反足者", "reverse_legged", ["lunge", "spur_kick", "claw", "pounce_bite"],
-		{"hp": 70, "speed": 4.2, "range": 3.5, "defend": 0.0, "dodge": 0.3, "sight": 11.0, "stagger": 10.0}))
+		{"hp": 70, "speed": 4.2, "range": 3.5, "defend": 0.0, "dodge": 0.3, "sight": 11.0, "stagger": 10.0, "xp": 60, "organs": ["reverse_leg"]}))
 	_save(_def(&"faceless_watcher", "無面觀察者", "faceless", ["gaze", "lash"],
-		{"hp": 65, "speed": 2.0, "range": 5.0, "defend": 0.05, "dodge": 0.15, "sight": 12.0, "fov": 220.0, "hearing": 3.5}))
+		{"hp": 65, "speed": 2.0, "range": 5.0, "defend": 0.05, "dodge": 0.15, "sight": 12.0, "fov": 220.0, "hearing": 3.5, "xp": 60, "organs": ["watcher_eye"]}))
 	_save(_def(&"many_hands", "多手人", "multi_armed", ["flurry", "double_grab", "swipe", "bite"],
-		{"hp": 110, "st": 120, "speed": 2.2, "range": 1.3, "defend": 0.3, "dodge": 0.0, "sight": 8.0, "stagger": 16.0}))
+		{"hp": 110, "st": 120, "speed": 2.2, "range": 1.3, "defend": 0.3, "dodge": 0.0, "sight": 8.0, "stagger": 16.0, "xp": 80, "organs": ["many_hands_heart"]}))
 	quit()
 
 func _save(d: EnemyDefinition) -> void:
@@ -37,4 +37,9 @@ func _def(id: StringName, name: String, profile: String, attacks: Array, o: Dict
 	d.sight_fov_degrees = o.get("fov", 140.0)
 	d.hearing_range = o.get("hearing", 3.0)
 	d.stagger_threshold = o.get("stagger", 12.0)
+	d.xp_reward = o.get("xp", 40)
+	var organs: Array[OrganDefinition] = []
+	for oid in o.get("organs", []):
+		organs.append(load("res://content/organs/%s.tres" % oid))
+	d.harvestable = organs
 	return d

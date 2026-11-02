@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_2iv6p"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_hd8d1"]
 
 [resource]
-script = ExtResource("1_2iv6p")
+script = ExtResource("1_hd8d1")
 id = &"gaze"
 display_name = "凝視"
 required_capabilities = {

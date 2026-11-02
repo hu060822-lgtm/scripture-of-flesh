@@ -42,6 +42,12 @@ const AP_PER_HIT := 4.0
 @export var vital_countdown: float = 8.0
 
 var pools := ResourcePools.new()
+## 由成長系統設定：Callable(attack: AttackDefinition, weapon: WeaponDefinition) -> float
+var damage_modifier: Callable
+## 出血扣 HP 的倍率（技能、器官可降低）。
+var bleed_scale := 1.0
+var ap_gain_bonus := 0.0
+var last_attacker: CombatComponent
 var anatomy: AnatomyComponent
 var equipment: EquipmentComponent
 var action: int = Action.IDLE
@@ -163,7 +169,8 @@ func advance(delta: float) -> void:
 	pools.tick(delta, action == Action.IDLE and not blocking)
 	var blood := anatomy.state.tick(delta)
 	if blood > 0.0:
-		pools.damage_hp(blood * BLEED_HP_FACTOR, "bleeding")
+		var organ_scale := 0.7 if caps().has("strong_heart") else 1.0
+		pools.damage_hp(blood * BLEED_HP_FACTOR * bleed_scale * organ_scale, "bleeding")
 	if vital_timer >= 0.0 and not is_dead():
 		vital_timer -= delta
 		if vital_timer <= 0.0:
@@ -262,6 +269,10 @@ func build_packet(attack: AttackDefinition, part: StringName) -> DamagePacket:
 		p.amounts = DamageTypes.from_names(attack.damage, attack.damage_scale)
 		p.sever_power = attack.sever_power
 		p.armor_penetration = clampf(attack.armor_penetration_bonus, 0.0, 1.0)
+	if damage_modifier.is_valid():
+		var m: float = damage_modifier.call(attack, w if attack.requires_weapon else null)
+		for t in p.amounts:
+			p.amounts[t] = float(p.amounts[t]) * m
 	return p
 
 func _perform_hit() -> void:
@@ -276,7 +287,7 @@ func _perform_hit() -> void:
 		return
 	var result := target.receive_hit(build_packet(attack, part), self, attack)
 	if result != null and not result.rejected:
-		pools.add_ap(AP_PER_HIT)
+		pools.add_ap(AP_PER_HIT + ap_gain_bonus)
 		attack_landed.emit(target, result)
 
 ## 受到攻擊。回傳 null 代表被閃避；被防禦時傷害已減免。
@@ -286,6 +297,8 @@ func receive_hit(packet: DamagePacket, attacker: CombatComponent, attack: Attack
 	if is_invulnerable():
 		dodged.emit(attacker)
 		return null
+	if attacker != null:
+		last_attacker = attacker
 	var p := packet
 	if blocking and attacker != null and _is_facing(attacker.body()):
 		var total := 0.0
@@ -357,3 +370,5 @@ func _die(cause: String) -> void:
 		pools.hp_changed.emit(0.0, pools.max_hp)
 	_set_action(Action.DEAD, 0.0)
 	died.emit(cause)
+	if is_inside_tree():
+		EventBus.creature_killed.emit(self, last_attacker)

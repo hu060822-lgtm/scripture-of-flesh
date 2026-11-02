@@ -9,3 +9,10 @@ signal creature_part_severed(creature_id: StringName, part_ids: PackedStringArra
 signal creature_part_disabled(creature_id: StringName, part_id: StringName)
 ## 致命部位失效。rule 為 BodyPartDef.VitalRule。
 signal creature_vital_failed(creature_id: StringName, part_id: StringName, rule: int)
+
+## 生物死亡。killer 可能為 null（失血、窒息等）。
+signal creature_killed(victim: Node, killer: Node)
+## 異化到達新階段。
+signal mutation_stage_reached(creature_id: StringName, stage_id: StringName)
+## 劇情旗標改變。
+signal flag_changed(flag: StringName, value: Variant)

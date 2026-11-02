@@ -1,23 +1,27 @@
-[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=9 format=3]
 
-[ext_resource type="Resource" path="res://content/anatomy/stitcher.tres" id="1_moiro"]
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_rngeo"]
-[ext_resource type="Resource" path="res://content/attacks/claw.tres" id="3_3ad1g"]
-[ext_resource type="Resource" path="res://content/attacks/grab_tear.tres" id="4_p08sw"]
-[ext_resource type="Resource" path="res://content/attacks/bite.tres" id="5_td7pc"]
-[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="6_2h7uh"]
+[ext_resource type="Resource" path="res://content/anatomy/stitcher.tres" id="1_yp86r"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_latxi"]
+[ext_resource type="Resource" path="res://content/attacks/claw.tres" id="3_jvd7o"]
+[ext_resource type="Resource" path="res://content/attacks/grab_tear.tres" id="4_bsmi2"]
+[ext_resource type="Resource" path="res://content/attacks/bite.tres" id="5_jtsbs"]
+[ext_resource type="Script" path="res://organ/organ_definition.gd" id="6_bge4x"]
+[ext_resource type="Resource" path="res://content/organs/stitched_arm.tres" id="7_t47jj"]
+[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="8_hhbuo"]
 
 [resource]
-script = ExtResource("6_2h7uh")
+script = ExtResource("8_hhbuo")
 id = &"stitcher"
 display_name = "縫屍者"
-anatomy_profile = ExtResource("1_moiro")
-attacks = Array[ExtResource("2_rngeo")]([ExtResource("3_3ad1g"), ExtResource("4_p08sw"), ExtResource("5_td7pc")])
+anatomy_profile = ExtResource("1_yp86r")
+attacks = Array[ExtResource("2_latxi")]([ExtResource("3_jvd7o"), ExtResource("4_bsmi2"), ExtResource("5_jtsbs")])
 max_hp = 85.0
 max_st = 80.0
 move_speed = 2.4
 sever_chance_scale = 1.0
 stagger_threshold = 12.0
+xp_reward = 40
+harvestable = Array[ExtResource("6_bge4x")]([ExtResource("7_t47jj")])
 sight_range = 8.0
 sight_fov_degrees = 140.0
 needs_vision = true

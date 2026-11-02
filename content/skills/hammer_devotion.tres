@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://progression/skill_definition.gd" id="1_7w0gq"]
+
+[resource]
+script = ExtResource("1_7w0gq")
+id = &"hammer_devotion"
+display_name = "聖錘奉獻"
+description = "聖骸錘傷害 +12%。"
+cost = 1
+prerequisites = Array[StringName]([])
+effects = {
+"damage_scale:hammer": 0.12
+}

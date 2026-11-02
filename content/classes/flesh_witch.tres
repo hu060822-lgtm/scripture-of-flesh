@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ClassDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://progression/class_definition.gd" id="1_fx8wm"]
+[ext_resource type="Resource" path="res://content/weapons/anatomist_rapier.tres" id="2_f3coe"]
+[ext_resource type="Script" path="res://progression/character_stats.gd" id="3_ccb1d"]
+
+[sub_resource type="Resource" id="Resource_luvo4"]
+script = ExtResource("3_ccb1d")
+STR = 8
+DEX = 10
+VIT = 9
+PER = 11
+WIL = 14
+TEC = 12
+
+[resource]
+script = ExtResource("1_fx8wm")
+id = &"flesh_witch"
+display_name = "肉巫"
+description = "與異化共處的人。器官相容性高，意志堅定。"
+stats = SubResource("Resource_luvo4")
+starting_weapon = ExtResource("2_f3coe")
+starting_skills = Array[StringName]([&"flesh_communion"])
+starting_items = {
+"suture_kit": 1
+}

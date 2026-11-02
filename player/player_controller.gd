@@ -52,6 +52,23 @@ func switch_weapon(index: int) -> bool:
 	weapon_switched.emit(weapons[index])
 	return true
 
+## E 鍵：撿武器 → 祭壇休息 → 摘取屍體器官，依序嘗試。
+func interact() -> bool:
+	if try_pickup():
+		return true
+	var altar := nearest_altar()
+	if altar != null:
+		altar.rest(body())
+		return true
+	var data: PlayerData = body().get_node_or_null("PlayerData")
+	return data != null and data.try_harvest()
+
+func nearest_altar() -> StitchingAltar:
+	for n in get_tree().get_nodes_in_group(StitchingAltar.GROUP):
+		if n is StitchingAltar and n.in_range(body()):
+			return n
+	return null
+
 ## 撿起附近掉落的武器。
 func try_pickup() -> bool:
 	var best: RigidBody3D = null
@@ -118,7 +135,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed(&"dodge"):
 		combat.dodge(_move_input_world())
 	elif event.is_action_pressed(&"interact"):
-		try_pickup()
+		interact()
+	elif event.is_action_pressed(&"use_item"):
+		var data: PlayerData = body().get_node_or_null("PlayerData")
+		if data != null:
+			data.start_suture()
+	elif event.is_action_pressed(&"surgery"):
+		var altar := nearest_altar()
+		if altar != null:
+			altar.request_surgery(body())
 	else:
 		for i in 3:
 			if event.is_action_pressed(StringName("weapon_%d" % (i + 1))):

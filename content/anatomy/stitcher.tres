@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="AnatomyProfile" load_steps=17 format=3]
 
-[ext_resource type="Script" path="res://anatomy/body_part_def.gd" id="1_krkwu"]
-[ext_resource type="Script" path="res://anatomy/anatomy_profile.gd" id="2_kdn1n"]
+[ext_resource type="Script" path="res://anatomy/body_part_def.gd" id="1_mk4cn"]
+[ext_resource type="Script" path="res://anatomy/anatomy_profile.gd" id="2_21k73"]
 
-[sub_resource type="Resource" id="Resource_mq8w2"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_b0p3b"]
+script = ExtResource("1_mk4cn")
 id = &"chest"
 display_name = "胸腔"
 max_hp = 60.0
@@ -25,8 +25,8 @@ mutation_threshold = 60.0
 bone_name = &"chest"
 mesh_segment = &"seg_chest"
 
-[sub_resource type="Resource" id="Resource_wi532"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_blew7"]
+script = ExtResource("1_mk4cn")
 id = &"heart"
 display_name = "心臟"
 max_hp = 15.0
@@ -44,8 +44,8 @@ mutation_threshold = 60.0
 bone_name = &"heart"
 mesh_segment = &"seg_heart"
 
-[sub_resource type="Resource" id="Resource_3ed2m"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_bo3lc"]
+script = ExtResource("1_mk4cn")
 id = &"lungs"
 display_name = "肺臟"
 max_hp = 25.0
@@ -63,8 +63,8 @@ mutation_threshold = 60.0
 bone_name = &"lungs"
 mesh_segment = &"seg_lungs"
 
-[sub_resource type="Resource" id="Resource_y6krq"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_tkra1"]
+script = ExtResource("1_mk4cn")
 id = &"spine"
 display_name = "脊椎"
 max_hp = 40.0
@@ -85,8 +85,8 @@ mutation_threshold = 60.0
 bone_name = &"spine"
 mesh_segment = &"seg_spine"
 
-[sub_resource type="Resource" id="Resource_7xpy0"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_3mi20"]
+script = ExtResource("1_mk4cn")
 id = &"abdomen"
 display_name = "腹部"
 max_hp = 45.0
@@ -106,8 +106,8 @@ mutation_threshold = 60.0
 bone_name = &"abdomen"
 mesh_segment = &"seg_abdomen"
 
-[sub_resource type="Resource" id="Resource_gk8ji"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_m7tes"]
+script = ExtResource("1_mk4cn")
 id = &"neck"
 display_name = "頸部"
 max_hp = 20.0
@@ -125,8 +125,8 @@ mutation_threshold = 60.0
 bone_name = &"neck"
 mesh_segment = &"seg_neck"
 
-[sub_resource type="Resource" id="Resource_rsqwo"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_rhook"]
+script = ExtResource("1_mk4cn")
 id = &"head"
 display_name = "頭部"
 max_hp = 30.0
@@ -147,8 +147,8 @@ mutation_threshold = 60.0
 bone_name = &"head"
 mesh_segment = &"seg_head"
 
-[sub_resource type="Resource" id="Resource_ucwvs"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_pn0pe"]
+script = ExtResource("1_mk4cn")
 id = &"eye_l"
 display_name = "左眼"
 max_hp = 5.0
@@ -166,8 +166,8 @@ mutation_threshold = 60.0
 bone_name = &"eye_l"
 mesh_segment = &"seg_eye_l"
 
-[sub_resource type="Resource" id="Resource_te5cv"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_pywjf"]
+script = ExtResource("1_mk4cn")
 id = &"eye_r"
 display_name = "右眼"
 max_hp = 5.0
@@ -185,8 +185,8 @@ mutation_threshold = 60.0
 bone_name = &"eye_r"
 mesh_segment = &"seg_eye_r"
 
-[sub_resource type="Resource" id="Resource_lh33c"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_dbitl"]
+script = ExtResource("1_mk4cn")
 id = &"jaw"
 display_name = "下顎"
 max_hp = 10.2
@@ -204,8 +204,8 @@ mutation_threshold = 60.0
 bone_name = &"jaw"
 mesh_segment = &"seg_jaw"
 
-[sub_resource type="Resource" id="Resource_1xh3r"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_gls7k"]
+script = ExtResource("1_mk4cn")
 id = &"arm_l"
 display_name = "左臂"
 max_hp = 25.5
@@ -223,8 +223,8 @@ mutation_threshold = 60.0
 bone_name = &"arm_l"
 mesh_segment = &"seg_arm_l"
 
-[sub_resource type="Resource" id="Resource_miu1a"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_yjp3m"]
+script = ExtResource("1_mk4cn")
 id = &"arm_r"
 display_name = "右臂"
 max_hp = 25.5
@@ -242,8 +242,8 @@ mutation_threshold = 60.0
 bone_name = &"arm_r"
 mesh_segment = &"seg_arm_r"
 
-[sub_resource type="Resource" id="Resource_dqh0v"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_ia64u"]
+script = ExtResource("1_mk4cn")
 id = &"leg_l"
 display_name = "左腿"
 max_hp = 34.0
@@ -261,8 +261,8 @@ mutation_threshold = 60.0
 bone_name = &"leg_l"
 mesh_segment = &"seg_leg_l"
 
-[sub_resource type="Resource" id="Resource_a278n"]
-script = ExtResource("1_krkwu")
+[sub_resource type="Resource" id="Resource_aih58"]
+script = ExtResource("1_mk4cn")
 id = &"leg_r"
 display_name = "右腿"
 max_hp = 34.0
@@ -281,7 +281,7 @@ bone_name = &"leg_r"
 mesh_segment = &"seg_leg_r"
 
 [resource]
-script = ExtResource("2_kdn1n")
+script = ExtResource("2_21k73")
 id = &"stitcher"
 display_name = "縫屍者"
-parts = Array[ExtResource("1_krkwu")]([SubResource("Resource_mq8w2"), SubResource("Resource_wi532"), SubResource("Resource_3ed2m"), SubResource("Resource_y6krq"), SubResource("Resource_7xpy0"), SubResource("Resource_gk8ji"), SubResource("Resource_rsqwo"), SubResource("Resource_ucwvs"), SubResource("Resource_te5cv"), SubResource("Resource_lh33c"), SubResource("Resource_1xh3r"), SubResource("Resource_miu1a"), SubResource("Resource_dqh0v"), SubResource("Resource_a278n")])
+parts = Array[ExtResource("1_mk4cn")]([SubResource("Resource_b0p3b"), SubResource("Resource_blew7"), SubResource("Resource_bo3lc"), SubResource("Resource_tkra1"), SubResource("Resource_3mi20"), SubResource("Resource_m7tes"), SubResource("Resource_rhook"), SubResource("Resource_pn0pe"), SubResource("Resource_pywjf"), SubResource("Resource_dbitl"), SubResource("Resource_gls7k"), SubResource("Resource_yjp3m"), SubResource("Resource_ia64u"), SubResource("Resource_aih58")])

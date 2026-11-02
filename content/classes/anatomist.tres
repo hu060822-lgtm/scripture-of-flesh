@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ClassDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://progression/class_definition.gd" id="1_h0q31"]
+[ext_resource type="Resource" path="res://content/weapons/anatomist_rapier.tres" id="2_ucl0a"]
+[ext_resource type="Script" path="res://progression/character_stats.gd" id="3_rq2os"]
+
+[sub_resource type="Resource" id="Resource_xfvw7"]
+script = ExtResource("3_rq2os")
+STR = 9
+DEX = 11
+VIT = 9
+PER = 14
+WIL = 10
+TEC = 12
+
+[resource]
+script = ExtResource("1_h0q31")
+id = &"anatomist"
+display_name = "解剖師"
+description = "熟知人體每一條縫隙。擅長指定部位與穿刺。"
+stats = SubResource("Resource_xfvw7")
+starting_weapon = ExtResource("2_ucl0a")
+starting_skills = Array[StringName]([&"anatomical_insight"])
+starting_items = {
+"suture_kit": 1
+}

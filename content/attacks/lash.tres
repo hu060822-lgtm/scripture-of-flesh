@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_2641h"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_hvdy3"]
 
 [resource]
-script = ExtResource("1_2641h")
+script = ExtResource("1_hvdy3")
 id = &"lash"
 display_name = "長臂鞭擊"
 required_capabilities = {

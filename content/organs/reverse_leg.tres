@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="OrganDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://organ/organ_definition.gd" id="1_jtnun"]
+[ext_resource type="Script" path="res://anatomy/body_part_def.gd" id="2_ixsd0"]
+
+[sub_resource type="Resource" id="Resource_vpm5k"]
+script = ExtResource("2_ixsd0")
+id = &""
+display_name = ""
+max_hp = 55.0
+armor = 3.0
+resistances = {}
+functions = PackedStringArray("leg", "locomotion", "leap")
+detachable = true
+parent_id = &""
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.7
+mutation_threshold = 60.0
+bone_name = &""
+mesh_segment = &""
+
+[resource]
+script = ExtResource("1_jtnun")
+id = &"reverse_leg"
+display_name = "反足"
+description = "膝蓋反折的腿。能讓你飛踢，走路時卻總像在逃跑。"
+slots = PackedStringArray("leg_l", "leg_r")
+template = SubResource("Resource_vpm5k")
+origin = &"abomination"
+base_compatibility = 0.45
+mutation_cost = 14.0
+min_tec = 0
+harvest_part = &"leg_l"

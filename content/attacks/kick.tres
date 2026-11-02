@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_i8tgo"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_3ffwf"]
 
 [resource]
-script = ExtResource("1_i8tgo")
+script = ExtResource("1_3ffwf")
 id = &"kick"
 display_name = "踢擊"
 required_capabilities = {

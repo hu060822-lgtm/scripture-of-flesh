@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="WeaponDefinition" load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_xidnq"]
-[ext_resource type="Script" path="res://equipment/weapon_definition.gd" id="2_ajnnq"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_ayofl"]
+[ext_resource type="Script" path="res://equipment/weapon_definition.gd" id="2_3nkwb"]
 
-[sub_resource type="Resource" id="Resource_80bpm"]
-script = ExtResource("1_xidnq")
+[sub_resource type="Resource" id="Resource_gn1e7"]
+script = ExtResource("1_ayofl")
 id = &"hammer_heavy"
 display_name = "碎骨禱"
 required_capabilities = {}
@@ -29,8 +29,8 @@ cooldown = 0.0
 preferred_target_part = &""
 tags = PackedStringArray()
 
-[sub_resource type="Resource" id="Resource_0c768"]
-script = ExtResource("1_xidnq")
+[sub_resource type="Resource" id="Resource_4l45a"]
+script = ExtResource("1_ayofl")
 id = &"hammer_light"
 display_name = "重擊"
 required_capabilities = {}
@@ -54,7 +54,7 @@ preferred_target_part = &""
 tags = PackedStringArray()
 
 [resource]
-script = ExtResource("2_ajnnq")
+script = ExtResource("2_3nkwb")
 id = &"reliquary_hammer"
 display_name = "聖骸錘"
 weapon_type = &"hammer"
@@ -66,5 +66,5 @@ sever_power = 0.6
 armor_penetration = 0.3
 bleed_multiplier = 0.6
 required_grip = 2
-light_attack = SubResource("Resource_0c768")
-heavy_attack = SubResource("Resource_80bpm")
+light_attack = SubResource("Resource_4l45a")
+heavy_attack = SubResource("Resource_gn1e7")

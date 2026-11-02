@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://progression/skill_definition.gd" id="1_xmt4l"]
+
+[resource]
+script = ExtResource("1_xmt4l")
+id = &"anatomical_insight"
+display_name = "解剖學洞察"
+description = "命中時多獲得 2 AP。"
+cost = 1
+prerequisites = Array[StringName]([])
+effects = {
+"ap_gain": 2.0
+}

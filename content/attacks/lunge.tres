@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_56y5s"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_hb141"]
 
 [resource]
-script = ExtResource("1_56y5s")
+script = ExtResource("1_hb141")
 id = &"lunge"
 display_name = "反足飛撲"
 required_capabilities = {

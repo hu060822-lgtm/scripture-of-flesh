@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ClassDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://progression/class_definition.gd" id="1_atyob"]
+[ext_resource type="Resource" path="res://content/weapons/reliquary_hammer.tres" id="2_5lbun"]
+[ext_resource type="Script" path="res://progression/character_stats.gd" id="3_7xd0e"]
+
+[sub_resource type="Resource" id="Resource_kotvv"]
+script = ExtResource("3_7xd0e")
+STR = 12
+DEX = 8
+VIT = 13
+PER = 9
+WIL = 11
+TEC = 13
+
+[resource]
+script = ExtResource("1_atyob")
+id = &"prosthetic_knight"
+display_name = "義體騎士"
+description = "以機械取代血肉的騎士。耐打，技術足以接上義肢。"
+stats = SubResource("Resource_kotvv")
+starting_weapon = ExtResource("2_5lbun")
+starting_skills = Array[StringName]([&"iron_discipline"])
+starting_items = {
+"suture_kit": 1
+}

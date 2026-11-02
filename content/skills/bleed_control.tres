@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://progression/skill_definition.gd" id="1_j42x0"]
+
+[resource]
+script = ExtResource("1_j42x0")
+id = &"bleed_control"
+display_name = "止血術"
+description = "出血造成的 HP 損失降低 30%。"
+cost = 1
+prerequisites = Array[StringName]([&"quick_suture"])
+effects = {
+"bleed_resist": 0.3
+}

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ClassDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://progression/class_definition.gd" id="1_uo5xe"]
+[ext_resource type="Resource" path="res://content/weapons/bone_saw_cleaver.tres" id="2_yr5ws"]
+[ext_resource type="Script" path="res://progression/character_stats.gd" id="3_dxi0a"]
+
+[sub_resource type="Resource" id="Resource_xlh0o"]
+script = ExtResource("3_dxi0a")
+STR = 10
+DEX = 10
+VIT = 11
+PER = 10
+WIL = 10
+TEC = 14
+
+[resource]
+script = ExtResource("1_uo5xe")
+id = &"stitcher"
+display_name = "縫合者"
+description = "把破碎的身體縫回去的人，包括自己的。"
+stats = SubResource("Resource_xlh0o")
+starting_weapon = ExtResource("2_yr5ws")
+starting_skills = Array[StringName]([&"quick_suture"])
+starting_items = {
+"suture_kit": 3
+}

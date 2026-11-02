@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="MutationStage" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://mutation/mutation_stage.gd" id="1_u1bln"]
+
+[resource]
+script = ExtResource("1_u1bln")
+id = &"stage_2_bone_spurs"
+display_name = "骨刺增生"
+threshold = 50.0
+description = "骨頭從皮膚下頂出。獲得「骨刺穿出」攻擊，體力上限 +10。祭壇的修復會讓骨刺長得更快（每次休息異化 +2）。"
+effects = {
+"grant_attack:bone_spur": 1.0,
+"heal_penalty": 2.0,
+"max_st": 10.0
+}
+story_flag = &"mutation_50"

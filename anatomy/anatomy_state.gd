@@ -11,6 +11,8 @@ signal part_disabled(part_id: StringName, reason: String)
 ## 部位斷離。severed_ids 包含此部位與所有連帶斷離的子部位。
 signal part_severed(part_id: StringName, severed_ids: PackedStringArray)
 signal part_restored(part_id: StringName)
+## 部位的定義被替換（器官移植、義肢）。
+signal part_replaced(part_id: StringName, organ_id: StringName)
 signal capabilities_changed(caps: CapabilitySet)
 ## 致命部位失效。rule 為 BodyPartDef.VitalRule。
 signal vital_failed(part_id: StringName, rule: int)
@@ -27,6 +29,8 @@ var _order: Array[StringName] = []
 var _children := {}         # StringName -> Array[StringName]
 var _caps: CapabilitySet = CapabilitySet.new()
 var _vital_reported := {}   # StringName -> true
+## 已移植的器官：part_id -> organ_id（存檔用）
+var organs := {}
 
 static func from_profile(p: AnatomyProfile) -> AnatomyState:
 	var errors := p.validate()
@@ -148,6 +152,17 @@ func restore_part(part_id: StringName, include_children: bool = true) -> bool:
 	part_restored.emit(part_id)
 	return true
 
+## 治療部位 HP（不會接回斷離部位）。HP 回到 0 以上且骨折未達門檻時恢復功能。
+func heal_part(part_id: StringName, amount: float) -> void:
+	var p: BodyPartState = _parts.get(part_id)
+	if p == null or p.severed or is_dead or amount <= 0.0:
+		return
+	var before := _snapshot()
+	p.hp = minf(p.def.max_hp, p.hp + amount)
+	if p.own_disabled and p.hp > 0.0 and p.injury(DamageTypes.Type.FRACTURE) < p.def.max_hp * DamageTypes.FRACTURE_DISABLE_RATIO:
+		p.own_disabled = false
+	_refresh(before, [])
+
 ## 時間推進：壞死扣 HP。回傳這段時間內的總失血量，由 HP 資源池扣除（M3）。
 func tick(delta: float) -> float:
 	if is_dead:
@@ -166,6 +181,28 @@ func tick(delta: float) -> float:
 	_refresh(before, [])
 	return blood
 
+## 以新的部位定義取代現有部位（器官移植、機械義肢）。ID、父部位與依賴關係必須維持，
+## 以免破壞身體結構；新定義的功能、HP、護甲、抗性會生效，部位恢復為完整狀態。
+func replace_part_definition(part_id: StringName, new_def: BodyPartDef, organ_id: StringName = &"") -> bool:
+	var old: BodyPartState = _parts.get(part_id)
+	if old == null or is_dead or new_def.id != part_id or new_def.parent_id != old.def.parent_id:
+		return false
+	if old.def.parent_id != &"" and (_parts[old.def.parent_id] as BodyPartState).severed:
+		return false
+	var before := _snapshot()
+	var st := BodyPartState.new(new_def)
+	st.mutation = old.mutation
+	_parts[part_id] = st
+	_vital_reported.erase(part_id)
+	if organ_id != &"":
+		organs[part_id] = organ_id
+	else:
+		organs.erase(part_id)
+	_refresh(before, [])
+	part_replaced.emit(part_id, organ_id)
+	part_restored.emit(part_id)
+	return true
+
 # ---------- 存檔 ----------
 
 func to_save() -> Dictionary:
@@ -179,12 +216,24 @@ func to_save() -> Dictionary:
 			"hp": p.hp, "injuries": inj, "bleed": p.bleed_rate, "mutation": p.mutation,
 			"severed": p.severed, "own_disabled": p.own_disabled,
 		}
-	return {"version": SAVE_VERSION, "profile_id": String(profile.id), "dead": is_dead, "parts": parts}
+	var organ_ids := {}
+	for k in organs:
+		organ_ids[String(k)] = String(organs[k])
+	return {"version": SAVE_VERSION, "profile_id": String(profile.id), "dead": is_dead, "parts": parts, "organs": organ_ids}
 
 ## 從存檔還原。存檔中不存在的部位（新版本新增的部位）保持完整；
 ## 存檔中有但 profile 已移除的部位會被忽略。
-static func from_save(p: AnatomyProfile, data: Dictionary) -> AnatomyState:
+## organ_lookup：Callable(organ_id: StringName) -> BodyPartDef，用來還原已移植器官的部位定義。
+static func from_save(p: AnatomyProfile, data: Dictionary, organ_lookup: Callable = Callable()) -> AnatomyState:
 	var s := from_profile(p)
+	var saved_organs: Dictionary = data.get("organs", {})
+	if organ_lookup.is_valid():
+		for key in saved_organs:
+			var pid := StringName(key)
+			var def: BodyPartDef = organ_lookup.call(StringName(saved_organs[key]))
+			if def != null and s._parts.has(pid):
+				s._parts[pid] = BodyPartState.new(def)
+				s.organs[pid] = StringName(saved_organs[key])
 	var parts: Dictionary = data.get("parts", {})
 	for key in parts:
 		var st: BodyPartState = s._parts.get(StringName(key))

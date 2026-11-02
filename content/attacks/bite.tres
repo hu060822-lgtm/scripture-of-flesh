@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_qsqkj"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_ectnb"]
 
 [resource]
-script = ExtResource("1_qsqkj")
+script = ExtResource("1_ectnb")
 id = &"bite"
 display_name = "啃咬"
 required_capabilities = {
