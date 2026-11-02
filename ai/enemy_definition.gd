@@ -44,3 +44,30 @@ extends Resource
 @export var special_behavior: StringName = &""
 ## 斷肢反應持續秒數。
 @export var dismember_react_seconds: float = 0.8
+
+@export_group("Tactics")
+## 以下為 AI-2 戰術個性（0..1）。【暫代】初值，未經遊玩測試；全域難度見 Tactics.difficulty。
+## 進攻慾：越高越常直接出手、越少繞圈等待。
+@export_range(0.0, 1.0) var aggression: float = 0.5
+## 謹慎：越高越常後退、防禦；受傷時再加成。
+@export_range(0.0, 1.0) var caution: float = 0.3
+## 耐心：在攻擊距離外繞圈等待時機的傾向。
+@export_range(0.0, 1.0) var patience: float = 0.5
+## 側翼：繞到目標側面／背後的傾向（玩家防禦只擋正面）。
+@export_range(0.0, 1.0) var flank_tendency: float = 0.3
+## 打帶跑：出手後立刻拉開距離。
+@export_range(0.0, 1.0) var hit_and_run: float = 0.0
+## 趁隙：玩家收招、僵直、耐力見底時進攻的敏銳度。
+@export_range(0.0, 1.0) var punish_skill: float = 0.5
+## 適應：依玩家習慣（常防禦／常閃避）調整打法的程度。
+@export_range(0.0, 1.0) var adaptivity: float = 0.5
+## 優先攻擊玩家受傷部位的機率（luz 決定：中等，約 40%）。
+@export_range(0.0, 1.0) var injured_target_bias: float = 0.4
+
+@export_group("Squad")
+## AI-3：出手前要取得攻擊令牌（同時最多 AttackTokens.max_attackers 隻）。Boss 為 false。
+@export var uses_attack_token: bool = true
+## 發現目標時呼叫附近同伴（alarm 聲響）的半徑；0 = 不呼叫。
+@export var alarm_radius: float = 10.0
+## 沒有受傷部位可瞄準時，偏好攻擊的部位（例如未生者咬腿）。高度不合時仍會忽略。
+@export var preferred_target_parts: PackedStringArray = PackedStringArray()

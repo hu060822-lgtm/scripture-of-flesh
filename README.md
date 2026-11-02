@@ -97,7 +97,7 @@ WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）
 | `scenes/prologue/` | `prologue_level.tscn`（由 `tools/generate_prologue_level.gd` 產生，之後直接在編輯器修改）、`prologue.tscn` |
 | `anatomy/` | `BodyPartDef`、`AnatomyProfile`（Resource）；`AnatomyState`、`BodyPartState`、`CapabilitySet`（即時狀態） |
 | `damage/` | `DamageTypes`（八種損傷與係數）、`DamagePacket`、`DamageResolver`、`DamageResult` |
-| `ai/` | `EnemyDefinition`、`EnemyRuntimeState`、`EnemyAI`（狀態機）、`ai/states/` 各狀態、`AttackSelector`、`EnemyFactory` |
+| `ai/` | `EnemyDefinition`、`EnemyRuntimeState`、`EnemyAI`（狀態機）、`ai/states/` 各狀態、`AttackSelector`、`EnemyFactory`、`AiNavigator`（尋路）、`ai/perception/NoiseEmitter`（聲響）、`ai/tactics/`（`Tactics` 戰術評分、`TargetHabits` 玩家習慣、`PartTargeting` 瞄準傷口）、`ai/squad/`（`AttackTokens` 攻擊令牌、`Squad` 包圍站位） |
 | `content/enemies/` | 四種敵人資料 |
 | `combat/` | `CombatComponent`（攻擊、防禦、閃避、硬直、出血、死亡）、`ResourcePools`（HP/ST/AP）、`AttackDefinition` |
 | `player/` | `PlayerController`（輸入 → 指令）、`TacticalController`（戰術介面）、`PlayerFactory` |
@@ -139,15 +139,16 @@ DamagePacket ─▶ DamageResolver.resolve()（不修改狀態）─▶ DamageRe
 - 還沒有 AnimationTree 與任何動畫：`AnimationSet` 只決定「該用哪一組動作」，沒有實際播放。
 - 器官移植演出是暫代的紅色閃光；正式的移植演出需要動畫。
 - 移植後的部位外觀沿用原本的膠囊體（只有資料、能力與名稱改變）。
-- 敵人移動是直線前進，沒有尋路（NavigationAgent3D 在 M7 視關卡需要加入）。
+- 敵人尋路：序章載入時以 `LevelNavigation` 從灰盒碰撞體烘焙導航網格，敵人沿路徑跨房間追擊；沙盒沒有導航網格時退回直線移動。敵人間距用簡單的分離轉向，不是 RVO。
 - 敵人沒有動畫，飛撲只是快速位移。
 - 武器外觀是暫代方塊。手臂「功能失效」（未斷）時武器仍握在手上，但雙手武器在可用的手不足時無法揮動。
 - 沒有攻擊動畫：攻擊時序（前搖／判定／收招）由資料驅動，畫面上目前看不到揮擊動作。
 - 命中判定是幾何扇形計算（不使用物理碰撞），方便戰術減速與測試；之後若需要精確武器軌跡再改。
 - 所有平衡係數（`damage/damage_types.gd`）皆為初值，未經遊玩測試。
 - **序章遊玩時間（目標 20–30 分鐘）尚未實測**：只有自動測試與 headless 模擬，沒有人實際玩過。
+- 敵人 AI 除錯：遊戲中按 F9 顯示每隻敵人的狀態／意圖／攻擊令牌／Boss 階段與連段。
 - Boss 登場演出是純文字標題卡；跪伏是身體直接下移；產聲沒有特效與音效。
 - 對話框沒有立繪、打字機效果與語音；結局是一段文字畫面。
-- 關卡是灰盒，沒有門的開啟動畫，敵人沒有尋路（房間之間靠直線追擊）。
+- 關卡是灰盒，沒有門的開啟動畫。
 - 匯出遊戲時需在匯出設定的「非資源檔案」加入 `*.json`（對話資料），目前專案還沒有匯出設定。
 - 沒有音效與音樂。

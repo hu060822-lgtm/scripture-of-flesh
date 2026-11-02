@@ -7,7 +7,7 @@ func update(ai: EnemyAI, _delta: float) -> StringName:
 	var t := ai.runtime.target
 	if t == null:
 		return &"patrol"
-	ai.move_away_from(t.body().global_position)
+	ai.flee_from(t.body().global_position)
 	if ai.runtime.time_in_state >= DURATION and AttackSelector.has_any_attack(ai.combat):
 		return &"chase"
 	return &""

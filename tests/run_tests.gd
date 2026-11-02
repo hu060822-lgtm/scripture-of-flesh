@@ -42,11 +42,14 @@ func _run_all() -> void:
 			# 重設全域狀態，避免失敗的測試影響後續測試
 			root.get_node("TimeScale").set_mode(0)
 			root.get_node("GameState").reset()
+			load("res://ai/squad/attack_tokens.gd").reset()  # 不直接引用 class_name（-s 模式下 autoload 尚未就緒）
 			# 清除測試加入場景樹的節點（autoload 不受影響）
 			for c in root.get_children():
 				if not c in existing:
 					root.remove_child(c)
 					c.free()
+			# 被清掉的導航網格要立刻從導航地圖移除，避免影響下一個測試
+			NavigationServer3D.map_force_update(root.get_world_3d().navigation_map)
 			if inst.failures.is_empty():
 				print("PASS   %s::%s" % [f, name])
 			else:

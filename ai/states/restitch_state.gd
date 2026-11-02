@@ -1,6 +1,9 @@
 extends AiState
 ## 特殊行為（縫屍者）：走到殘肢旁，花時間把它縫回去。期間被打中就中斷。
 
+## 被打斷後多久才會再嘗試縫回。
+const RESTITCH_RETRY_COOLDOWN := 3.0
+
 func enter(ai: EnemyAI) -> void:
 	ai.runtime.special_target = RestitchLogic.find_limb(ai)
 	ai.runtime.special_progress = 0.0
@@ -13,6 +16,7 @@ func update(ai: EnemyAI, delta: float) -> StringName:
 	if ai.interrupted:
 		ai.interrupted = false
 		if ai.runtime.special_progress > 0.0:
+			ai.runtime.special_cooldown = RESTITCH_RETRY_COOLDOWN
 			return &"chase"  # 縫到一半被打斷
 	var d := g.global_position.distance_to(ai.body().global_position)
 	if d > RestitchLogic.REACH:

@@ -21,11 +21,13 @@ func _init() -> void:
 		["stilt_stomp", "cradle_crush", "mother_lash", "birth_scream", "crawl_grasp"],
 		{"hp": 620, "st": 300, "speed": 1.9, "range": 2.4, "defend": 0.0, "dodge": 0.0, "special": &"boss",
 		 "sight": 14.0, "fov": 220.0, "hearing": 6.0, "stagger": 45.0, "xp": 500, "retreat": 0.0,
-		 "react": 1.2, "radius": 0.85, "height": 3.9, "sever_scale": 0.8, "memory": 30.0})
+		 "react": 1.2, "radius": 0.85, "height": 3.9, "sever_scale": 0.8, "memory": 30.0,
+		 "tactics": {"aggression": 0.6, "caution": 0.1, "patience": 0.2, "flank_tendency": 0.0, "hit_and_run": 0.0, "punish_skill": 0.5, "adaptivity": 0.3, "uses_attack_token": false}})
 	_save(mother, "res://content/enemies/walking_mother.tres")
 	var unborn := _enemy(&"unborn", "未生者", "unborn", ["bite", "claw"],
 		{"hp": 28, "st": 60, "speed": 5.5, "range": 0.9, "defend": 0.0, "dodge": 0.0, "sight": 9.0, "fov": 360.0,
-		 "hearing": 5.0, "stagger": 6.0, "xp": 5, "radius": 0.2, "height": 0.8, "scale": 0.45, "sever_scale": 1.4, "memory": 20.0})
+		 "hearing": 5.0, "stagger": 6.0, "xp": 5, "radius": 0.2, "height": 0.8, "scale": 0.45, "sever_scale": 1.4, "memory": 20.0,
+		 "tactics": {"aggression": 0.9, "caution": 0.0, "patience": 0.1, "flank_tendency": 0.4, "hit_and_run": 0.0, "punish_skill": 0.3, "adaptivity": 0.0, "preferred_target_parts": PackedStringArray(["leg_l", "leg_r"])}})
 	_save(unborn, "res://content/enemies/unborn.tres")
 	quit()
 
@@ -152,4 +154,8 @@ func _enemy(id: StringName, name: String, profile: String, attacks: Array, o: Di
 	d.collision_height = o.get("height", 1.8)
 	d.visual_scale = o.get("scale", 1.0)
 	d.sever_chance_scale = o.get("sever_scale", 1.0)
+	# AI-2 戰術個性
+	var tactics: Dictionary = o.get("tactics", {})
+	for k in tactics:
+		d.set(k, tactics[k])
 	return d
