@@ -277,3 +277,118 @@ func test_cutting_a_cord_staggers_her_and_slows_births() -> void:
 	c.anatomy.state.sever_part(&"cord_2")
 	assert_eq(cuts, [2, 1])
 	assert_eq(bp.cords_lost(), 2)
+
+# ---------- D／G／E：關卡 ----------
+
+const SAVE := "user://test_prologue_fun_save.json"
+
+func _game() -> PrologueGame:
+	var g := PrologueGame.new()
+	g.autostart = false
+	g.play_opening = false
+	g.save_path = SAVE
+	tree.root.add_child(g)
+	g.start_game("new")
+	return g
+
+func _cleanup_save() -> void:
+	if FileAccess.file_exists(SAVE):
+		DirAccess.remove_absolute(SAVE)
+
+func test_linear_level_has_new_content() -> void:
+	var lvl: Node3D = (load(PrologueGame.LEVEL) as PackedScene).instantiate()
+	for path in ["Geometry/Cistern", "Geometry/SecretLibrary", "Geometry/Courtyard/Terrace",
+			"Geometry/SutureCorridor/Ramp", "Geometry/Courtyard/StairsWest", "Geometry/Courtyard/StairsEast",
+			"Interactables/Item_item_agnes_arm", "Interactables/PalmLock_Sacristy",
+			"Interactables/HiddenScripture_Archive", "Interactables/ShortcutGate_Courtyard",
+			"Secrets/SecretWall_Archive", "Secrets/SecretWall_MotherNook", "Markers/MotherChaseSpawn",
+			"Spawns/Spawn_cistern_firstborn", "Interactables/Item_item_cistern_iron_arm",
+			"Interactables/Item_item_secret_watcher_eye"]:
+		assert_true(lvl.get_node_or_null(path) != null, path)
+	var arm: ItemPickup = lvl.get_node("Interactables/Item_item_agnes_arm")
+	assert_eq(arm.item_id, "organ:agnes_arm")
+	assert_true(arm.hint_text.contains("T"), "tells the player how to graft")
+	var altar: Node3D = lvl.get_node("Altars/Altar_altar_courtyard")
+	assert_true(altar.position.distance_to(arm.position) < 3.0, "gift waits next to the terrace altar")
+	assert_true(absf(altar.position.y - 2.0) < 0.01, "altar is up on the terrace")
+	assert_eq((load((lvl.get_node("Spawns/Spawn_cistern_firstborn") as EnemySpawn).enemy_path) as EnemyDefinition).id, &"unborn_elite")
+	assert_true("inscription_cistern" in DialogueRunner.all_ids())
+	lvl.free()
+
+func test_navmesh_climbs_the_terrace_and_reaches_the_cistern() -> void:
+	var lvl: Node3D = (load(PrologueGame.LEVEL) as PackedScene).instantiate()
+	tree.root.add_child(lvl)
+	LevelNavigation.bake(lvl, lvl.get_node("Geometry"))
+	var map := lvl.get_world_3d().navigation_map
+	# 產房 → 坡道 → 高台祭壇
+	var p1 := NavigationServer3D.map_get_path(map, Vector3(0, 0, 0), Vector3(4.5, 2, -28.5), true)
+	assert_true(p1.size() > 2 and absf(p1[-1].y - 2.0) < 0.5, "reaches the terrace (%s)" % [p1[-1] if p1.size() > 0 else "none"])
+	# 高台 → 西坡道 → 庭院地面
+	var p2 := NavigationServer3D.map_get_path(map, Vector3(4.5, 2, -28.5), Vector3(0, 0, -42), true)
+	assert_true(p2.size() > 2 and absf(p2[-1].y) < 0.5 and Vector2(p2[-1].x, p2[-1].z).distance_to(Vector2(0, -42)) < 0.6, "terrace connects down to the courtyard")
+	# 庭院 → 藏書室 → 坡道 → 水室
+	var p3 := NavigationServer3D.map_get_path(map, Vector3(0, 0, -42), Vector3(-18, -2, -52), true)
+	assert_true(p3.size() > 2 and absf(p3[-1].y + 2.0) < 0.5, "cistern reachable (%s)" % [p3[-1] if p3.size() > 0 else "none"])
+	lvl.queue_free()
+
+func test_shortcut_gate_only_opens_from_the_courtyard_side() -> void:
+	var g := _game()
+	var gate: ShortcutGate = g.level.get_node("Interactables/ShortcutGate_Courtyard")
+	g.player.global_position = gate.global_position + Vector3(0, 0, 1.0)  # 坡道那一側（南）
+	assert_false(gate.interact(g.player), "latched from the stairs side")
+	assert_false(gate.is_open())
+	g.player.global_position = gate.global_position + Vector3(0, 0, -1.0)  # 庭院那一側（北）
+	assert_true(gate.interact(g.player))
+	assert_true(gate.is_open())
+	assert_true(GameState.taken.has(&"shortcut_courtyard"), "remembered")
+	_cleanup_save()
+
+func test_mother_bursts_out_when_the_key_is_taken_and_gives_up_in_the_courtyard() -> void:
+	var g := _game()
+	var mc := g.mother_chase
+	assert_true(mc != null)
+	var wall: SecretWall = g.level.get_node("Secrets/SecretWall_MotherNook")
+	mc.advance(0.1)
+	assert_false(mc.active, "nothing before the key")
+	var key: ItemPickup = g.level.get_node("Interactables/Item_item_umbilical_key")
+	g.player.global_position = key.global_position
+	assert_true(key.interact(g.player))
+	mc.advance(0.1)
+	assert_true(mc.active, "chase starts")
+	assert_true(mc.mother != null and is_instance_valid(mc.mother))
+	assert_false(mc.mother.has_node("BossPhase"), "apparition is not the real boss")
+	wall._physics_process(0.016)
+	assert_true(wall.is_open, "nook wall breaks open")
+	g.player.global_position = Vector3(5, 0, -40)
+	mc.advance(0.1)
+	assert_false(mc.active)
+	assert_true(GameState.has_flag(MotherChase.DONE_FLAG))
+	mc.advance(MotherChase.RETREAT_SECONDS + 0.1)
+	assert_eq(mc.mother, null, "pulled back and gone")
+	assert_false(g.boss == null, "the real boss still waits in the chapel")
+	_cleanup_save()
+
+func test_mother_grabs_an_arm_but_does_not_kill() -> void:
+	var g := _game()
+	var mc := g.mother_chase
+	(g.player.get_node("PlayerData") as PlayerData).inventory.add("umbilical_key")
+	g.player.global_position = Vector3(26, 0, -40)
+	mc.advance(0.1)
+	assert_true(mc.active)
+	mc.advance(MotherChase.STARTUP_SECONDS)
+	mc.mother.global_position = g.player.global_position + Vector3(1.0, 0, 0)
+	mc.advance(0.05)
+	assert_false(mc.active, "caught")
+	var st := (g.player.get_node("CombatComponent") as CombatComponent).anatomy.state
+	assert_true(st.get_part(&"arm_l").severed or st.get_part(&"arm_r").severed, "lost an arm")
+	assert_false((g.player.get_node("CombatComponent") as CombatComponent).is_dead())
+	_cleanup_save()
+
+func test_chase_happens_only_once() -> void:
+	var g := _game()
+	g.mother_chase.queue_free()
+	g.mother_chase = null
+	GameState.set_flag(MotherChase.DONE_FLAG)
+	g._setup_mother_chase()
+	assert_eq(g.mother_chase, null, "no second chase once done (flag is saved at altars)")
+	_cleanup_save()

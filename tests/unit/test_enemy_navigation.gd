@@ -196,7 +196,7 @@ func test_prologue_level_bakes_a_connected_navmesh() -> void:
 	assert_true(AiNavigator.has_navigation(lvl), "baked")
 	# 產房 → 庭院 → 東側聖器室：必須經過走廊與門，路徑比直線長
 	var from := Vector3(0, 0, 0)
-	var to := Vector3(17, 0, -36)
+	var to := Vector3(24, 0, -40)
 	var len := AiNavigator.path_length(lvl, from, to)
 	assert_true(len < INF and len > from.distance_to(to), "connected via corridor (%s)" % len)
 	var end := NavigationServer3D.map_get_path(lvl.get_world_3d().navigation_map, from, to, true)

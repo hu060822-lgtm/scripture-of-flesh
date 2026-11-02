@@ -27,6 +27,7 @@ var player: CharacterBody3D
 var boss: CharacterBody3D
 var rig: CameraRig
 var boss_intro: BossIntro
+var mother_chase: MotherChase
 var hud: CombatHud
 var dialogue: DialogueBox
 var boss_bar: BossBar
@@ -58,6 +59,7 @@ func start_game(mode: String) -> void:
 	_build_world()
 	_spawn_player(data)
 	_build_ui()
+	_setup_mother_chase()
 	if data.is_empty():
 		# 新遊戲：赤手醒來，等阿格妮絲的對話決定職業。立即存一次，死在第一個祭壇前也能重生。
 		(player.get_node("PlayerData") as PlayerData).inventory.items.clear()
@@ -131,10 +133,37 @@ func boss_line(moment: StringName) -> String:
 			return "母親：「……伊蓮……妳好溫暖……」" if knows else "母親：「……好冷……我的孩子們……」"
 	return ""
 
+func _on_cord_cut(left: int) -> void:
+	if left > 0:
+		show_toast("臍帶斷了　母親踉蹌了一下（剩 %d 條，生產變慢）" % left)
+	else:
+		show_toast("最後一條臍帶斷了　她再也生不出孩子")
+
 func _on_boss_defeated() -> void:
 	boss_bar.hide_boss()
 	show_toast(boss_line(&"defeated"))
 	save_now()
+
+## 序章提案 E：拿到臍帶鑰匙時母親破牆追出來（只發生一次）。
+func _setup_mother_chase() -> void:
+	if GameState.has_flag(MotherChase.DONE_FLAG) or level.get_node_or_null("Markers/MotherChaseSpawn") == null:
+		return
+	mother_chase = MotherChase.new()
+	mother_chase.name = "MotherChase"
+	mother_chase.spawn_marker = NodePath("Markers/MotherChaseSpawn")
+	add_child(mother_chase)
+	mother_chase.setup(level, player)
+	mother_chase.started.connect(_on_mother_chase_started)
+	mother_chase.ended.connect(_on_mother_chase_ended)
+
+func _on_mother_chase_started() -> void:
+	show_toast("牆後傳來搖籃曲……她來了。逃回庭院！")
+
+func _on_mother_chase_ended(reason: StringName) -> void:
+	if reason == &"caught":
+		show_toast("母親扯走了你的一條手臂，然後被臍帶拉回了牆後")
+	else:
+		show_toast("臍帶繃緊，把母親拉回了黑暗裡")
 
 # ---------- 玩家 ----------
 

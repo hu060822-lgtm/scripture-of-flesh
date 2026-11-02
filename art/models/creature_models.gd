@@ -22,6 +22,8 @@ const LOOKS := {
 	&"reverse_legged": {"skin": [Color("8f7a74"), "skin"], "cloth": [Color("2a2725"), "cloth"], "trim": Color("6e1f19"), "gaunt": true},
 	&"faceless_watcher": {"skin": [Color("e8e2d6"), "skin"], "cloth": [Color("e8e2d6"), "cloth"], "trim": Color("a8863f"), "clothed": true, "robe": true},
 	&"unborn": {"skin": [Color("c8a09a"), "flesh"], "cloth": [Color("efe2b0"), "cloth"], "trim": Color("6e1f19"), "fetal": true},
+	# 序章提案 G：水室的「長子」——長大了卻沒有出生的孩子，膚色更灰、布更髒。
+	&"unborn_elite": {"skin": [Color("a88a86"), "flesh"], "cloth": [Color("b8a888"), "cloth"], "trim": Color("4e1612"), "fetal": true},
 	# 阿格妮絲：產房的修女兼接生者。奶油黃頭巾、煤灰黑修女服、陳舊金念珠。
 	&"agnes": {"skin": [Color("d6bfb6"), "skin"], "cloth": [Color("2a2725"), "cloth"], "hood_cloth": [Color("e2d4a4"), "cloth"], "trim": Color("a8863f"), "clothed": true, "hood": true},
 	&"walking_mother": {"skin": [Color("e8e2d6"), "skin"], "cloth": [Color("efe2b0"), "cloth"], "trim": Color("a8863f"), "veil": true},
