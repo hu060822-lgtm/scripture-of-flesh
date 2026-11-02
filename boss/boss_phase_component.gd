@@ -160,6 +160,7 @@ func _kneel() -> void:
 		_kneel_left = KNEEL_TIME
 	var anim: CreatureAnimator = body().get_node_or_null("CreatureAnimator")
 	if anim != null:
+		anim.posture_override = CreatureAnimationLibrary.KNEEL  # 之後的出手與受擊都維持跪姿
 		anim.play_override(&"kneel")
 	ai.definition.move_speed *= KNEEL_SPEED_FACTOR
 	GameState.set_flag(&"mother_kneeled")

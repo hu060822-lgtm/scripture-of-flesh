@@ -12,6 +12,10 @@ extends Node
 ## 所以出手姿勢與 CombatComponent 的命中判定落在同一刻（資料改了動畫自動跟著改）。
 ## 以 TimeScale（戰術減速／暫停）推進，並以 12fps 逐格更新，保留 PS1 的低幀數頓挫感。
 ## 動畫只寫骨骼「旋轉」與 Skeleton 節點的位移／旋轉，不碰骨骼縮放，所以斷肢後縮為零的骨骼不受影響。
+##
+## 姿態：失去雙腿（爬行）時為「倒地」，Boss 跪伏後為「跪伏」（posture_override）。
+## 攻擊、受擊、硬直、斷肢、閃避、死亡都改播該姿態的變體（<片段>~prone／~kneel），
+## 倒在地上的身體在地上出手與受擊，不會先站起來。
 
 const FPS := 12.0
 const LOCO_STATES := [&"idle", &"walk", &"limp", &"crawl", &"crawl_idle", &"block"]
@@ -21,7 +25,7 @@ const ATTACK_STATES := [&"attack_windup", &"attack_active", &"attack_recovery"]
 const WALK_THRESHOLD := 0.25
 ## 行走片段的參考速度：以此速度移動時播放倍率為 1。
 const WALK_REFERENCE_SPEED := 2.6
-const HIT_TIME := 0.3
+const HIT_TIME := 0.35
 const SEVER_TIME := 0.6
 
 var body: CharacterBody3D
@@ -36,6 +40,8 @@ var current_clip: StringName = &""
 var playback_scale := 1.0
 ## 劇本演出（Boss 跪伏等）暫時接管：非空時固定播放此片段。
 var override_clip: StringName = &""
+## 劇本指定的姿態（Boss 跪伏 = &"kneel"）。倒地（失去雙腿）優先於此。
+var posture_override: StringName = &""
 
 var _acc := 0.0
 var _hit_timer := 0.0
@@ -43,6 +49,7 @@ var _sever_timer := 0.0
 var _phase_duration := 1.0
 var _attack_style: StringName = &""
 var _attack_arm: StringName = &""
+var _library: AnimationLibrary
 var _nodes := {}  # state -> AnimationNodeAnimation
 
 func _ready() -> void:
@@ -67,7 +74,8 @@ func _ready() -> void:
 func _build_tree() -> void:
 	tree = AnimationTree.new()
 	tree.name = "AnimationTree"
-	tree.add_animation_library(&"", CreatureAnimationLibrary.for_profile(anatomy.profile))
+	_library = CreatureAnimationLibrary.for_profile(anatomy.profile)
+	tree.add_animation_library(&"", _library)
 	tree.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	var sm := AnimationNodeStateMachine.new()
 	for st in LOCO_STATES + ONE_SHOT_STATES + ATTACK_STATES:
@@ -134,6 +142,19 @@ func _choose_attack_clips(attack: AttackDefinition) -> void:
 		_attack_style = &"strike"
 		_attack_arm = &""
 		CreatureAnimationLibrary.ensure_attack(anatomy.profile, _attack_style, _attack_arm)
+	_ensure_posture_attack()
+
+## 目前姿態的攻擊片段（倒地／跪伏的變體在第一次需要時產生）。
+func _ensure_posture_attack() -> void:
+	var p := posture()
+	if p != &"" and _attack_style != &"":
+		CreatureAnimationLibrary.ensure_attack(anatomy.profile, _attack_style, _attack_arm, p)
+
+## 目前的姿態：&"prone"（失去雙腿，倒地爬行）、&"kneel"（劇本指定）或空字串（站姿）。
+func posture() -> StringName:
+	if animation_set.get("legs") == AnimationSet.LEGS_CRAWL:
+		return CreatureAnimationLibrary.PRONE
+	return posture_override
 
 ## 出手的手臂：武器攻擊用持武器的手；徒手攻擊優先用右手，右手斷了就用剩下的手。
 func striking_arm(attack: AttackDefinition) -> StringName:
@@ -168,7 +189,8 @@ func _update_state(force: bool = false) -> void:
 		var phase: String = {CombatComponent.Action.WINDUP: "windup", CombatComponent.Action.ACTIVE: "active",
 			CombatComponent.Action.RECOVERY: "recovery"}[action]
 		st = StringName("attack_" + phase)
-		clip = CreatureAnimationLibrary.attack_clip_name(_attack_style, _attack_arm, phase)
+		_ensure_posture_attack()  # 出手途中失去雙腿時，下一格就換成倒地版本
+		clip = CreatureAnimationLibrary.attack_clip_name(_attack_style, _attack_arm, phase, posture())
 		playback_scale = 1.0 / maxf(_phase_duration, 0.01)
 	elif _sever_timer > 0.0:
 		st = &"sever"
@@ -186,6 +208,11 @@ func _update_state(force: bool = false) -> void:
 			playback_scale = clampf(horizontal_speed() / _reference_speed(), 0.5, 2.0)
 	if clip == &"":
 		clip = st
+		var varied := CreatureAnimationLibrary.posture_clip(clip, posture())
+		if varied != clip and _library.has_animation(varied):
+			clip = varied
+	if not _library.has_animation(clip):
+		clip = st if _library.has_animation(st) else &"idle"
 	var changed := st != current_state or clip != current_clip
 	if changed or (force and st in ATTACK_STATES):
 		var node: AnimationNodeAnimation = _nodes[st]
@@ -193,6 +220,9 @@ func _update_state(force: bool = false) -> void:
 		current_state = st
 		current_clip = clip
 		playback.start(st, true)
+		# 讓狀態機立刻處理切換：否則切換後的第一格只會「定位到第 0 格」，
+		# 受擊／出手在 12fps 下會晚一整格（約 83 毫秒）才有反應，顯得軟。
+		tree.advance(0.0)
 
 func _locomotion_state() -> StringName:
 	var moving := horizontal_speed() > WALK_THRESHOLD

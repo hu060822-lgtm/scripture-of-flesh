@@ -56,6 +56,9 @@ func test_losing_stilts_makes_her_kneel_exposes_womb_and_screams() -> void:
 	bp.advance(BossPhaseComponent.KNEEL_TIME)
 	assert_near((b.get_node("Body") as Node3D).position.y, y_before - BossPhaseComponent.KNEEL_DROP, 0.001, "body lowered")
 	assert_eq((b.get_node("CreatureAnimator") as CreatureAnimator).override_clip, &"", "animation control handed back")
+	var anim := b.get_node("CreatureAnimator") as CreatureAnimator
+	assert_eq(anim.posture(), &"kneel", "stays knelt after the kneel clip")
+	assert_true(String(anim.current_clip).ends_with("~kneel"), "attacks/reactions use the knelt variant: %s" % anim.current_clip)
 	assert_near(bp.ai.definition.move_speed, speed_before * BossPhaseComponent.KNEEL_SPEED_FACTOR)
 	var res: EnemyDefinition = load("res://content/enemies/walking_mother.tres")
 	assert_near(res.move_speed, speed_before, 0.001, "resource not modified")
