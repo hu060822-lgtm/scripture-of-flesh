@@ -2,7 +2,7 @@
 
 2.5D 日式黑暗奇幻 RPG。Godot **4.3** / GDScript，目標平台 PC。
 
-> 目前階段：**M4 敵人 AI**。主場景暫定為戰鬥沙盒（測試用），有四種敵人。
+> 目前階段：**M5 戰術介面**。主場景暫定為戰鬥沙盒（測試用），有四種敵人。
 
 ## 執行測試
 
@@ -18,6 +18,11 @@ headless 模式下會出現大量 `Parameter "m" is null`（mesh_storage）訊�
 
 WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）、Space 閃避、Shift 防禦、
 1/2/3 換武器（骨鋸斧／聖骸錘［雙手］／解剖刺劍）、E 撿起掉落的武器、F5 重置、F6 敵人 AI 開關。
+
+**戰術介面（Tab）**：戰鬥減速到 10%（P 切換完全暫停）。自動選最近的敵人，點擊部位或 Q／R 切換部位，
+右側面板顯示每個部位的 HP、狀態、護甲，以及普通攻擊打在指定部位的預估傷害與斷肢機率。
+指定部位的攻擊每次消耗 10 AP（AP 靠命中累積），AP 不足時自動改為依攻擊方向選部位。
+關閉介面後鎖定仍保留，直到目標死亡或部位斷離。
 
 | 敵人 | 解剖特徵 | 斷肢後的行為變化 |
 | --- | --- | --- |
@@ -45,9 +50,9 @@ WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）
 | `ai/` | `EnemyDefinition`、`EnemyRuntimeState`、`EnemyAI`（狀態機）、`ai/states/` 各狀態、`AttackSelector`、`EnemyFactory` |
 | `content/enemies/` | 四種敵人資料 |
 | `combat/` | `CombatComponent`（攻擊、防禦、閃避、硬直、出血、死亡）、`ResourcePools`（HP/ST/AP）、`AttackDefinition` |
-| `player/` | `PlayerController`（輸入 → 指令）、`PlayerFactory` |
+| `player/` | `PlayerController`（輸入 → 指令）、`TacticalController`（戰術介面）、`PlayerFactory` |
 | `game/` | `CameraRig`（固定斜俯視）、`Greybox`【暫代】灰盒工具 |
-| `ui/` | `CombatHud` |
+| `ui/` | `CombatHud`、`TacticalOverlay` |
 | `content/weapons/`、`content/attacks/` | 三種武器、徒手攻擊（拳、踢、咬） |
 | `creature/` | `AnatomyComponent`：把 AnatomyState 掛到場景，套用玩家斷肢倍率（D2） |
 | `dismemberment/` | `DismembermentController`、`Hurtbox`、`SeveredPart`（殘肢）、`AnimationSet` |

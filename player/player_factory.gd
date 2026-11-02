@@ -24,4 +24,7 @@ static func create(weapon_paths: Array = WEAPONS) -> CharacterBody3D:
 		ws.append(load(p))
 	ctrl.weapons = ws
 	body.add_child(ctrl)
+	var tac := TacticalController.new()
+	tac.name = "TacticalController"
+	body.add_child(tac)
 	return body

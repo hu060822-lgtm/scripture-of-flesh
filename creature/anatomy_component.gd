@@ -35,6 +35,16 @@ func receive(packet: DamagePacket) -> DamageResult:
 		p.source_id = packet.source_id
 	return state.receive(p, rng)
 
+## 預覽一次命中的結果（不修改狀態），戰術介面顯示預估傷害與斷肢機率用。
+func preview(packet: DamagePacket) -> DamageResult:
+	var p := DamagePacket.make(packet.target_part_id, packet.amounts)
+	p.armor_penetration = packet.armor_penetration
+	p.bleed_multiplier = packet.bleed_multiplier
+	p.sever_power = packet.sever_power * sever_chance_scale
+	var preview_rng := RandomNumberGenerator.new()
+	preview_rng.seed = 0
+	return DamageResolver.resolve(state, p, preview_rng)
+
 func _on_part_severed(_part_id: StringName, ids: PackedStringArray) -> void:
 	if is_inside_tree():
 		EventBus.creature_part_severed.emit(creature_id, ids)

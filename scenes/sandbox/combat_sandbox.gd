@@ -1,7 +1,7 @@
 extends Node3D
 ## 【測試場景】戰鬥沙盒：玩家 vs 四種敵人（縫屍者、反足者、無面觀察者、多手人）。
 ## WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（AP）、Space 閃避、Shift 防禦、
-## 1/2/3 換武器、E 撿武器、F5 重置。F6 切換「敵人 AI 開／關」（關掉時敵人變成木樁）。
+## 1/2/3 換武器、E 撿武器、Tab 戰術介面（減速 10%，P 暫停，點擊部位或 Q/R 指定）、F5 重置。F6 切換「敵人 AI 開／關」（關掉時敵人變成木樁）。
 
 var _ai_enabled := true
 
@@ -16,8 +16,9 @@ func _ready() -> void:
 	_reset()
 
 func _reset() -> void:
+	TimeScale.set_mode(TimeScale.Mode.NORMAL)
 	for c in get_children():
-		if c is CharacterBody3D or c is SeveredPart or (c is RigidBody3D and c.get_meta(&"pickup", false)) or c is CameraRig or c is CombatHud:
+		if c is CharacterBody3D or c is SeveredPart or (c is RigidBody3D and c.get_meta(&"pickup", false)) or c is CameraRig or c is CanvasLayer or c is MeshInstance3D:
 			c.queue_free()
 	_player = PlayerFactory.create()
 	add_child(_player)
@@ -28,6 +29,12 @@ func _reset() -> void:
 	_hud = CombatHud.new()
 	_hud.player = _player.get_node("CombatComponent")
 	add_child(_hud)
+	var tac: TacticalController = _player.get_node("TacticalController")
+	tac.camera = _rig.camera
+	tac.toggled.connect(func(on): _rig.in_combat = on)
+	var overlay := TacticalOverlay.new()
+	overlay.tactical = tac
+	add_child(overlay)
 	var enemies := [
 		["stitcher", Vector3(-4, 0, -6)],
 		["reverse_legged", Vector3(4, 0, -9)],

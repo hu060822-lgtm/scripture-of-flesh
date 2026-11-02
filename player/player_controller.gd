@@ -124,13 +124,36 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event.is_action_pressed(StringName("weapon_%d" % (i + 1))):
 				switch_weapon(i)
 
-func _attack(a: AttackDefinition) -> void:
+## 指定部位攻擊的 AP 消耗（戰術介面）。AP 不足時改為自動選擇部位。
+const TARGETED_AP_COST := 10.0
+
+func _attack(a: AttackDefinition) -> bool:
 	if a == null:
-		return
-	var part := tactical_part if tactical_target != null and not tactical_target.is_dead() else &""
+		return false
+	var part := targeted_part()
+	if part != &"" and combat.pools.ap < TARGETED_AP_COST + a.ap_cost:
+		part = &""
 	if part != &"":
 		_face_towards(tactical_target.body().global_position, 1000.0)
-	combat.try_attack(a, part)
+	var ok := combat.try_attack(a, part)
+	if ok and part != &"":
+		combat.pools.spend_ap(TARGETED_AP_COST)
+	return ok
+
+## 目前有效的指定部位（目標死亡或部位斷離時自動失效）。
+func targeted_part() -> StringName:
+	if tactical_target == null or not is_instance_valid(tactical_target) or tactical_target.is_dead() or tactical_part == &"":
+		return &""
+	if not tactical_part in tactical_target.anatomy.state.targetable_part_ids():
+		return &""
+	return tactical_part
+
+## 給測試與 UI 使用：以普通攻擊／特殊技出手。
+func attack_light() -> bool:
+	return _attack(light_attack())
+
+func attack_heavy() -> bool:
+	return _attack(heavy_attack())
 
 func _physics_process(delta: float) -> void:
 	var b := body()
