@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_ohij3"]
+
+[resource]
+script = ExtResource("1_ohij3")
+id = &"crawl_grasp"
+display_name = "爬行抓握"
+required_capabilities = {
+"arm": 1
+}
+requires_weapon = false
+st_cost = 14.0
+ap_cost = 0.0
+windup = 0.55
+active = 0.1
+recovery = 0.55
+reach = 2.2
+arc_degrees = 90.0
+aim_height = 0.8
+damage = {
+"CRUSH": 3.0,
+"LACERATION": 10.0
+}
+damage_scale = 1.0
+sever_power = 0.6
+armor_penetration_bonus = 0.0
+stagger_threshold_bonus = 0.0
+ai_weight = 1.0
+cooldown = 0.0
+preferred_target_part = &""
+tags = PackedStringArray()

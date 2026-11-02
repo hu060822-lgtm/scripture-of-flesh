@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_0sl44"]
+
+[resource]
+script = ExtResource("1_0sl44")
+id = &"mother_lash"
+display_name = "長臂鞭笞"
+required_capabilities = {
+"grip": 1
+}
+requires_weapon = false
+st_cost = 14.0
+ap_cost = 0.0
+windup = 0.6
+active = 0.12
+recovery = 0.6
+reach = 3.2
+arc_degrees = 120.0
+aim_height = 1.2
+damage = {
+"CRUSH": 4.0,
+"LACERATION": 9.0
+}
+damage_scale = 1.0
+sever_power = 0.4
+armor_penetration_bonus = 0.0
+stagger_threshold_bonus = 0.0
+ai_weight = 1.0
+cooldown = 0.0
+preferred_target_part = &""
+tags = PackedStringArray()

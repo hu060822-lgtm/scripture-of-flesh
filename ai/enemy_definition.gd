@@ -18,6 +18,11 @@ extends Resource
 ## 死後可摘取的器官（捐贈部位必須完好）。
 @export var harvestable: Array[OrganDefinition] = []
 
+## 暫代外觀：移動碰撞膠囊與整體縮放（Boss 較大、未生者較小）。
+@export var collision_radius: float = 0.32
+@export var collision_height: float = 1.8
+@export var visual_scale: float = 1.0
+
 @export_group("Perception")
 @export var sight_range: float = 9.0
 @export var sight_fov_degrees: float = 140.0
@@ -35,7 +40,7 @@ extends Resource
 @export_range(0.0, 1.0) var dodge_chance: float = 0.1
 @export var decision_interval: float = 0.35
 @export var patrol_radius: float = 3.0
-## 特殊行為：&"restitch"（縫屍者）、&"" 無。
+## 特殊行為：&"restitch"（縫屍者）、&"boss"（由 BossPhaseComponent 控制階段）、&"" 無。
 @export var special_behavior: StringName = &""
 ## 斷肢反應持續秒數。
 @export var dismember_react_seconds: float = 0.8

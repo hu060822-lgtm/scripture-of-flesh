@@ -1,0 +1,50 @@
+{
+ "id": "ending",
+ "start": "b",
+ "nodes": {
+  "b": {
+   "speaker": "",
+   "text": "母親倒下了。禮拜堂深處，胎房仍在搏動，像一顆巨大的心臟。數百條細線從牆上垂下，等待被接起。",
+   "choices": [
+    {
+     "text": "燒掉胎房。",
+     "next": "burn"
+    },
+    {
+     "text": "把自己縫進胎房，成為新的母親。",
+     "next": "mother",
+     "if": {
+      "mutation_gte": 50
+     }
+    },
+    {
+     "text": "回去找阿格妮絲，一起離開。",
+     "next": "escape",
+     "if": {
+      "flag": "agnes_promise",
+      "mutation_lt": 75,
+      "not_flag": "agnes_afraid"
+     }
+    }
+   ]
+  },
+  "burn": {
+   "speaker": "",
+   "text": "火從胎房的中心燒起。你聞到自己身上的線也在焦。至少，不會再有第七百三十二個了。",
+   "next": "",
+   "action": "ending:burn"
+  },
+  "mother": {
+   "speaker": "",
+   "text": "你把手伸進溫熱的肉裡。細線一條一條接上你的神經。你聽見了所有孩子的心跳——現在，他們是你的了。",
+   "next": "",
+   "action": "ending:mother"
+  },
+  "escape": {
+   "speaker": "",
+   "text": "阿格妮絲握住你的手，那是一隻別人的手，但它是溫的。聖骸院的大門外，天空是灰色的。",
+   "next": "",
+   "action": "ending:escape"
+  }
+ }
+}

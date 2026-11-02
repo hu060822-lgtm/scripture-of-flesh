@@ -1,0 +1,11 @@
+{
+ "id": "inscription_sacristy",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "",
+   "text": "聖器室的祭具櫃上刻著：「多手者，為了同時向所有的神祈禱。」",
+   "next": ""
+  }
+ }
+}

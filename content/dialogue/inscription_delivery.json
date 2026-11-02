@@ -1,0 +1,11 @@
+{
+ "id": "inscription_delivery",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "",
+   "text": "白色產房的牆上刻著：「凡縫合者皆為子，凡為子者皆歸母。」",
+   "next": ""
+  }
+ }
+}

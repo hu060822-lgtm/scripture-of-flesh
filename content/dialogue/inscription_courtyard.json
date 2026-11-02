@@ -1,0 +1,11 @@
+{
+ "id": "inscription_courtyard",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "",
+   "text": "庭院中央的石碑：「反足者曾是信徒。他們為了跪得更久，把膝蓋縫向後方。」",
+   "next": ""
+  }
+ }
+}

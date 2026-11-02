@@ -1,0 +1,17 @@
+{
+ "id": "mother_intro",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "行走的母親",
+   "text": "……第七百三十一個……你回來了……",
+   "next": "n2"
+  },
+  "n2": {
+   "speaker": "行走的母親",
+   "text": "把手給我。把腳給我。把眼睛給我。回到我裡面來，孩子。",
+   "next": "",
+   "action": "start_boss"
+  }
+ }
+}

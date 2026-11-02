@@ -1,0 +1,11 @@
+{
+ "id": "inscription_archive",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "",
+   "text": "藏書室的講台上攤著一本書，所有的字都被挖去，只剩一句：「觀看即是吞噬。」",
+   "next": ""
+  }
+ }
+}

@@ -1,0 +1,11 @@
+{
+ "id": "inscription_chapel_gate",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "",
+   "text": "禮拜堂大門被一條乾枯的臍帶纏住，中央有一個鑰匙孔形狀的肉洞。",
+   "next": ""
+  }
+ }
+}

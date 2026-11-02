@@ -6,6 +6,7 @@ signal changed
 
 const ITEM_NAMES := {
 	"suture_kit": "緊急縫合包",
+	"umbilical_key": "臍帶鑰匙",
 	"blood_vial": "濁血瓶",
 }
 
