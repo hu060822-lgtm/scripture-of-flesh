@@ -1,12 +1,14 @@
 class_name MainMenu
 extends Control
-## 主選單：新遊戲／繼續／戰鬥沙盒／離開。【暫代】外觀：純文字按鈕，無背景美術。
+## 主選單：新遊戲／繼續／戰鬥沙盒／美術測試／聲音設定／離開。【暫代】外觀：純文字按鈕，無背景美術。
 
 const PROLOGUE := "res://scenes/prologue/prologue.tscn"
 const SANDBOX := "res://scenes/sandbox/combat_sandbox.tscn"
 const ART_TEST := "res://scenes/art_test/art_test.tscn"
 
 var continue_button: Button
+var audio_panel: AudioSettingsPanel
+var _menu_box: VBoxContainer
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -20,6 +22,7 @@ func _ready() -> void:
 	v.position = Vector2(-180, -190)
 	v.add_theme_constant_override("separation", 12)
 	add_child(v)
+	_menu_box = v
 	var title := Label.new()
 	title.text = "肉身聖典"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -36,6 +39,7 @@ func _ready() -> void:
 	continue_button.disabled = not SaveSystem.exists()
 	_button(v, "戰鬥沙盒", func(): get_tree().change_scene_to_file(SANDBOX))
 	_button(v, "美術測試（PS1 風格）", func(): get_tree().change_scene_to_file(ART_TEST))
+	_button(v, "聲音設定", open_audio_settings)
 	_button(v, "離開", func(): get_tree().quit())
 
 func _button(parent: Node, text: String, cb: Callable) -> Button:
@@ -45,6 +49,16 @@ func _button(parent: Node, text: String, cb: Callable) -> Button:
 	b.pressed.connect(cb)
 	parent.add_child(b)
 	return b
+
+func open_audio_settings() -> void:
+	if audio_panel == null:
+		audio_panel = AudioSettingsPanel.new()
+		audio_panel.set_anchors_preset(Control.PRESET_CENTER)
+		audio_panel.position = Vector2(-210, -160)
+		audio_panel.closed.connect(func(): _menu_box.show())
+		add_child(audio_panel)
+	_menu_box.hide()
+	audio_panel.show()
 
 func new_game() -> void:
 	GameState.reset()

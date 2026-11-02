@@ -16,6 +16,7 @@ run/main_scene="res://scenes/main_menu.tscn"
 EventBus="*res://core/event_bus.gd"
 TimeScale="*res://core/time_scale_service.gd"
 GameState="*res://core/game_state.gd"
+AudioManager="*res://audio/audio_manager.gd"
 
 [rendering]
 

@@ -18,6 +18,25 @@
 - 按鍵：F1 效果開關（對照）、F2 解析度、F3 抖色、F4 頂點抖動、F5 重置、F6 敵人 AI、Esc 主選單。
 - 截圖：`xvfb-run -s "-screen 0 1280x720x24" godot --rendering-driver opengl3 --path . -s tests/sim/art_shots.gd -- <資料夾>`
 
+## 聲音（A1：架構）
+
+- `AudioManager`（autoload）：匯流排 Master ← Music／Ambience／SFX／UI／Voice（SFX 與 Ambience 預留低通濾波，A4 低血量悶聲用；Master 有限幅器）。
+  `play(cue_id, at)` 會隨機選變體與音高，並處理冷卻、同一 cue 的發聲上限，以及 3D 定位。
+- `SoundCatalog`：cue 定義表。音檔放到 `audio/sfx/<cue_id>/` 就會自動載入，不需要改程式。**目前還沒有音檔**，所有 cue 都是【暫代】靜音。
+- `AudioDirector`：監聽場景樹，自動接上戰鬥、解剖、Boss、縫合、移植、祭壇、拾取、門、按鈕的 signal，不必修改那些系統。腳步聲依移動距離觸發。
+  音樂狀態依序判斷：結局 > 死亡 > Boss（boss_1／boss_2）> 戰鬥 > 緊張 > 探索 > 主選單。戰鬥結束後戰鬥音樂會再維持 4 秒。
+- `MusicMixer`（A3）：10 個同長的 stem 同時循環，依音樂狀態淡入淡出（`MIXES` 表）。
+  探索時是走音的八音盒搖籃曲；緊張時搖籃曲退遠，低鳴與倒放人聲浮上來；戰鬥時只剩心跳與悶擊。
+  Boss 戰時母親哼同一首搖籃曲，跪伏後哼唱崩壞。死亡時音樂抽空，只留一聲低鳴；離院結局是同一首曲子的大調版本。
+- `AmbiencePlayer`（A3）：房間環境音交叉淡變，依玩家離最近的區域觸發點決定（【暫代】近似）。
+- `PsycheAudio`（A4，只作用在玩家身上）：
+  - HP 降到 30% 以下時，音效與環境音逐漸變悶，5% 時最悶（低通 600 Hz）。
+  - 自己的肢體被斷時會耳鳴，世界另外變悶 3 秒。
+  - 異化 ≥ 25 時，身邊會出現聽不清楚的低語：異化 25 時約每 36 秒一次，100 時約每 8 秒一次，而且越來越大聲。
+- 重新產生音樂：`python3 tools/music_synth/generate_music.py`（需要 numpy；有 ffmpeg 時輸出 .ogg）。
+- 主選單 →「聲音設定」：六條音量滑桿，設定存在 `user://settings.cfg`。
+- 素材來源與授權見 `audio/SOURCES.md`。
+
 ## 序章流程
 
 白色產房醒來（赤手）→ 與助產修女阿格妮絲對話，以「手還記得什麼」選擇職業（取得職業武器與縫合包）
