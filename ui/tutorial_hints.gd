@@ -113,6 +113,8 @@ func _show(id: StringName) -> void:
 
 ## 情境偵測：開場、附近有敵人追擊、耐力過低、靠近祭壇／武器台。
 func _watch(delta: float) -> void:
+	if _intro_left > 0.0 and seen(&"intro"):
+		_intro_left = 0.0  # 讀檔或重生後不必再等開場提示
 	if _intro_left > 0.0:
 		_intro_left -= delta
 		if _intro_left > 0.0:
