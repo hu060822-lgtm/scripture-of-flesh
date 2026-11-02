@@ -14,5 +14,12 @@ enum PartStatus {
 const DAMAGED_RATIO := 0.75
 const SEVERELY_DAMAGED_RATIO := 0.35
 
+const STATUS_LABELS := ["完整", "受損", "重傷", "失效", "斷離", "異化"]
+
+## 介面顯示用的中文狀態名稱。
 static func status_name(s: int) -> String:
+	return STATUS_LABELS[s] if s >= 0 and s < STATUS_LABELS.size() else str(s)
+
+## 列舉鍵名（除錯用）。
+static func status_key(s: int) -> String:
 	return PartStatus.keys()[s]

@@ -4,6 +4,7 @@ extends Control
 
 const PROLOGUE := "res://scenes/prologue/prologue.tscn"
 const SANDBOX := "res://scenes/sandbox/combat_sandbox.tscn"
+const ART_TEST := "res://scenes/art_test/art_test.tscn"
 
 var continue_button: Button
 
@@ -15,8 +16,8 @@ func _ready() -> void:
 	add_child(bg)
 	var v := VBoxContainer.new()
 	v.set_anchors_preset(Control.PRESET_CENTER)
-	v.custom_minimum_size = Vector2(360, 320)
-	v.position = Vector2(-180, -160)
+	v.custom_minimum_size = Vector2(360, 380)
+	v.position = Vector2(-180, -190)
 	v.add_theme_constant_override("separation", 12)
 	add_child(v)
 	var title := Label.new()
@@ -34,6 +35,7 @@ func _ready() -> void:
 	continue_button = _button(v, "繼續", continue_game)
 	continue_button.disabled = not SaveSystem.exists()
 	_button(v, "戰鬥沙盒", func(): get_tree().change_scene_to_file(SANDBOX))
+	_button(v, "美術測試（PS1 風格）", func(): get_tree().change_scene_to_file(ART_TEST))
 	_button(v, "離開", func(): get_tree().quit())
 
 func _button(parent: Node, text: String, cb: Callable) -> Button:
