@@ -3,6 +3,8 @@ extends RefCounted
 ## 極簡測試基底類別。方法名稱以 test_ 開頭者會被 tests/run_tests.gd 執行。
 
 var failures: Array[String] = []
+## 測試執行器的 SceneTree。測試結束後，加入 tree.root 的節點會被自動清除。
+var tree: SceneTree
 var _current := ""
 
 func before_each() -> void:

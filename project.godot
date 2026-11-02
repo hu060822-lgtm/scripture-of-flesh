@@ -8,6 +8,8 @@ config_version=5
 config/name="The Scripture of Flesh"
 config/description="肉身聖典 — 2.5D dark fantasy RPG (vertical slice)"
 config/features=PackedStringArray("4.3", "Forward Plus")
+; 暫時：主場景為斷肢沙盒（測試用），M3 後改為正式入口
+run/main_scene="res://scenes/sandbox/dismemberment_sandbox.tscn"
 
 [autoload]
 
