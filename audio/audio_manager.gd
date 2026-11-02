@@ -4,6 +4,7 @@ extends Node
 ## - play(cue_id, at) 播放音效：隨機變體與音高、冷卻、同 cue 發聲上限、3D 定位。
 ## - 音樂狀態（探索／緊張／戰鬥／Boss…）由 AudioDirector 決定，交給 MusicMixer 淡入淡出各層。
 ## - 房間環境音由 AmbiencePlayer 交叉淡變。
+## - 心理效果（低血量悶聲、斷肢耳鳴、異化低語）由 PsycheAudio 處理。
 ## - 音量設定存在 user://settings.cfg 的 [audio] 區段。
 ## 沒有音檔的 cue 是【暫代】靜音：照常記錄在 history，不發聲。
 
@@ -29,6 +30,7 @@ var director: AudioDirector
 var music: MusicMixer
 var ambience: AmbiencePlayer
 var ambience_id: StringName = &""
+var psyche: PsycheAudio
 
 var _now := 0.0
 var _last_time := {}     # cue id -> 上次播放時間
@@ -56,6 +58,8 @@ func _ready() -> void:
 	add_child(music)
 	ambience = AmbiencePlayer.new()
 	add_child(ambience)
+	psyche = PsycheAudio.new()
+	add_child(psyche)
 	director = AudioDirector.new()
 	director.manager = self
 	add_child(director)

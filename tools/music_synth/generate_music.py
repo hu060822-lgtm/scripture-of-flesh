@@ -14,6 +14,7 @@
 - heartbeat：每拍一次的心跳。perc：悶擊與金屬刮擦。
 - hum：母親哼唱同一首搖籃曲（共振峰合成）；hum_broken：第二階段，音高下垂、走音、斷續。
 - boss_low：更深的不協和低音群。death_sting：死亡時的一次性低鳴。
+- tinnitus：自己的肢體被斷時的耳鳴；whispers：異化越高越常出現的低語（A4）。
 - 環境音（30 秒循環）：ward、corridor、courtyard、library、sacristy、chapel。
 所有濾波用 FFT（循環），因此每個循環的頭尾無縫。
 """
@@ -351,6 +352,38 @@ def death_sting():
     return normalize(fft_filter(out, hi=2000), 0.7)
 
 
+def tinnitus():
+    """A4：自己的肢體被斷時的耳鳴（不循環）。"""
+    n = int(5.0 * SR)
+    t = t_axis(n)
+    s = np.sin(2 * np.pi * 3700 * t) + 0.3 * np.sin(2 * np.pi * 3707 * t)
+    env = np.minimum(1, t / 0.05) * np.exp(-t * 0.7)
+    return normalize(s * env, 0.35)
+
+
+VOWELS = [AH, OO, MM, [(400, 90, 1.0), (2000, 200, 0.4)], [(550, 100, 1.0), (1800, 200, 0.5)]]
+
+
+def whisper(seed):
+    """A4：異化低語。噪音通過隨機的母音共振峰，形成像說話的音節（聽不清楚的字）。"""
+    r = np.random.default_rng(seed)
+    n = int(3.0 * SR)
+    x = np.zeros(n)
+    t = 0.15
+    while t < 2.6:
+        syl = r.uniform(0.09, 0.22)
+        m = int(syl * SR)
+        v = VOWELS[r.integers(0, len(VOWELS))]
+        noise = fft_filter(r.standard_normal(m), peaks=[(c * r.uniform(0.9, 1.1), w * 1.5, g) for c, w, g in v] + [(4500, 900, 0.25)])
+        env = np.sin(np.pi * np.arange(m) / m) ** 1.5
+        i = int(t * SR)
+        x[i:i + m] += noise * env * r.uniform(0.5, 1.0)
+        t += syl + r.uniform(0.0, 0.12)
+    if seed % 2 == 1:
+        x = x[::-1]  # 一半是倒放的低語
+    return normalize(fft_filter(x, lo=300, hi=6000), 0.5)
+
+
 # ---------------- 環境音（30 秒循環） ----------------
 AMB_LEN = 30.0
 
@@ -486,7 +519,11 @@ def main():
         write(os.path.join(out, "ambience", name), amb(name), use_ogg)
         print("ambience", name)
     write(os.path.join(out, "stingers", "death"), death_sting(), use_ogg)
-    print("stinger death")
+    write(os.path.join(out, "stingers", "tinnitus"), tinnitus(), use_ogg)
+    os.makedirs(os.path.join(out, "whispers"), exist_ok=True)
+    for i in range(4):
+        write(os.path.join(out, "whispers", "whisper_%d" % i), whisper(100 + i), use_ogg)
+    print("stingers + whispers")
 
 
 if __name__ == "__main__":

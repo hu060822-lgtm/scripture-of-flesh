@@ -50,6 +50,8 @@ func _ready() -> void:
 
 ## 清除音樂狀態的計時（換場景、測試用）。
 func reset() -> void:
+	if _psyche() != null:
+		_psyche().reset()
 	_alert.clear()
 	_combat_hold = 0.0
 	_tension_hold = 0.0
@@ -154,7 +156,9 @@ func _rehook_anatomy(c: CombatComponent) -> void:
 	var b := c.body()
 	st.part_severed.connect(func(_p, _ids):
 		_cue(&"sever", b)
-		_cue(&"bone_snap", b))
+		_cue(&"bone_snap", b)
+		if c.faction == &"player" and _psyche() != null:
+			_psyche().on_player_severed())
 	st.part_disabled.connect(func(_p, _r): _cue(&"part_disabled", b))
 	st.vital_failed.connect(func(_p, _r): _cue(&"vital_fail", b))
 
@@ -186,6 +190,28 @@ static func hit_cue(r: DamageResult) -> StringName:
 			return &"hit_pierce"
 		_:
 			return &"hit_burn"
+
+func _psyche() -> PsycheAudio:
+	return manager.get(&"psyche") as PsycheAudio if manager != null else null
+
+func _player() -> CombatComponent:
+	for info in _creatures.values():
+		if _live(info.c) and info.c.faction == &"player":
+			return info.c
+	return null
+
+## 把玩家的 HP 與異化交給 PsycheAudio。沒有玩家（主選單）時效果歸零。
+func update_psyche(delta: float) -> void:
+	var ps := _psyche()
+	if ps == null:
+		return
+	var p := _player()
+	if p == null or p.is_dead():
+		ps.update(delta, 1.0, 0.0, null)
+		return
+	var mut := p.body().get_node_or_null("MutationComponent") as MutationComponent
+	var hp := p.pools.hp / maxf(1.0, p.pools.max_hp)
+	ps.update(delta, hp, mut.value if mut != null else 0.0, p.body())
 
 ## 玩家所在區域的環境音；沒有玩家或沒有區域時回傳 &""。
 func area_ambience() -> StringName:
@@ -224,6 +250,7 @@ func _physics_process(delta: float) -> void:
 		_rehook_anatomy(c)
 		_step(c, delta)
 	update_music(delta)
+	update_psyche(delta)
 	var amb := area_ambience()
 	if amb != &"":
 		_ambience(amb)

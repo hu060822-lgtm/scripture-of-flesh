@@ -24,6 +24,8 @@
 | `stems/hum.ogg`、`stems/hum_broken.ogg` | 母親以「嗯」母音哼唱搖籃曲。broken 版本會下滑、走音、吞音，並疊上三全音 |
 | `stems/boss_low.ogg` | E1／F1 不協和低音群，每小節一次脈動 |
 | `stingers/death.ogg` | 死亡時的下沉低鳴（7 秒，不循環） |
+| `stingers/tinnitus.ogg` | A4：3.7 kHz 耳鳴，帶 7 Hz 拍頻（5 秒） |
+| `whispers/whisper_0..3.ogg` | A4：噪音通過隨機母音共振峰組成的「聽不清楚的字」，奇數編號是倒放 |
 | `ambience/*.ogg` | 30 秒循環：產房（日光燈嗡鳴、滴水）、迴廊（風、木頭吱嘎）、庭院（風、遠方的鐘）、藏書室（時鐘、紙頁）、聖器室（滴水、鎖鏈）、禮拜堂（管風琴持續音、牆在呼吸） |
 
 所有濾波都用 FFT 循環運算，LFO 都取整數圈數，所以每個循環的頭尾無縫。
