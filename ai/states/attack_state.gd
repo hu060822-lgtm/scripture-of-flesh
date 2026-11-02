@@ -17,14 +17,16 @@ func enter(ai: EnemyAI) -> void:
 		var off := (lkp - ai.body().global_position).rotated(Vector3.UP, ai.rng.randf_range(-BLIND_JITTER, BLIND_JITTER))
 		aim = ai.body().global_position + off
 	ai.face(aim)
+	AttackTokens.request(ai, t)  # 通常已由 chase 取得；直接進入攻擊狀態時補拿
 	var a := AttackSelector.select_for(ai, ai.distance_to(t))
 	if a != null:
-		var part := PartTargeting.pick(t, a, ai.definition.injured_target_bias, ai.rng)
+		var part := PartTargeting.pick(t, a, ai.definition.injured_target_bias, ai.rng, ai.definition.preferred_target_parts, ai.definition.visual_scale)
 		ai.combat.try_attack(a, part)
 
 ## 收招結束才開始計算「剛出手」（打帶跑在收招後拉開距離）。
 func exit(ai: EnemyAI) -> void:
 	ai.runtime.since_attack = 0.0
+	AttackTokens.release(ai)
 
 func update(ai: EnemyAI, _delta: float) -> StringName:
 	ai.stop()

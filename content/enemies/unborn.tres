@@ -43,3 +43,4 @@ flank_tendency = 0.4
 hit_and_run = 0.0
 punish_skill = 0.3
 adaptivity = 0.0
+preferred_target_parts = PackedStringArray("leg_l", "leg_r")

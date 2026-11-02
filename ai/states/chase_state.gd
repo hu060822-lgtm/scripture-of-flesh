@@ -12,6 +12,8 @@ const SIDE_SWAP_CHANCE := 0.2
 const FLANK_ANGLE := 1.9
 ## 縫屍者：目標至少這麼遠才會先回去縫殘肢。
 const RESTITCH_SAFE_DISTANCE := 2.5
+## 沒拿到攻擊令牌時，比交戰距離再外圍多少公尺等待。
+const OUTER_RING := 1.2
 
 func _lost(ai: EnemyAI) -> StringName:
 	ai.runtime.investigate_point = ai.runtime.last_known_position
@@ -54,6 +56,9 @@ func update(ai: EnemyAI, _delta: float) -> StringName:
 			and not AttackSelector.usable_in_range(ai.combat, d).is_empty() \
 			and ai.has_line_of_sight(t.body().global_position + Vector3.UP * EnemyAI.TARGET_AIM_HEIGHT)
 		var intent := Tactics.decide(ai, d, engage, can_attack)
+		# AI-3：出手要先拿到攻擊令牌；拿不到就重新決策（繞圈、補位）。
+		if intent == &"attack" and not AttackTokens.request(ai, t):
+			intent = Tactics.decide(ai, d, engage, false)
 		if intent != ai.runtime.intent and intent in [&"circle", &"flank"] and ai.rng.randf() < SIDE_SWAP_CHANCE:
 			ai.runtime.strafe_side *= -1.0
 		ai.set_intent(intent)
@@ -79,13 +84,23 @@ func _react_to_threat(ai: EnemyAI) -> StringName:
 func _execute(ai: EnemyAI, t: CombatComponent, d: float, engage: float) -> void:
 	var me := ai.body().global_position
 	var tp := t.body().global_position
+	var squad := Squad.members(ai, t).size()
+	# 沒有令牌的敵人在外圈等待，令牌持有者才貼近。
+	var ring := engage
+	if squad > 1 and ai.definition.uses_attack_token and not AttackTokens.has(ai, t) \
+			and AttackTokens.holders(t).size() >= AttackTokens.max_attackers:
+		ring = engage + OUTER_RING
 	match ai.runtime.intent:
 		&"circle":
-			var from_t := me - tp
-			from_t.y = 0
-			if from_t.length() < 0.01:
-				from_t = Vector3.FORWARD
-			var p := tp + from_t.normalized().rotated(Vector3.UP, CIRCLE_STEP * ai.runtime.strafe_side) * engage
+			var p: Vector3
+			if squad > 1:
+				p = Squad.slot_position(ai, t, ring)  # 包圍：各自佔一個扇區
+			else:
+				var from_t := me - tp
+				from_t.y = 0
+				if from_t.length() < 0.01:
+					from_t = Vector3.FORWARD
+				p = tp + from_t.normalized().rotated(Vector3.UP, CIRCLE_STEP * ai.runtime.strafe_side) * ring
 			ai.strafe_to(p, tp, 0.55)
 		&"flank":
 			var fwd := -t.body().global_transform.basis.z
@@ -103,7 +118,9 @@ func _execute(ai: EnemyAI, t: CombatComponent, d: float, engage: float) -> void:
 			ai.stop()
 			ai.face(tp)
 		_:
-			if d > engage:
+			if d > ring + 1.5 and squad > 1:
+				ai.move_towards(Squad.slot_position(ai, t, ring))  # 從自己的方向逼近
+			elif d > ring:
 				ai.move_towards(tp)
 			else:
 				ai.stop()

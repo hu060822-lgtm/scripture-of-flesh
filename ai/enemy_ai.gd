@@ -140,6 +140,8 @@ func force_state(name: StringName) -> void:
 		return
 	var old := runtime.state_name
 	_states[old].exit(self)
+	if name == &"dead":
+		AttackTokens.release(self)
 	runtime.state_name = name
 	runtime.time_in_state = 0.0
 	_states[name].enter(self)
@@ -147,6 +149,9 @@ func force_state(name: StringName) -> void:
 	if name == &"chase" and old in [&"patrol", &"detect", &"search"] and runtime.target != null:
 		alerted.emit(runtime.target)
 		bark.emit(&"alert")
+		# AI-3：呼叫附近的同伴（同陣營只會回應 alarm）
+		if definition.alarm_radius > 0.0 and body().is_inside_tree():
+			EventBus.emit_noise(body().global_position, definition.alarm_radius, body(), &"alarm")
 
 # ---------- 感知 ----------
 

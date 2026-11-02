@@ -42,6 +42,7 @@ func _run_all() -> void:
 			# 重設全域狀態，避免失敗的測試影響後續測試
 			root.get_node("TimeScale").set_mode(0)
 			root.get_node("GameState").reset()
+			load("res://ai/squad/attack_tokens.gd").reset()  # 不直接引用 class_name（-s 模式下 autoload 尚未就緒）
 			# 清除測試加入場景樹的節點（autoload 不受影響）
 			for c in root.get_children():
 				if not c in existing:

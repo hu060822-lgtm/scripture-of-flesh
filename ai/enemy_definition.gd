@@ -63,3 +63,11 @@ extends Resource
 @export_range(0.0, 1.0) var adaptivity: float = 0.5
 ## 優先攻擊玩家受傷部位的機率（luz 決定：中等，約 40%）。
 @export_range(0.0, 1.0) var injured_target_bias: float = 0.4
+
+@export_group("Squad")
+## AI-3：出手前要取得攻擊令牌（同時最多 AttackTokens.max_attackers 隻）。Boss 為 false。
+@export var uses_attack_token: bool = true
+## 發現目標時呼叫附近同伴（alarm 聲響）的半徑；0 = 不呼叫。
+@export var alarm_radius: float = 10.0
+## 沒有受傷部位可瞄準時，偏好攻擊的部位（例如未生者咬腿）。高度不合時仍會忽略。
+@export var preferred_target_parts: PackedStringArray = PackedStringArray()

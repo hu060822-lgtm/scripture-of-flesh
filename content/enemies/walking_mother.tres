@@ -46,3 +46,4 @@ flank_tendency = 0.0
 hit_and_run = 0.0
 punish_skill = 0.5
 adaptivity = 0.3
+uses_attack_token = false
