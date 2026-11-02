@@ -97,7 +97,7 @@ WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）
 | `scenes/prologue/` | `prologue_level.tscn`（由 `tools/generate_prologue_level.gd` 產生，之後直接在編輯器修改）、`prologue.tscn` |
 | `anatomy/` | `BodyPartDef`、`AnatomyProfile`（Resource）；`AnatomyState`、`BodyPartState`、`CapabilitySet`（即時狀態） |
 | `damage/` | `DamageTypes`（八種損傷與係數）、`DamagePacket`、`DamageResolver`、`DamageResult` |
-| `ai/` | `EnemyDefinition`、`EnemyRuntimeState`、`EnemyAI`（狀態機）、`ai/states/` 各狀態、`AttackSelector`、`EnemyFactory`、`AiNavigator`（尋路）、`ai/perception/NoiseEmitter`（聲響） |
+| `ai/` | `EnemyDefinition`、`EnemyRuntimeState`、`EnemyAI`（狀態機）、`ai/states/` 各狀態、`AttackSelector`、`EnemyFactory`、`AiNavigator`（尋路）、`ai/perception/NoiseEmitter`（聲響）、`ai/tactics/`（`Tactics` 戰術評分、`TargetHabits` 玩家習慣、`PartTargeting` 瞄準傷口） |
 | `content/enemies/` | 四種敵人資料 |
 | `combat/` | `CombatComponent`（攻擊、防禦、閃避、硬直、出血、死亡）、`ResourcePools`（HP/ST/AP）、`AttackDefinition` |
 | `player/` | `PlayerController`（輸入 → 指令）、`TacticalController`（戰術介面）、`PlayerFactory` |

@@ -16,6 +16,9 @@ signal telegraph(attack: AttackDefinition, windup_seconds: float)
 signal locomotion_changed(mode: StringName)
 ## 叫聲：&"alert"（發現）、&"search"（搜尋低語）、&"pain"（斷肢）。音效執行緒接這個訊號。
 signal bark(kind: StringName)
+## 戰術意圖改變（見 Tactics）：&"approach"、&"attack"、&"circle"、&"flank"、&"back_off"、&"lurk"。
+## 動畫可依此切換（例如 circle/flank 用側步、back_off 用後退步）。
+signal intent_changed(intent: StringName)
 
 const STATE_SCRIPTS := {
 	&"patrol": preload("res://ai/states/patrol_state.gd"),
@@ -51,6 +54,7 @@ var desired_velocity := Vector3.ZERO
 var interrupted := false
 var _states := {}
 var navigator := AiNavigator.new()
+var habits := TargetHabits.new()
 var locomotion_mode: StringName = &"idle"
 var _initial_vision := 0
 var _initial_locomotion := 0
@@ -120,7 +124,10 @@ func advance(delta: float) -> void:
 	runtime.time_in_state += delta
 	runtime.decision_timer -= delta
 	navigator.tick(delta)
+	runtime.since_attack += delta
+	runtime.special_cooldown = maxf(0.0, runtime.special_cooldown - delta)
 	perceive(delta)
+	habits.observe(combat, runtime.target)
 	var next: StringName = _states[runtime.state_name].update(self, delta)
 	if next != &"" and next != runtime.state_name:
 		force_state(next)
@@ -313,6 +320,16 @@ func move_away_from(point: Vector3, speed_factor: float = 1.0) -> void:
 		to = body().global_transform.basis.z
 	desired_velocity = to.normalized() * definition.move_speed * combat.movement_multiplier() * speed_factor
 	face(point)  # 後退時仍面向目標
+
+## 走向 point 但臉朝 look_at（側步、繞圈、後退）。沿導航路徑並保持間距。
+func strafe_to(point: Vector3, look_at: Vector3, speed_factor: float = 0.6) -> void:
+	move_towards(point, speed_factor)
+	face(look_at)
+
+func set_intent(intent: StringName) -> void:
+	if intent != runtime.intent:
+		runtime.intent = intent
+		intent_changed.emit(intent)
 
 func stop() -> void:
 	desired_velocity = Vector3.ZERO

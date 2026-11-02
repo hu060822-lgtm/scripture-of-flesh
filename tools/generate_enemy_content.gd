@@ -4,13 +4,13 @@ extends SceneTree
 
 func _init() -> void:
 	_save(_def(&"stitcher", "縫屍者", "stitcher", ["claw", "grab_tear", "bite"],
-		{"hp": 85, "speed": 2.4, "range": 1.1, "defend": 0.1, "dodge": 0.0, "special": &"restitch", "sight": 8.0, "xp": 40, "organs": ["stitched_arm"]}))
+		{"hp": 85, "speed": 2.4, "range": 1.1, "defend": 0.1, "dodge": 0.0, "special": &"restitch", "sight": 8.0, "xp": 40, "organs": ["stitched_arm"], "tactics": {"aggression": 0.6, "caution": 0.2, "patience": 0.3, "flank_tendency": 0.2, "hit_and_run": 0.0, "punish_skill": 0.4, "adaptivity": 0.4}}))
 	_save(_def(&"reverse_legged", "反足者", "reverse_legged", ["lunge", "spur_kick", "claw", "pounce_bite"],
-		{"hp": 70, "speed": 4.2, "range": 3.5, "defend": 0.0, "dodge": 0.3, "sight": 11.0, "stagger": 10.0, "xp": 60, "organs": ["reverse_leg"]}))
+		{"hp": 70, "speed": 4.2, "range": 3.5, "defend": 0.0, "dodge": 0.3, "sight": 11.0, "stagger": 10.0, "xp": 60, "organs": ["reverse_leg"], "tactics": {"aggression": 0.7, "caution": 0.3, "patience": 0.4, "flank_tendency": 0.6, "hit_and_run": 0.8, "punish_skill": 0.7, "adaptivity": 0.5}}))
 	_save(_def(&"faceless_watcher", "無面觀察者", "faceless", ["gaze", "lash"],
-		{"hp": 65, "speed": 2.0, "range": 5.0, "defend": 0.05, "dodge": 0.15, "sight": 12.0, "fov": 220.0, "hearing": 3.5, "xp": 60, "organs": ["watcher_eye"]}))
+		{"hp": 65, "speed": 2.0, "range": 5.0, "defend": 0.05, "dodge": 0.15, "sight": 12.0, "fov": 220.0, "hearing": 3.5, "xp": 60, "organs": ["watcher_eye"], "tactics": {"aggression": 0.4, "caution": 0.7, "patience": 0.7, "flank_tendency": 0.1, "hit_and_run": 0.3, "punish_skill": 0.5, "adaptivity": 0.5}}))
 	_save(_def(&"many_hands", "多手人", "multi_armed", ["flurry", "double_grab", "swipe", "bite"],
-		{"hp": 110, "st": 120, "speed": 2.2, "range": 1.3, "defend": 0.3, "dodge": 0.0, "sight": 8.0, "stagger": 16.0, "xp": 80, "organs": ["many_hands_heart"]}))
+		{"hp": 110, "st": 120, "speed": 2.2, "range": 1.3, "defend": 0.3, "dodge": 0.0, "sight": 8.0, "stagger": 16.0, "xp": 80, "organs": ["many_hands_heart"], "tactics": {"aggression": 0.5, "caution": 0.4, "patience": 0.6, "flank_tendency": 0.3, "hit_and_run": 0.0, "punish_skill": 0.6, "adaptivity": 0.8}}))
 	quit()
 
 func _save(d: EnemyDefinition) -> void:
@@ -42,4 +42,8 @@ func _def(id: StringName, name: String, profile: String, attacks: Array, o: Dict
 	for oid in o.get("organs", []):
 		organs.append(load("res://content/organs/%s.tres" % oid))
 	d.harvestable = organs
+	# AI-2 戰術個性
+	var tactics: Dictionary = o.get("tactics", {})
+	for k in tactics:
+		d.set(k, tactics[k])
 	return d
