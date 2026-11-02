@@ -12,6 +12,8 @@ var taken := {}
 var checkpoint_altar: StringName = &""
 var class_id: StringName = &""
 var playtime := 0.0
+## 執行期（不存檔）：主選單選擇的開始方式，"new" 或 "continue"。
+var start_mode := "new"
 
 func _process(delta: float) -> void:
 	playtime += delta

@@ -52,9 +52,13 @@ func switch_weapon(index: int) -> bool:
 	weapon_switched.emit(weapons[index])
 	return true
 
-## E 鍵：撿武器 → 祭壇休息 → 摘取屍體器官，依序嘗試。
+## E 鍵：撿武器 → 場景物件（銘文、NPC、武器台、門）→ 祭壇休息 → 摘取屍體器官，依序嘗試。
 func interact() -> bool:
 	if try_pickup():
+		return true
+	var it := Interactable.nearest(get_tree(), body())
+	if it != null:
+		it.interact(body())
 		return true
 	var altar := nearest_altar()
 	if altar != null:

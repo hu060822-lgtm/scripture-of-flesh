@@ -2,7 +2,29 @@
 
 2.5D 日式黑暗奇幻 RPG。Godot **4.3** / GDScript，目標平台 PC。
 
-> 目前階段：**M6 身體成長**。主場景暫定為戰鬥沙盒（測試用），有四種敵人與一座縫合祭壇。
+> 目前階段：**M7 序章（垂直切片）**。主場景是主選單：新遊戲／繼續／戰鬥沙盒／離開。
+> 所有畫面仍是【暫代】灰盒；美術方向（PS1 低多邊形哥德身體恐怖）待美術測試場景確認後才製作正式資產。
+
+## 序章流程
+
+白色產房醒來（赤手）→ 與助產修女阿格妮絲對話，以「手還記得什麼」選擇職業（取得職業武器與縫合包）
+→ 縫合迴廊（縫屍者 ×2）→ 反足者庭院（反足者 ×2、縫屍者、骨鋸斧台座、祭壇）
+→ 西：觀察者藏書室（無面觀察者 ×2、解剖刺劍台座）／東：多手人聖器室（多手人、聖骸錘台座、**臍帶鑰匙**）
+→ 以鑰匙打開禮拜堂大門 → 前廳（祭壇）→ 母親的禮拜堂（Boss）→ 胎房（結局選擇）。
+
+- **存檔**：在縫合祭壇休息時存檔（`user://save_0.json`，有版本號與遷移表）。存身體（含斷肢、移植器官）、資源、武器、等級、異化、物品、旗標、已擊殺敵人、已拿取物品、檢查點。
+- **死亡**：3 秒後在最後休息的祭壇重生，世界回到存檔當時（存檔後擊殺的敵人與拿取的物品會復原；Boss 也會復原）。
+- **Boss 行走的母親**：四根高蹺腿、三條臍帶、骨盆甲包覆的子宮、兩條抱臂、兩條長臂、覆面頭。
+  - 第一階段：子宮護甲 10，只能先打腿與臍帶。
+  - 高蹺腿剩 2 根以下 → **跪伏**：身體降低、骨盆甲剝落（子宮換成暴露定義，保留受損比例）、產聲、移動變慢。
+  - 臍帶還連著時每 9 秒生出「未生者」（最多 2 隻）；三條臍帶全斷後不再召喚。
+  - 攻擊依身體自動增減：踐踏需 2 根高蹺、懷抱擠壓需雙抱臂、鞭笞需長臂、產聲需頭部。
+- **結局**（胎房對話，依異化度與旗標）：
+  - 灰燼結局：燒掉胎房（永遠可選）。
+  - 母親結局：異化 ≥ 50 才出現。
+  - 離院結局：曾答應帶阿格妮絲離開、異化 < 75，且沒有在她面前保持沉默。
+- 阿格妮絲的對話會依異化度（≥75 害怕你）、是否持有鑰匙、Boss 是否死亡而改變。
+- Esc 按兩次回主選單；B 身體選單；其他操作同戰鬥沙盒。
 
 ## 執行測試
 
@@ -14,7 +36,7 @@ GODOT=/path/to/godot tests/run_tests.sh
 （GDScript 執行期錯誤只會中止單一函式，否則可能造成「假通過」）。
 headless 模式下會出現大量 `Parameter "m" is null`（mesh_storage）訊息，這是 Godot 4.3 dummy 渲染器的已知雜訊，不影響結果。
 
-## 戰鬥沙盒（主場景，F5）
+## 戰鬥沙盒（主選單 → 戰鬥沙盒，F5 重置）
 
 WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）、Space 閃避、Shift 防禦、
 1/2/3 換武器（骨鋸斧／聖骸錘［雙手］／解剖刺劍）、E 撿起掉落的武器、F5 重置、F6 敵人 AI 開關。
@@ -55,20 +77,24 @@ WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）
 
 | 資料夾 | 內容 |
 | --- | --- |
-| `core/` | `EventBus`、`TimeScale`（戰鬥時間倍率，戰術介面用）autoload、`InputSetup` |
+| `core/` | `EventBus`、`TimeScale`（戰鬥時間倍率，戰術介面用）、`GameState`（旗標、擊殺、檢查點）autoload、`InputSetup` |
+| `save/` | `SaveSystem`：版本化 JSON 存檔、遷移、讀檔時重放斷肢讓模型同步 |
+| `dialogue/` | `DialogueRunner`：JSON 對話（`content/dialogue/`），條件（旗標、異化、職業、物品）、分支、動作 |
+| `boss/` | `BossPhaseComponent`（階段、召喚）、`BossFactory` |
+| `scenes/prologue/` | `prologue_level.tscn`（由 `tools/generate_prologue_level.gd` 產生，之後直接在編輯器修改）、`prologue.tscn` |
 | `anatomy/` | `BodyPartDef`、`AnatomyProfile`（Resource）；`AnatomyState`、`BodyPartState`、`CapabilitySet`（即時狀態） |
 | `damage/` | `DamageTypes`（八種損傷與係數）、`DamagePacket`、`DamageResolver`、`DamageResult` |
 | `ai/` | `EnemyDefinition`、`EnemyRuntimeState`、`EnemyAI`（狀態機）、`ai/states/` 各狀態、`AttackSelector`、`EnemyFactory` |
 | `content/enemies/` | 四種敵人資料 |
 | `combat/` | `CombatComponent`（攻擊、防禦、閃避、硬直、出血、死亡）、`ResourcePools`（HP/ST/AP）、`AttackDefinition` |
 | `player/` | `PlayerController`（輸入 → 指令）、`TacticalController`（戰術介面）、`PlayerFactory` |
-| `game/` | `CameraRig`（固定斜俯視）、`Greybox`【暫代】灰盒工具 |
-| `ui/` | `CombatHud`、`TacticalOverlay`、`TransplantScreen`、`BodyMenu` |
+| `game/` | `PrologueGame`（序章控制器）、`CameraRig`（固定斜俯視）、`Greybox`【暫代】灰盒工具 |
+| `ui/` | `MainMenu`、`CombatHud`、`TacticalOverlay`、`TransplantScreen`、`BodyMenu`、`DialogueBox`、`BossBar`（含登場標題卡） |
 | `progression/` | `CharacterStats`、`ClassDefinition`、`SkillDefinition`、`ProgressionComponent` |
 | `mutation/` | `MutationStage`、`MutationComponent` |
 | `organ/` | `OrganDefinition`、`TransplantService`、`OrganRegistry` |
 | `inventory/` | `Inventory` |
-| `world/` | `StitchingAltar` |
+| `world/` | `StitchingAltar`、`Interactable` 及子類別（銘文／NPC、武器台、物品、Boss 門）、`AreaTrigger`、`EnemySpawn` |
 | `content/classes/`、`skills/`、`mutation/`、`organs/` | 職業、技能、異化階段、器官資料 |
 | `content/weapons/`、`content/attacks/` | 三種武器、徒手攻擊（拳、踢、咬） |
 | `creature/` | `AnatomyComponent`：把 AnatomyState 掛到場景，套用玩家斷肢倍率（D2） |
@@ -78,7 +104,7 @@ WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）
 | `scenes/sandbox/` | 斷肢沙盒測試場景 |
 | `content/anatomy/` | 身體模板 `.tres`：`humanoid`（14 部位）、`multi_armed`（六臂） |
 | `tests/` | headless 測試執行器與單元測試 |
-| `tools/` | 一次性內容產生腳本 |
+| `tools/` | 一次性內容產生腳本，執行順序：anatomy → combat → growth → enemy → boss → prologue_level |
 
 ### 解剖系統資料流
 
@@ -106,3 +132,9 @@ DamagePacket ─▶ DamageResolver.resolve()（不修改狀態）─▶ DamageRe
 - 沒有攻擊動畫：攻擊時序（前搖／判定／收招）由資料驅動，畫面上目前看不到揮擊動作。
 - 命中判定是幾何扇形計算（不使用物理碰撞），方便戰術減速與測試；之後若需要精確武器軌跡再改。
 - 所有平衡係數（`damage/damage_types.gd`）皆為初值，未經遊玩測試。
+- **序章遊玩時間（目標 20–30 分鐘）尚未實測**：只有自動測試與 headless 模擬，沒有人實際玩過。
+- Boss 登場演出是純文字標題卡；跪伏是身體直接下移；產聲沒有特效與音效。
+- 對話框沒有立繪、打字機效果與語音；結局是一段文字畫面。
+- 關卡是灰盒，沒有門的開啟動畫，敵人沒有尋路（房間之間靠直線追擊）。
+- 匯出遊戲時需在匯出設定的「非資源檔案」加入 `*.json`（對話資料），目前專案還沒有匯出設定。
+- 沒有音效與音樂。
