@@ -158,7 +158,14 @@ static func build_body(profile: AnatomyProfile) -> Node3D:
 		var child_pos: Vector3 = positions[d.id]
 		var dir: Vector3 = (positions[d.parent_id] - child_pos)
 		dir = dir.normalized() if dir.length() > 0.001 else Vector3.UP
-		var joint := child_pos + dir * _half_extent(_layout_for(d, profile))
+		var lay := _layout_for(d, profile)
+		var joint := child_pos + dir * _half_extent(lay)
+		if lay["shape"] == "capsule":
+			# 直立膠囊（手臂、腿、臍帶）：關節取靠近父部位的那一端，斷面才會在肩膀／髖部而不是埋進軀幹
+			var top := child_pos + Vector3.UP * float(lay["h"]) * 0.5
+			var bottom := child_pos - Vector3.UP * float(lay["h"]) * 0.5
+			var pp: Vector3 = positions[d.parent_id]
+			joint = top if top.distance_to(pp) <= bottom.distance_to(pp) else bottom
 		var marker := Marker3D.new()
 		marker.name = "stump_%s" % d.id
 		parent_att.add_child(marker)

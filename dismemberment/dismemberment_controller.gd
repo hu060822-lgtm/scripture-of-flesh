@@ -18,6 +18,9 @@ const BONE_COLLAPSED_SCALE := Vector3(0.0001, 0.0001, 0.0001)
 ## 殘肢與掉落武器放置的父節點；未設定時使用生物的父節點。
 @export var world_parent: Node
 @export var gib_impulse: float = 3.0
+## 可選：自訂斷面外觀 Callable(part_id: StringName) -> Node3D（美術測試的 PS1 斷面使用）。
+## 未設定時使用暫代的乾涸紅球體。
+var cap_builder: Callable
 
 var animation_set := {}
 var _creature: Node3D
@@ -105,16 +108,24 @@ func _on_part_severed(top_id: StringName, ids: PackedStringArray) -> void:
 	# 5. 斷面：在父部位的關節處接上斷面網格
 	var marker := _find("stump_%s" % top_id)
 	if marker != null and marker.get_node_or_null("cap") == null:
-		var cap := MeshInstance3D.new()
+		var cap: Node3D
+		if cap_builder.is_valid():
+			cap = cap_builder.call(top_id)
+		else:
+			var mi := MeshInstance3D.new()
+			var m := SphereMesh.new()
+			m.radius = 0.06
+			m.height = 0.06
+			mi.mesh = m
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = STUMP_COLOR
+			mi.material_override = mat
+			cap = mi
 		cap.name = "cap"
-		var m := SphereMesh.new()
-		m.radius = 0.06
-		m.height = 0.06
-		cap.mesh = m
-		var mat := StandardMaterial3D.new()
-		mat.albedo_color = STUMP_COLOR
-		cap.material_override = mat
 		marker.add_child(cap)
+		# 斷面的 +Y 朝向關節外側（從父部位中心指向斷口）
+		if marker.position.length() > 0.001:
+			cap.basis = Basis(Quaternion(Vector3.UP, marker.position.normalized()))
 	severed_visuals_applied.emit(top_id, ids)
 
 func _on_capabilities_changed(caps: CapabilitySet) -> void:
