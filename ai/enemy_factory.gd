@@ -24,6 +24,9 @@ static func create(def: EnemyDefinition, creature_id: StringName) -> CharacterBo
 	combat.max_hp = def.max_hp
 	combat.max_st = def.max_st
 	combat.stagger_threshold = def.stagger_threshold
+	if def.damage_scale != 1.0:
+		var scale := def.damage_scale
+		combat.damage_modifier = func(_a, _w): return scale
 	var ai := EnemyAI.new()
 	ai.name = "EnemyAI"
 	ai.definition = def

@@ -8,7 +8,7 @@ const KEYS := {
 	&"dodge": [KEY_SPACE], &"block": [KEY_SHIFT], &"interact": [KEY_E], &"tactical": [KEY_TAB],
 	&"tactical_pause": [KEY_P], &"weapon_1": [KEY_1], &"weapon_2": [KEY_2], &"weapon_3": [KEY_3],
 	&"target_prev": [KEY_Q], &"target_next": [KEY_R], &"menu_body": [KEY_B], &"pause_menu": [KEY_ESCAPE],
-	&"use_item": [KEY_F], &"surgery": [KEY_T],
+	&"use_item": [KEY_F], &"surgery": [KEY_T], &"help": [KEY_H],
 }
 const MOUSE := {
 	&"attack_light": MOUSE_BUTTON_LEFT, &"attack_heavy": MOUSE_BUTTON_RIGHT,

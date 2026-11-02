@@ -71,3 +71,9 @@ extends Resource
 @export var alarm_radius: float = 10.0
 ## 沒有受傷部位可瞄準時，偏好攻擊的部位（例如未生者咬腿）。高度不合時仍會忽略。
 @export var preferred_target_parts: PackedStringArray = PackedStringArray()
+## 這隻敵人參與時，同一目標同時出手的上限（0 = 用全域的 AttackTokens.max_attackers）。難度曲線前段設為 1。
+@export var squad_attackers: int = 0
+
+@export_group("Difficulty")
+## 對目標造成傷害的倍率（難度曲線使用；1.0 = 原始數值）。
+@export var damage_scale: float = 1.0
