@@ -142,6 +142,15 @@ func try_attack(attack: AttackDefinition, target_part: StringName = &"") -> bool
 	attack_started.emit(attack)
 	return true
 
+## 強制發動（Boss 階段轉換等劇本事件用）：中斷目前的前搖／收招並忽略冷卻。死亡或僵直時無效。
+func force_attack(attack: AttackDefinition) -> bool:
+	if action in [Action.DEAD, Action.STAGGER]:
+		return false
+	if action != Action.IDLE:
+		_set_action(Action.IDLE, 0.0)
+	_cooldowns.erase(attack.id)
+	return try_attack(attack)
+
 ## 閃避。需要至少一條可用的腿。direction 為世界座標的水平方向。
 func dodge(direction: Vector3) -> bool:
 	if action != Action.IDLE or caps().count("locomotion") < 1:

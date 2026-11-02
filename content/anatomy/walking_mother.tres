@@ -1,0 +1,334 @@
+[gd_resource type="Resource" script_class="AnatomyProfile" load_steps=19 format=3]
+
+[ext_resource type="Script" path="res://anatomy/body_part_def.gd" id="1_smbpv"]
+[ext_resource type="Script" path="res://anatomy/anatomy_profile.gd" id="2_3y701"]
+
+[sub_resource type="Resource" id="Resource_dwgvs"]
+script = ExtResource("1_smbpv")
+id = &"torso"
+display_name = "軀幹"
+max_hp = 180.0
+armor = 3.0
+resistances = {
+"CUT": 0.8
+}
+functions = PackedStringArray("torso")
+detachable = false
+parent_id = &""
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray("heart")
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"torso"
+mesh_segment = &"seg_torso"
+
+[sub_resource type="Resource" id="Resource_gq5ay"]
+script = ExtResource("1_smbpv")
+id = &"heart"
+display_name = "心臟"
+max_hp = 80.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("circulation")
+detachable = false
+parent_id = &"torso"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = true
+vital = 1
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"heart"
+mesh_segment = &"seg_heart"
+
+[sub_resource type="Resource" id="Resource_ks52x"]
+script = ExtResource("1_smbpv")
+id = &"neck"
+display_name = "頸部"
+max_hp = 60.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("head_support")
+detachable = false
+parent_id = &"torso"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"neck"
+mesh_segment = &"seg_neck"
+
+[sub_resource type="Resource" id="Resource_ugixw"]
+script = ExtResource("1_smbpv")
+id = &"head"
+display_name = "覆面頭"
+max_hp = 90.0
+armor = 4.0
+resistances = {}
+functions = PackedStringArray("cognition", "vision", "scream")
+detachable = true
+parent_id = &"neck"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 1
+sever_multiplier = 0.3
+mutation_threshold = 60.0
+bone_name = &"head"
+mesh_segment = &"seg_head"
+
+[sub_resource type="Resource" id="Resource_s2nfc"]
+script = ExtResource("1_smbpv")
+id = &"womb"
+display_name = "子宮（骨盆甲）"
+max_hp = 200.0
+armor = 10.0
+resistances = {
+"CRUSH": 0.7,
+"CUT": 0.5,
+"PIERCE": 0.5
+}
+functions = PackedStringArray("birth")
+detachable = false
+parent_id = &"torso"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 1
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"womb"
+mesh_segment = &"seg_womb"
+
+[sub_resource type="Resource" id="Resource_suq3w"]
+script = ExtResource("1_smbpv")
+id = &"cradle_l"
+display_name = "左抱臂"
+max_hp = 70.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "cradle")
+detachable = true
+parent_id = &"torso"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.8
+mutation_threshold = 60.0
+bone_name = &"cradle_l"
+mesh_segment = &"seg_cradle_l"
+
+[sub_resource type="Resource" id="Resource_3f6u7"]
+script = ExtResource("1_smbpv")
+id = &"cradle_r"
+display_name = "右抱臂"
+max_hp = 70.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "cradle")
+detachable = true
+parent_id = &"torso"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.8
+mutation_threshold = 60.0
+bone_name = &"cradle_r"
+mesh_segment = &"seg_cradle_r"
+
+[sub_resource type="Resource" id="Resource_bei4p"]
+script = ExtResource("1_smbpv")
+id = &"long_arm_l"
+display_name = "左長臂"
+max_hp = 55.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "grip")
+detachable = true
+parent_id = &"torso"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"long_arm_l"
+mesh_segment = &"seg_long_arm_l"
+
+[sub_resource type="Resource" id="Resource_tp72b"]
+script = ExtResource("1_smbpv")
+id = &"long_arm_r"
+display_name = "右長臂"
+max_hp = 55.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "grip")
+detachable = true
+parent_id = &"torso"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"long_arm_r"
+mesh_segment = &"seg_long_arm_r"
+
+[sub_resource type="Resource" id="Resource_6kk52"]
+script = ExtResource("1_smbpv")
+id = &"stilt_1"
+display_name = "高蹺腿1"
+max_hp = 80.0
+armor = 2.0
+resistances = {
+"FRACTURE": 1.3
+}
+functions = PackedStringArray("leg", "locomotion", "stilt")
+detachable = true
+parent_id = &"womb"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.9
+mutation_threshold = 60.0
+bone_name = &"stilt_1"
+mesh_segment = &"seg_stilt_1"
+
+[sub_resource type="Resource" id="Resource_rghbu"]
+script = ExtResource("1_smbpv")
+id = &"stilt_2"
+display_name = "高蹺腿2"
+max_hp = 80.0
+armor = 2.0
+resistances = {
+"FRACTURE": 1.3
+}
+functions = PackedStringArray("leg", "locomotion", "stilt")
+detachable = true
+parent_id = &"womb"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.9
+mutation_threshold = 60.0
+bone_name = &"stilt_2"
+mesh_segment = &"seg_stilt_2"
+
+[sub_resource type="Resource" id="Resource_kuqyf"]
+script = ExtResource("1_smbpv")
+id = &"stilt_3"
+display_name = "高蹺腿3"
+max_hp = 80.0
+armor = 2.0
+resistances = {
+"FRACTURE": 1.3
+}
+functions = PackedStringArray("leg", "locomotion", "stilt")
+detachable = true
+parent_id = &"womb"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.9
+mutation_threshold = 60.0
+bone_name = &"stilt_3"
+mesh_segment = &"seg_stilt_3"
+
+[sub_resource type="Resource" id="Resource_mhpon"]
+script = ExtResource("1_smbpv")
+id = &"stilt_4"
+display_name = "高蹺腿4"
+max_hp = 80.0
+armor = 2.0
+resistances = {
+"FRACTURE": 1.3
+}
+functions = PackedStringArray("leg", "locomotion", "stilt")
+detachable = true
+parent_id = &"womb"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.9
+mutation_threshold = 60.0
+bone_name = &"stilt_4"
+mesh_segment = &"seg_stilt_4"
+
+[sub_resource type="Resource" id="Resource_axmfo"]
+script = ExtResource("1_smbpv")
+id = &"cord_1"
+display_name = "臍帶1"
+max_hp = 30.0
+armor = 0.0
+resistances = {
+"CUT": 1.3
+}
+functions = PackedStringArray("tether")
+detachable = true
+parent_id = &"womb"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.6
+mutation_threshold = 60.0
+bone_name = &"cord_1"
+mesh_segment = &"seg_cord_1"
+
+[sub_resource type="Resource" id="Resource_ogsjy"]
+script = ExtResource("1_smbpv")
+id = &"cord_2"
+display_name = "臍帶2"
+max_hp = 30.0
+armor = 0.0
+resistances = {
+"CUT": 1.3
+}
+functions = PackedStringArray("tether")
+detachable = true
+parent_id = &"womb"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.6
+mutation_threshold = 60.0
+bone_name = &"cord_2"
+mesh_segment = &"seg_cord_2"
+
+[sub_resource type="Resource" id="Resource_myloo"]
+script = ExtResource("1_smbpv")
+id = &"cord_3"
+display_name = "臍帶3"
+max_hp = 30.0
+armor = 0.0
+resistances = {
+"CUT": 1.3
+}
+functions = PackedStringArray("tether")
+detachable = true
+parent_id = &"womb"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.6
+mutation_threshold = 60.0
+bone_name = &"cord_3"
+mesh_segment = &"seg_cord_3"
+
+[resource]
+script = ExtResource("2_3y701")
+id = &"walking_mother"
+display_name = "行走的母親"
+parts = Array[ExtResource("1_smbpv")]([SubResource("Resource_dwgvs"), SubResource("Resource_gq5ay"), SubResource("Resource_ks52x"), SubResource("Resource_ugixw"), SubResource("Resource_s2nfc"), SubResource("Resource_suq3w"), SubResource("Resource_3f6u7"), SubResource("Resource_bei4p"), SubResource("Resource_tp72b"), SubResource("Resource_6kk52"), SubResource("Resource_rghbu"), SubResource("Resource_kuqyf"), SubResource("Resource_mhpon"), SubResource("Resource_axmfo"), SubResource("Resource_ogsjy"), SubResource("Resource_myloo")])

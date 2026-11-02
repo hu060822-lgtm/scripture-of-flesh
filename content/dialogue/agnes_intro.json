@@ -1,0 +1,76 @@
+{
+ "id": "agnes_intro",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "阿格妮絲",
+   "text": "……醒了。別急著坐起來，你的線還沒乾。",
+   "next": "n2"
+  },
+  "n2": {
+   "speaker": "阿格妮絲",
+   "text": "你是這間產房縫出來的第七百三十一個孩子。頭是一個人的，手是另一個人的，心臟……我也不知道是誰的。",
+   "next": "n3"
+  },
+  "n3": {
+   "speaker": "阿格妮絲",
+   "text": "但身體會記得。告訴我，你的手還記得什麼？",
+   "choices": [
+    {
+     "text": "把裂開的東西縫回去。（縫合者）",
+     "next": "c_done",
+     "action": "choose_class:stitcher"
+    },
+    {
+     "text": "找到皮下的縫隙，刺進去。（解剖師）",
+     "next": "c_done",
+     "action": "choose_class:anatomist"
+    },
+    {
+     "text": "斬斷。只是斬斷。（刑體師）",
+     "next": "c_done",
+     "action": "choose_class:mutilator"
+    },
+    {
+     "text": "冰冷的鐵，比肉可靠。（義體騎士）",
+     "next": "c_done",
+     "action": "choose_class:prosthetic_knight"
+    },
+    {
+     "text": "牠們在我體內說話，我聽得懂。（肉巫）",
+     "next": "c_done",
+     "action": "choose_class:flesh_witch"
+    }
+   ]
+  },
+  "c_done": {
+   "speaker": "阿格妮絲",
+   "text": "……是嗎。那就照那雙手的記憶活下去吧。",
+   "next": "n4",
+   "set": {
+    "met_agnes": true
+   }
+  },
+  "n4": {
+   "speaker": "阿格妮絲",
+   "text": "聽好。這座聖骸院的盡頭是禮拜堂，『母親』在那裡行走。她生下我們，也會把不合格的孩子收回肚子裡。",
+   "next": "n5"
+  },
+  "n5": {
+   "speaker": "阿格妮絲",
+   "text": "路上的縫合祭壇能把你掉下來的部分接回去，也會記住你。死了，你會在最後碰過的祭壇醒來。",
+   "next": "n6"
+  },
+  "n6": {
+   "speaker": "阿格妮絲",
+   "text": "拿著，緊急縫合包。手斷了就自己接，別等祭壇。只是……每縫一次，你就更不像人一點。",
+   "next": "n7",
+   "action": "give_item:suture_kit:2"
+  },
+  "n7": {
+   "speaker": "阿格妮絲",
+   "text": "我會留在這裡。如果你還想回來說話的話。",
+   "next": ""
+  }
+ }
+}

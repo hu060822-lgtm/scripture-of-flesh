@@ -7,6 +7,15 @@ static func create(def: EnemyDefinition, creature_id: StringName) -> CharacterBo
 	body.set_meta(&"enemy_id", def.id)
 	body.set_meta(&"xp_reward", def.xp_reward)
 	body.set_meta(&"harvestable", def.harvestable)
+	if def.collision_radius != 0.32 or def.collision_height != 1.8:
+		var cap := CapsuleShape3D.new()
+		cap.radius = def.collision_radius
+		cap.height = maxf(def.collision_height, def.collision_radius * 2.0)
+		var col: CollisionShape3D = body.get_node("BodyCollision")
+		col.shape = cap
+		col.position = Vector3(0, cap.height * 0.5, 0)
+	if def.visual_scale != 1.0:
+		(body.get_node("Body") as Node3D).scale = Vector3.ONE * def.visual_scale
 	var anatomy: AnatomyComponent = body.get_node("AnatomyComponent")
 	anatomy.sever_chance_scale = def.sever_chance_scale
 	var combat: CombatComponent = body.get_node("CombatComponent")

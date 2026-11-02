@@ -11,7 +11,8 @@ const PLAYER_SEVER_SCALE := 0.5
 const DEFAULT_CLASS := "res://content/classes/stitcher.tres"
 
 ## class_path 為起始職業；weapon_paths 為初始攜帶武器（空陣列 = 只帶職業武器）。
-static func create(weapon_paths: Array = WEAPONS, class_path: String = DEFAULT_CLASS) -> CharacterBody3D:
+## include_class_weapon = false：不帶職業武器（序章開場赤手醒來，之後由 apply_class 給予）。
+static func create(weapon_paths: Array = WEAPONS, class_path: String = DEFAULT_CLASS, include_class_weapon: bool = true) -> CharacterBody3D:
 	var naturals: Array[AttackDefinition] = []
 	for p in NATURAL + ["res://content/attacks/leap_kick.tres"]:
 		naturals.append(load(p))
@@ -24,7 +25,7 @@ static func create(weapon_paths: Array = WEAPONS, class_path: String = DEFAULT_C
 	ctrl.name = "PlayerController"
 	var cls: ClassDefinition = load(class_path)
 	var ws: Array[WeaponDefinition] = []
-	if cls.starting_weapon != null:
+	if cls.starting_weapon != null and include_class_weapon:
 		ws.append(cls.starting_weapon)
 	for p in weapon_paths:
 		var w: WeaponDefinition = load(p)
@@ -46,3 +47,34 @@ static func create(weapon_paths: Array = WEAPONS, class_path: String = DEFAULT_C
 	tac.name = "TacticalController"
 	body.add_child(tac)
 	return body
+
+## 遊戲中途決定職業（序章中透過阿格妮絲的對話）。重設屬性與起始技能，給予職業武器與起始物品。
+## 玩家必須已加入場景（_ready 完成）。
+static func apply_class(player: Node3D, class_path: String) -> bool:
+	if not ResourceLoader.exists(class_path):
+		return false
+	var cls: ClassDefinition = load(class_path)
+	var prog: ProgressionComponent = player.get_node("ProgressionComponent")
+	prog.unlocked.clear()
+	prog.apply_class(cls)
+	prog.apply_to_combat()
+	var combat: CombatComponent = player.get_node("CombatComponent")
+	combat.pools.hp = combat.pools.max_hp
+	combat.pools.st = combat.pools.max_st
+	var ctrl: PlayerController = player.get_node("PlayerController")
+	if cls.starting_weapon != null:
+		if not ctrl.weapons.has(cls.starting_weapon):
+			ctrl.weapons.append(cls.starting_weapon)
+		var cur := ctrl.equipment.weapon_part()
+		if cur != &"":
+			var old := ctrl.equipment.unequip(cur)
+			if old != null:
+				old.queue_free()
+			ctrl.weapon_index = -1
+		ctrl.switch_weapon(ctrl.weapons.find(cls.starting_weapon))
+	var data: PlayerData = player.get_node_or_null("PlayerData")
+	if data != null:
+		for k in cls.starting_items:
+			data.inventory.add(String(k), int(cls.starting_items[k]))
+	GameState.class_id = cls.id
+	return true

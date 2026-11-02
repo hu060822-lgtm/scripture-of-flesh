@@ -28,6 +28,29 @@ const LAYOUT := {
 	&"leg_r":   {"pos": Vector3(-0.10, 0.45, 0), "shape": "capsule", "r": 0.08, "h": 0.90},
 }
 
+## 非人形生物的專屬暫代配置（以 AnatomyProfile.id 為鍵），優先於 LAYOUT。
+const PROFILE_LAYOUTS := {
+	# 行走的母親（Boss）：四根高蹺腿撐起的巨大身軀，臍帶從子宮垂到地面。
+	&"walking_mother": {
+		&"torso":    {"pos": Vector3(0, 2.90, 0), "shape": "capsule", "r": 0.36, "h": 0.95},
+		&"heart":    {"pos": Vector3(0, 2.95, 0), "shape": "sphere", "r": 0.12},
+		&"neck":     {"pos": Vector3(0, 3.48, 0), "shape": "capsule", "r": 0.10, "h": 0.24},
+		&"head":     {"pos": Vector3(0, 3.75, 0), "shape": "sphere", "r": 0.22, "color": Color("d8d0c0")},
+		&"womb":     {"pos": Vector3(0, 2.20, 0.08), "shape": "sphere", "r": 0.45, "color": Color("8a3a30")},
+		&"cradle_l": {"pos": Vector3(0.30, 2.45, 0.40), "shape": "capsule", "r": 0.08, "h": 0.70},
+		&"cradle_r": {"pos": Vector3(-0.30, 2.45, 0.40), "shape": "capsule", "r": 0.08, "h": 0.70},
+		&"long_arm_l": {"pos": Vector3(0.58, 2.50, 0), "shape": "capsule", "r": 0.07, "h": 1.50},
+		&"long_arm_r": {"pos": Vector3(-0.58, 2.50, 0), "shape": "capsule", "r": 0.07, "h": 1.50},
+		&"stilt_1":  {"pos": Vector3(0.38, 0.95, 0.28), "shape": "capsule", "r": 0.08, "h": 1.90, "color": SOOT_BLACK},
+		&"stilt_2":  {"pos": Vector3(-0.38, 0.95, 0.28), "shape": "capsule", "r": 0.08, "h": 1.90, "color": SOOT_BLACK},
+		&"stilt_3":  {"pos": Vector3(0.38, 0.95, -0.28), "shape": "capsule", "r": 0.08, "h": 1.90, "color": SOOT_BLACK},
+		&"stilt_4":  {"pos": Vector3(-0.38, 0.95, -0.28), "shape": "capsule", "r": 0.08, "h": 1.90, "color": SOOT_BLACK},
+		&"cord_1":   {"pos": Vector3(0.16, 1.30, 0.34), "shape": "capsule", "r": 0.05, "h": 1.10, "color": Color("a04a3e")},
+		&"cord_2":   {"pos": Vector3(-0.16, 1.25, 0.34), "shape": "capsule", "r": 0.05, "h": 1.10, "color": Color("a04a3e")},
+		&"cord_3":   {"pos": Vector3(0.0, 1.40, 0.44), "shape": "capsule", "r": 0.05, "h": 1.10, "color": Color("a04a3e")},
+	},
+}
+
 const CREATURE_LAYER := 1 << 1  # 物理層 2：生物本體（移動碰撞）
 const WORLD_LAYER := 1 << 0      # 物理層 1：場景
 
@@ -81,7 +104,7 @@ static func build_body(profile: AnatomyProfile) -> Node3D:
 
 	var positions := {}
 	for d in profile.parts:
-		positions[d.id] = _layout_for(d)["pos"]
+		positions[d.id] = _layout_for(d, profile)["pos"]
 
 	# 依深度排序，確保父骨骼先建立。
 	var ordered: Array[BodyPartDef] = profile.parts.duplicate()
@@ -98,7 +121,7 @@ static func build_body(profile: AnatomyProfile) -> Node3D:
 	skel.reset_bone_poses()
 
 	for d in ordered:
-		var lay := _layout_for(d)
+		var lay := _layout_for(d, profile)
 		var att := BoneAttachment3D.new()
 		att.name = "attach_%s" % d.id
 		att.bone_name = String(d.bone_name)
@@ -135,14 +158,16 @@ static func build_body(profile: AnatomyProfile) -> Node3D:
 		var child_pos: Vector3 = positions[d.id]
 		var dir: Vector3 = (positions[d.parent_id] - child_pos)
 		dir = dir.normalized() if dir.length() > 0.001 else Vector3.UP
-		var joint := child_pos + dir * _half_extent(_layout_for(d))
+		var joint := child_pos + dir * _half_extent(_layout_for(d, profile))
 		var marker := Marker3D.new()
 		marker.name = "stump_%s" % d.id
 		parent_att.add_child(marker)
 		marker.position = joint - positions[d.parent_id]
 	return body
 
-static func _layout_for(d: BodyPartDef) -> Dictionary:
+static func _layout_for(d: BodyPartDef, profile: AnatomyProfile = null) -> Dictionary:
+	if profile != null and PROFILE_LAYOUTS.has(profile.id) and PROFILE_LAYOUTS[profile.id].has(d.id):
+		return PROFILE_LAYOUTS[profile.id][d.id]
 	if LAYOUT.has(d.id):
 		return LAYOUT[d.id]
 	var s := String(d.id)

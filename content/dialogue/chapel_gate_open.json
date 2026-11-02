@@ -1,0 +1,14 @@
+{
+ "id": "chapel_gate_open",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "",
+   "text": "臍帶鑰匙插入肉洞。門像產道一樣，緩慢地張開了。",
+   "next": "",
+   "set": {
+    "chapel_open": true
+   }
+  }
+ }
+}

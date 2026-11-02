@@ -1,0 +1,139 @@
+{
+ "id": "agnes_return",
+ "start": "b",
+ "nodes": {
+  "b": {
+   "branches": [
+    {
+     "if": {
+      "flag": "boss_defeated"
+     },
+     "next": "after_boss"
+    },
+    {
+     "if": {
+      "mutation_gte": 75
+     },
+     "next": "afraid"
+    },
+    {
+     "if": {
+      "flag": "agnes_promise"
+     },
+     "next": "waiting"
+    },
+    {
+     "if": {
+      "has_item": "umbilical_key"
+     },
+     "next": "key"
+    },
+    {
+     "next": "default"
+    }
+   ]
+  },
+  "default": {
+   "speaker": "阿格妮絲",
+   "text": "還活著。很好。……反足者的膝蓋是反的，從側面砍，牠就站不住。",
+   "choices": [
+    {
+     "text": "觀察者呢？",
+     "next": "watcher"
+    },
+    {
+     "text": "多手人呢？",
+     "next": "many"
+    },
+    {
+     "text": "我該走了。",
+     "next": ""
+    }
+   ]
+  },
+  "watcher": {
+   "speaker": "阿格妮絲",
+   "text": "別讓牠一直盯著你。眼睛就是牠的全部，戳瞎了，牠就只能亂抓。",
+   "next": "default_end"
+  },
+  "many": {
+   "speaker": "阿格妮絲",
+   "text": "手太多的東西，就一隻一隻剁。牠每少一隻手，就少一種打你的方法。",
+   "next": "default_end"
+  },
+  "default_end": {
+   "speaker": "阿格妮絲",
+   "text": "去吧。祭壇會等你。",
+   "next": ""
+  },
+  "key": {
+   "speaker": "阿格妮絲",
+   "text": "那是……臍帶鑰匙。你真的拿到了。打開禮拜堂的門，母親就會醒來。",
+   "next": "key2"
+  },
+  "key2": {
+   "speaker": "阿格妮絲",
+   "text": "如果你殺了她……能不能帶我離開這裡？我已經七年沒有看過天空了。",
+   "choices": [
+    {
+     "text": "我答應你。",
+     "next": "promise",
+     "set": {
+      "agnes_promise": true
+     }
+    },
+    {
+     "text": "我不能保證。",
+     "next": "refuse"
+    }
+   ]
+  },
+  "promise": {
+   "speaker": "阿格妮絲",
+   "text": "……謝謝。斬斷她的腳，她就跪下來了；臍帶還連著的時候，她會一直生。",
+   "next": ""
+  },
+  "refuse": {
+   "speaker": "阿格妮絲",
+   "text": "是嗎。……斬斷她的腳，她就跪下來了；臍帶還連著的時候，她會一直生。",
+   "next": ""
+  },
+  "waiting": {
+   "speaker": "阿格妮絲",
+   "text": "我在這裡等你。記得，先斷臍帶，再斷腳。",
+   "next": ""
+  },
+  "afraid": {
+   "speaker": "阿格妮絲",
+   "text": "……別過來。你身上有東西在動。你還是你嗎？",
+   "choices": [
+    {
+     "text": "我還是我。",
+     "next": "afraid2"
+    },
+    {
+     "text": "……（不回答）",
+     "next": "afraid3",
+     "set": {
+      "agnes_afraid": true
+     }
+    }
+   ]
+  },
+  "afraid2": {
+   "speaker": "阿格妮絲",
+   "text": "那就證明給我看。活著回來，用人的樣子。",
+   "next": ""
+  },
+  "afraid3": {
+   "speaker": "阿格妮絲",
+   "text": "……我會為你祈禱。不知道是為了你，還是為了我。",
+   "next": ""
+  },
+  "after_boss": {
+   "speaker": "阿格妮絲",
+   "text": "她的聲音停了。……你去禮拜堂深處吧，胎房還在那裡跳。",
+   "next": ""
+  }
+ }
+}

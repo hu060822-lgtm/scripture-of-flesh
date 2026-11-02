@@ -73,6 +73,9 @@ func _process(_delta: float) -> void:
 		if data.is_suturing():
 			lines.append("縫合中：%s……" % st.get_part(data.suturing_part).def.display_name)
 	if controller != null:
+		var it := Interactable.nearest(controller.get_tree(), player.body())
+		if it != null:
+			lines.append(it.prompt())
 		var altar := controller.nearest_altar()
 		if altar != null:
 			lines.append(altar.prompt())
