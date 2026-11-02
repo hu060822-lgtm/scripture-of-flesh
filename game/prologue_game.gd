@@ -242,6 +242,7 @@ func _build_ui() -> void:
 	ai_debug.name = "AiDebugOverlay"
 	add_child(ai_debug)
 	dialogue = DialogueBox.new()
+	hints.dialogue = dialogue
 	add_child(dialogue)
 	dialogue.action_requested.connect(_on_dialogue_action)
 	boss_bar = BossBar.new()

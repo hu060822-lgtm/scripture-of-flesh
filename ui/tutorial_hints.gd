@@ -27,6 +27,8 @@ const HINTS := {
 }
 
 var player: Node3D
+## 可選：對話框（PrologueGame 設定）。對話開啟時提示全部暫停並隱藏。
+var dialogue: DialogueBox
 var queue: Array[StringName] = []
 var current: StringName = &""
 var _label: Label
@@ -75,6 +77,12 @@ func request(id: StringName) -> void:
 		return
 	queue.append(id)
 
+## 對話開啟或遊戲暫停（對話、身體選單、移植、操作說明）時暫停提示。
+func is_held() -> bool:
+	if dialogue != null and is_instance_valid(dialogue) and dialogue.is_open():
+		return true
+	return TimeScale.mode == TimeScale.Mode.PAUSE
+
 static func text_of(id: StringName) -> String:
 	return KeyNames.format(HINTS[id])
 
@@ -85,6 +93,11 @@ func _process(delta: float) -> void:
 func advance(delta: float) -> void:
 	if player == null or not is_instance_valid(player):
 		return
+	if is_held():
+		_panel.visible = false  # 對話、選單、暫停時不推進也不顯示，結束後從原處繼續
+		return
+	if current != &"":
+		_panel.visible = true
 	_watch(delta)
 	if current != &"":
 		_show_left -= delta

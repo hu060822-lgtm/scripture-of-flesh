@@ -206,3 +206,24 @@ func test_prologue_spawns_use_the_curve() -> void:
 	assert_eq(e.get_meta(&"difficulty_progress"), 0.0)
 	var base: EnemyDefinition = load("res://content/enemies/stitcher.tres")
 	assert_near((e.get_node("CombatComponent") as CombatComponent).max_hp, base.max_hp * 0.65, 0.01)
+
+func test_hints_hold_while_a_dialogue_or_pause_is_open() -> void:
+	var p := _player()
+	var h := _hints(p)
+	var d := DialogueBox.new()
+	tree.root.add_child(d)
+	h.dialogue = d
+	TimeScale.set_mode(TimeScale.Mode.PAUSE)  # 對話／選單會暫停
+	assert_eq(_run(h, 20.0), [], "nothing while paused")
+	assert_true(h.is_held())
+	TimeScale.set_mode(TimeScale.Mode.NORMAL)
+	var shown := _run(h, TutorialHints.INTRO_DELAY + 0.5)
+	assert_eq(shown, [&"intro"], "intro waits for the narration to end")
+	TimeScale.set_mode(TimeScale.Mode.PAUSE)
+	var left := h._show_left
+	_run(h, 5.0)
+	assert_near(h._show_left, left, 0.001, "countdown frozen")
+	assert_false(h._panel.visible, "hidden under the dialogue")
+	TimeScale.set_mode(TimeScale.Mode.NORMAL)
+	h.advance(0.1)
+	assert_true(h._panel.visible, "back after the dialogue")
