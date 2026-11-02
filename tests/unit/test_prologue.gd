@@ -110,6 +110,13 @@ func test_boss_fight_and_ending() -> void:
 	assert_true(g.dialogue.is_open(), "mother_intro plays")
 	g.dialogue.runner.advance()
 	g.dialogue.runner.advance()  # action start_boss
+	assert_false(g.dialogue.is_open())
+	assert_true(g.boss_intro != null and g.boss_intro.playing, "boss intro cinematic plays after the dialogue")
+	assert_eq(TimeScale.mode, TimeScale.Mode.PAUSE, "combat paused during the intro")
+	assert_eq(g.boss.get_node("EnemyAI").process_mode, Node.PROCESS_MODE_DISABLED, "boss waits for the intro")
+	assert_eq((g.boss.get_node("CreatureAnimator") as CreatureAnimator).current_clip, &"intro")
+	g.boss_intro.advance(BossIntro.DURATION + 0.1)
+	assert_eq(TimeScale.mode, TimeScale.Mode.NORMAL)
 	assert_eq(g.boss.get_node("EnemyAI").process_mode, Node.PROCESS_MODE_INHERIT, "boss awake")
 	assert_true((g.boss.get_node("BossPhase") as BossPhaseComponent).engaged)
 	assert_true(g.boss_bar.visible)

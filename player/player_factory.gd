@@ -17,6 +17,7 @@ static func create(weapon_paths: Array = WEAPONS, class_path: String = DEFAULT_C
 	for p in NATURAL + ["res://content/attacks/leap_kick.tres"]:
 		naturals.append(load(p))
 	var body := PlaceholderBodyBuilder.build_creature(load(PROFILE), &"player", naturals, &"player")
+	CreatureModels.apply(body, &"player")
 	(body.get_node("AnatomyComponent") as AnatomyComponent).sever_chance_scale = PLAYER_SEVER_SCALE
 	var combat: CombatComponent = body.get_node("CombatComponent")
 	combat.max_hp = 160.0

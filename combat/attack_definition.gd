@@ -39,6 +39,9 @@ extends Resource
 ## 偏好攻擊的部位（例如縫屍者偏好抓手臂）。空字串代表依瞄準高度決定。
 @export var preferred_target_part: StringName = &""
 @export var tags: PackedStringArray = PackedStringArray()
+@export_group("Presentation")
+## 動作風格（見 AttackStyles）。空字串代表依攻擊 id／能力需求自動決定。
+@export var anim_style: StringName = &""
 
 func total_duration() -> float:
 	return windup + active + recovery

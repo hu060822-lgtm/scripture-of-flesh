@@ -5,6 +5,8 @@ extends RefCounted
 static func create(def: EnemyDefinition, creature_id: StringName) -> CharacterBody3D:
 	var body := PlaceholderBodyBuilder.build_creature(def.anatomy_profile, creature_id, def.attacks, &"enemy")
 	body.set_meta(&"enemy_id", def.id)
+	if CreatureModels.LOOKS.has(def.id):
+		CreatureModels.apply(body, def.id)
 	body.set_meta(&"xp_reward", def.xp_reward)
 	body.set_meta(&"harvestable", def.harvestable)
 	if def.collision_radius != 0.32 or def.collision_height != 1.8:

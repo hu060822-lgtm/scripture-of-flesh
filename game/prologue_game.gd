@@ -24,6 +24,7 @@ var level: Node3D
 var player: CharacterBody3D
 var boss: CharacterBody3D
 var rig: CameraRig
+var boss_intro: BossIntro
 var hud: CombatHud
 var dialogue: DialogueBox
 var boss_bar: BossBar
@@ -174,13 +175,28 @@ func _on_dialogue_action(action: StringName, arg: String) -> void:
 			var data: PlayerData = player.get_node("PlayerData")
 			data.inventory.add(parts[0], int(parts[1]) if parts.size() > 1 else 1)
 		"start_boss":
-			set_boss_active(true)
-			if boss != null:
-				boss_bar.show_boss(boss, "行走的母親", "THE WALKING MOTHER")
+			# 對話結束後才播放登場演出（對話關閉時會恢復戰鬥時間，避免互相覆蓋）
+			if dialogue.is_open():
+				dialogue.closed.connect(start_boss_intro, CONNECT_ONE_SHOT)
+			else:
+				start_boss_intro()
 		"ending":
 			reach_ending(arg)
 		_:
 			push_warning("未處理的對話動作：%s" % action)
+
+## Boss 登場：鏡頭演出結束後才啟動 AI。
+func start_boss_intro() -> void:
+	if boss == null or not is_instance_valid(boss):
+		return
+	boss_bar.show_boss(boss, "行走的母親", "THE WALKING MOTHER")
+	boss_intro = BossIntro.new()
+	boss_intro.name = "BossIntro"
+	add_child(boss_intro)
+	boss_intro.finished.connect(func():
+		set_boss_active(true)
+		boss_intro.queue_free(), CONNECT_ONE_SHOT)
+	boss_intro.start(boss, rig)
 
 func reach_ending(id: String) -> void:
 	ending_id = id

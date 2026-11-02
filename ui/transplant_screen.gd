@@ -2,7 +2,7 @@ class_name TransplantScreen
 extends CanvasLayer
 ## 器官移植介面（在縫合祭壇使用）。開啟時暫停戰鬥。
 ## 左：可移植的部位；右：適用該部位的持有器官、相容性、異化代價、排斥風險。
-## 移植演出目前為【暫代】：紅色閃光與文字，正式演出待美術與動畫。
+## 確認移植後播放 TransplantCutscene（舊部位移開、新器官降下、一針一針縫合；排斥時壞死轉暗）。
 
 signal closed
 signal transplanted(outcome: TransplantService.Outcome)
@@ -17,6 +17,7 @@ var _flash: ColorRect
 var _options := []  # 目前選中部位的 [organ, slot, prediction]
 var _slot_ids: Array[StringName] = []
 var rng := RandomNumberGenerator.new()
+var cutscene: TransplantCutscene
 
 func _ready() -> void:
 	layer = 10
@@ -25,6 +26,10 @@ func _ready() -> void:
 	_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_flash)
+	cutscene = TransplantCutscene.new()
+	cutscene.name = "Cutscene"
+	add_child(cutscene)
+	cutscene.finished.connect(func(): _root.visible = true)
 	_root = PanelContainer.new()
 	_root.set_anchors_preset(Control.PRESET_CENTER)
 	_root.custom_minimum_size = Vector2(820, 460)
@@ -104,6 +109,17 @@ static func perform(p: Node3D, organ: OrganDefinition, slot: StringName, rng: Ra
 		data.inventory.remove("organ:%s" % organ.id)
 	return o
 
+## 播放移植過場（介面暫時隱藏，過場結束後回來）。
+func play_cutscene(organ: OrganDefinition, slot: StringName, outcome: TransplantService.Outcome) -> void:
+	var anatomy: AnatomyComponent = player.get_node("AnatomyComponent")
+	var st := anatomy.state.get_part(slot)
+	if st == null:
+		return
+	var look: StringName = player.get_meta(&"model_look", &"humanoid")
+	var variant: StringName = ModelSkinner.ORGAN_VARIANTS.get(organ.id, &"")
+	_root.visible = false
+	cutscene.play(st.def, anatomy.profile, look, variant, outcome.rejected, organ.display_name)
+
 func refresh() -> void:
 	_slots.clear()
 	_organs.clear()
@@ -147,10 +163,7 @@ func _on_organ_selected(i: int) -> void:
 func _on_confirm() -> void:
 	var o: Array = _confirm.get_meta(&"choice")
 	var outcome := perform(player, o[0], o[1], rng)
-	# 【暫代演出】紅色閃光
-	var tw := create_tween()
-	tw.tween_property(_flash, "color:a", 0.8, 0.15)
-	tw.tween_property(_flash, "color:a", 0.0, 0.9)
+	play_cutscene(o[0], o[1], outcome)
 	var msg := "移植完成。" if not outcome.rejected else "[color=#8b2a20]身體正在排斥新的器官……部位開始壞死。[/color]"
 	refresh()
 	_detail.text = "%s\n相容性 %d%%，異化 +%.1f" % [msg, roundi(outcome.compatibility * 100), outcome.mutation_added]

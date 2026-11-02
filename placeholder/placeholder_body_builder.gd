@@ -30,6 +30,14 @@ const LAYOUT := {
 
 ## 非人形生物的專屬暫代配置（以 AnatomyProfile.id 為鍵），優先於 LAYOUT。
 const PROFILE_LAYOUTS := {
+	# 未生者：胎兒比例，頭特別大，沒有腿（EnemyDefinition.visual_scale 再縮小）。
+	&"unborn": {
+		&"chest": {"pos": Vector3(0, 0.95, 0), "shape": "capsule", "r": 0.22, "h": 0.55},
+		&"head":  {"pos": Vector3(0, 1.45, 0.02), "shape": "sphere", "r": 0.25},
+		&"jaw":   {"pos": Vector3(0, 1.27, 0.14), "shape": "capsule", "r": 0.06, "h": 0.14},
+		&"arm_l": {"pos": Vector3(0.28, 0.92, 0.04), "shape": "capsule", "r": 0.05, "h": 0.5},
+		&"arm_r": {"pos": Vector3(-0.28, 0.92, 0.04), "shape": "capsule", "r": 0.05, "h": 0.5},
+	},
 	# 行走的母親（Boss）：四根高蹺腿撐起的巨大身軀，臍帶從子宮垂到地面。
 	&"walking_mother": {
 		&"torso":    {"pos": Vector3(0, 2.90, 0), "shape": "capsule", "r": 0.36, "h": 0.95},
@@ -93,6 +101,13 @@ static func build_creature(profile: AnatomyProfile, creature_id: StringName,
 	combat.natural_attacks = natural_attacks
 	combat.faction = faction
 	root.add_child(combat)
+
+	# 具象低多邊形外觀（依身體模板的通用外觀；工廠可再以專屬外觀覆蓋）
+	CreatureModels.apply(root, profile.id)
+
+	var animator := CreatureAnimator.new()
+	animator.name = "CreatureAnimator"
+	root.add_child(animator)
 	return root
 
 static func build_body(profile: AnatomyProfile) -> Node3D:
@@ -102,31 +117,31 @@ static func build_body(profile: AnatomyProfile) -> Node3D:
 	skel.name = "Skeleton"
 	body.add_child(skel)
 
-	var positions := {}
-	for d in profile.parts:
-		positions[d.id] = _layout_for(d, profile)["pos"]
-
+	var frames := part_frames(profile)
 	# 依深度排序，確保父骨骼先建立。
 	var ordered: Array[BodyPartDef] = profile.parts.duplicate()
 	ordered.sort_custom(func(a, b): return _depth(profile, a) < _depth(profile, b))
+	# 骨骼原點 = 關節（樞軸），旋轉骨骼就是繞關節轉動（動畫只需要旋轉軌）。
 	for d in ordered:
 		var idx := skel.add_bone(String(d.bone_name))
-		var world_pos: Vector3 = positions[d.id]
-		var parent_pos := Vector3.ZERO
+		var pivot: Vector3 = frames[d.id]["pivot"]
+		var parent_pivot := Vector3.ZERO
 		if d.parent_id != &"":
 			var pdef := profile.get_part(d.parent_id)
 			skel.set_bone_parent(idx, skel.find_bone(String(pdef.bone_name)))
-			parent_pos = positions[d.parent_id]
-		skel.set_bone_rest(idx, Transform3D(Basis(), world_pos - parent_pos))
+			parent_pivot = frames[d.parent_id]["pivot"]
+		skel.set_bone_rest(idx, Transform3D(Basis(), pivot - parent_pivot))
 	skel.reset_bone_poses()
 
 	for d in ordered:
 		var lay := _layout_for(d, profile)
+		var center: Vector3 = frames[d.id]["center"]
+		var offset: Vector3 = center - frames[d.id]["pivot"]  # 部位中心相對於關節
 		var att := BoneAttachment3D.new()
 		att.name = "attach_%s" % d.id
 		att.bone_name = String(d.bone_name)
 		skel.add_child(att)
-		att.position = positions[d.id]
+		att.position = frames[d.id]["pivot"]
 		if d.is_internal:
 			continue  # 內部器官沒有外觀也不能直接命中
 		if lay.get("mesh", true):
@@ -136,10 +151,12 @@ static func build_body(profile: AnatomyProfile) -> Node3D:
 			var mat := StandardMaterial3D.new()
 			mat.albedo_color = lay.get("color", BONE_WHITE)
 			mi.material_override = mat
+			mi.position = offset
 			att.add_child(mi)
 		var hb := Hurtbox.new()
 		hb.name = "hurt_%s" % d.id
 		hb.part_id = d.id
+		hb.position = offset
 		var cs := CollisionShape3D.new()
 		cs.shape = _shape_for(lay)
 		hb.add_child(cs)
@@ -147,7 +164,7 @@ static func build_body(profile: AnatomyProfile) -> Node3D:
 		if d.functions.has("grip"):
 			var grip := Marker3D.new()
 			grip.name = "grip_%s" % d.id
-			grip.position = Vector3(0, -float(lay.get("h", 0.5)) * 0.5, 0)
+			grip.position = offset + Vector3(0, -float(lay.get("h", 0.5)) * 0.5, 0)
 			att.add_child(grip)
 
 	# 斷面標記：放在父部位上、子部位與父部位相接的關節處。
@@ -155,22 +172,40 @@ static func build_body(profile: AnatomyProfile) -> Node3D:
 		if d.parent_id == &"" or not d.detachable:
 			continue
 		var parent_att := skel.get_node("attach_%s" % d.parent_id) as Node3D
-		var child_pos: Vector3 = positions[d.id]
-		var dir: Vector3 = (positions[d.parent_id] - child_pos)
-		dir = dir.normalized() if dir.length() > 0.001 else Vector3.UP
-		var lay := _layout_for(d, profile)
-		var joint := child_pos + dir * _half_extent(lay)
-		if lay["shape"] == "capsule":
-			# 直立膠囊（手臂、腿、臍帶）：關節取靠近父部位的那一端，斷面才會在肩膀／髖部而不是埋進軀幹
-			var top := child_pos + Vector3.UP * float(lay["h"]) * 0.5
-			var bottom := child_pos - Vector3.UP * float(lay["h"]) * 0.5
-			var pp: Vector3 = positions[d.parent_id]
-			joint = top if top.distance_to(pp) <= bottom.distance_to(pp) else bottom
+		var joint: Vector3 = frames[d.id]["pivot"]
 		var marker := Marker3D.new()
 		marker.name = "stump_%s" % d.id
 		parent_att.add_child(marker)
-		marker.position = joint - positions[d.parent_id]
+		marker.position = joint - frames[d.parent_id]["pivot"]
+		# 斷面朝外的方向：從父部位中心指向關節（DismembermentController 用來擺放斷面）
+		var outward: Vector3 = joint - frames[d.parent_id]["center"]
+		marker.set_meta(&"outward", outward.normalized() if outward.length() > 0.001 else Vector3.UP)
 	return body
+
+## 每個部位的「中心」與「關節（樞軸）」位置（腳底為原點，靜止姿勢）。
+## 根部位的樞軸就是中心；其他部位的樞軸是與父部位相接的關節。
+## 動畫庫（CreatureAnimationLibrary）也用這份資料判斷肢體方向。
+static func part_frames(profile: AnatomyProfile) -> Dictionary:
+	var centers := {}
+	for d in profile.parts:
+		centers[d.id] = _layout_for(d, profile)["pos"]
+	var out := {}
+	for d in profile.parts:
+		var c: Vector3 = centers[d.id]
+		var pivot := c
+		if d.parent_id != &"" and centers.has(d.parent_id) and not d.is_internal:
+			var lay := _layout_for(d, profile)
+			var pp: Vector3 = centers[d.parent_id]
+			var dir: Vector3 = pp - c
+			dir = dir.normalized() if dir.length() > 0.001 else Vector3.UP
+			pivot = c + dir * _half_extent(lay)
+			if lay["shape"] == "capsule":
+				# 直立膠囊（手臂、腿、臍帶）：關節取靠近父部位的那一端，斷面才會在肩膀／髖部而不是埋進軀幹
+				var top := c + Vector3.UP * float(lay["h"]) * 0.5
+				var bottom := c - Vector3.UP * float(lay["h"]) * 0.5
+				pivot = top if top.distance_to(pp) <= bottom.distance_to(pp) else bottom
+		out[d.id] = {"center": c, "pivot": pivot}
+	return out
 
 static func _layout_for(d: BodyPartDef, profile: AnatomyProfile = null) -> Dictionary:
 	if profile != null and PROFILE_LAYOUTS.has(profile.id) and PROFILE_LAYOUTS[profile.id].has(d.id):
