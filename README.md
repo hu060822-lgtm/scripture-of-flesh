@@ -113,7 +113,7 @@ WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）
 | `creature/` | `AnatomyComponent`：把 AnatomyState 掛到場景，套用玩家斷肢倍率（D2） |
 | `dismemberment/` | `DismembermentController`、`Hurtbox`、`SeveredPart`（殘肢）、`AnimationSet` |
 | `equipment/` | `EquipmentComponent`：武器掛在手臂上（D4），斷臂時掉落 |
-| `placeholder/` | 【暫代】`PlaceholderBodyBuilder`：程序生成膠囊體分段人形 |
+| `placeholder/` | `PlaceholderBodyBuilder`：分段骨架、受擊區域、斷面標記（外觀由 `CreatureModels` 套用） |
 | `scenes/sandbox/` | 斷肢沙盒測試場景 |
 | `content/anatomy/` | 身體模板 `.tres`：`humanoid`（14 部位）、`multi_armed`（六臂） |
 | `tests/` | headless 測試執行器與單元測試 |
@@ -150,7 +150,7 @@ DamagePacket ─▶ DamageResolver.resolve()（不修改狀態）─▶ DamageRe
 
 ## 暫代與未實作（明確標示）
 
-- 人形是程序生成的膠囊體（`placeholder/`），每段是用 BoneAttachment3D 掛在骨骼上的剛體網格，不是蒙皮網格。
+- 角色模型是程序生成的低多邊形（`art/models/`），不是手工建模；每段是用 BoneAttachment3D 掛在骨骼上的剛體網格（PS1 時代的做法），不是蒙皮網格。
   正式模型只要遵守 `PlaceholderBodyBuilder` 註解中的命名慣例即可直接替換。
 - 動畫是【程序生成】的關鍵格（`CreatureAnimationLibrary`），不是手工動畫；手肘、手指、脊椎沒有獨立骨骼（每個部位一根骨骼）。
 - 器官移植演出是暫代的紅色閃光；正式的移植演出需要動畫。
