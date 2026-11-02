@@ -19,15 +19,27 @@ const AI_ALERT := {
 const COMBAT_HOLD := 4.0
 const TENSION_HOLD := 2.0
 const STRIDE := {&"player": 1.4}
+## 區域（AreaTrigger.trigger_id）→ 環境音。玩家所在位置最近的那個區域觸發點決定環境音
+## （觸發點只觸發一次，所以不用 triggered 訊號，往回走也會換回來）。【暫代】近似：之後關卡有房間體積再改。
+const AREA_AMBIENCE := {
+	&"enter_delivery": &"ward",
+	&"enter_corridor": &"corridor",
+	&"enter_courtyard": &"courtyard",
+	&"enter_archive": &"library",
+	&"enter_sacristy": &"sacristy",
+	&"enter_antechamber": &"chapel",
+	&"chapel_arena": &"chapel",
+}
+const START_AMBIENCE := &"ward"
 const DEFAULT_STRIDE := 1.6
 
 var manager: Node
-## 已接上的生物：CombatComponent -> {state: AnatomyState, last_pos, walked}
-var _creatures := {}
-var _alert := {}        # EnemyAI -> 程度
+var _creatures := {}  # instance id -> {c, state, last_pos, walked}（不用物件當鍵：Godot 4.3 迭代含已釋放物件鍵的字典會卡住）
+var _alert := {}        # instance id -> {ai, level}
 var _bosses: Array = []
-var _blocked_frame := {}  # CombatComponent -> physics frame
+var _blocked_frame := {}  # CombatComponent instance id -> physics frame
 var _menus: Array = []
+var _areas: Array = []
 var _ending := &""
 var _combat_hold := 0.0
 var _tension_hold := 0.0
@@ -54,7 +66,7 @@ func _on_node_added(n: Node) -> void:
 	if n is CombatComponent or n is EnemyAI or n is BossPhaseComponent or n is PlayerData \
 			or n is StitchingAltar or n is ItemPickup or n is WeaponPedestal or n is BossGate \
 			or n is TransplantScreen or n is DialogueBox or n is BaseButton or n is MainMenu \
-			or n is PrologueGame:
+			or n is PrologueGame or n is AreaTrigger:
 		n.set_meta(&"_audio_hooked", true)
 		if n.is_node_ready():
 			_hook(n)
@@ -101,23 +113,29 @@ func _hook(n: Node) -> void:
 				_cue(&"ui_hover"))
 	elif n is MainMenu:
 		_menus.append(n)
+	elif n is AreaTrigger:
+		if AREA_AMBIENCE.has((n as AreaTrigger).trigger_id):
+			_areas.append(n)
 	elif n is PrologueGame:
 		var g := n as PrologueGame
 		_ending = &""
+		_ambience(START_AMBIENCE)
 		g.ending_reached.connect(func(id): _ending = StringName("ending_" + id))
 		g.player_respawned.connect(func(): _ending = &"")
-		g.tree_exiting.connect(reset)
+		g.tree_exiting.connect(func():
+			reset()
+			_ambience(&""))
 
 # ---------- 戰鬥與解剖 ----------
 
 func _hook_combat(c: CombatComponent) -> void:
-	_creatures[c] = {"state": null, "last_pos": null, "walked": 0.0}
+	_creatures[c.get_instance_id()] = {"c": c, "state": null, "last_pos": null, "walked": 0.0}
 	var b := c.body()
 	c.attack_started.connect(func(a): _cue(ATTACK_CUES.get(a.id, &"attack_swing"), b))
 	c.attack_missed.connect(func(_a): _cue(&"miss", b))
 	c.hit_received.connect(func(r, _att): _on_hit(c, r))
 	c.blocked.connect(func(_att, broken):
-		_blocked_frame[c] = Engine.get_physics_frames()
+		_blocked_frame[c.get_instance_id()] = Engine.get_physics_frames()
 		_cue(&"guard_break" if broken else &"block", b))
 	c.dodged.connect(func(_att): _cue(&"dodge", b))
 	c.staggered.connect(func(): _cue(&"stagger", b))
@@ -126,7 +144,7 @@ func _hook_combat(c: CombatComponent) -> void:
 
 ## 讀檔會換掉 AnatomyState，所以每幀檢查並重新接上。
 func _rehook_anatomy(c: CombatComponent) -> void:
-	var info: Dictionary = _creatures.get(c, {})
+	var info: Dictionary = _creatures.get(c.get_instance_id(), {})
 	if info.is_empty() or c.anatomy == null or c.anatomy.state == null:
 		return
 	var st := c.anatomy.state
@@ -141,7 +159,7 @@ func _rehook_anatomy(c: CombatComponent) -> void:
 	st.vital_failed.connect(func(_p, _r): _cue(&"vital_fail", b))
 
 func _on_hit(c: CombatComponent, r: DamageResult) -> void:
-	if _blocked_frame.get(c, -1) == Engine.get_physics_frames():
+	if _blocked_frame.get(c.get_instance_id(), -1) == Engine.get_physics_frames():
 		return  # 已經播了格擋聲
 	_cue(hit_cue(r), c.body())
 
@@ -169,6 +187,30 @@ static func hit_cue(r: DamageResult) -> StringName:
 		_:
 			return &"hit_burn"
 
+## 玩家所在區域的環境音；沒有玩家或沒有區域時回傳 &""。
+func area_ambience() -> StringName:
+	var player: CombatComponent = null
+	for info in _creatures.values():
+		if _live(info.c) and info.c.faction == &"player":
+			player = info.c
+	if player == null:
+		return &""
+	var pos := player.body().global_position
+	var best: AreaTrigger = null
+	var best_d := INF
+	for a in _areas:
+		if not _live(a):
+			continue
+		var d := Vector2(a.global_position.x - pos.x, a.global_position.z - pos.z).length()
+		if d < best_d:
+			best_d = d
+			best = a
+	return AREA_AMBIENCE[best.trigger_id] if best != null else &""
+
+func _ambience(id: StringName) -> void:
+	if manager != null and manager.has_method(&"set_ambience"):
+		manager.set_ambience(id)
+
 func _cue(id: StringName, at: Variant = null) -> void:
 	if manager != null and manager.has_method(&"play"):
 		manager.play(id, at)
@@ -177,16 +219,20 @@ func _cue(id: StringName, at: Variant = null) -> void:
 
 func _physics_process(delta: float) -> void:
 	_prune()
-	for c in _creatures.keys():
+	for info in _creatures.values():
+		var c: CombatComponent = info.c
 		_rehook_anatomy(c)
 		_step(c, delta)
 	update_music(delta)
+	var amb := area_ambience()
+	if amb != &"":
+		_ambience(amb)
 
 func _step(c: CombatComponent, _delta: float) -> void:
 	var b := c.body() as CharacterBody3D
 	if b == null or not b.is_inside_tree() or c.is_dead():
 		return
-	var info: Dictionary = _creatures[c]
+	var info: Dictionary = _creatures[c.get_instance_id()]
 	var pos := b.global_position
 	if info.last_pos != null and b.is_on_floor():
 		var d := Vector2(pos.x - info.last_pos.x, pos.z - info.last_pos.z).length()
@@ -201,27 +247,27 @@ func _step(c: CombatComponent, _delta: float) -> void:
 func _on_ai_state(ai: EnemyAI, s: StringName) -> void:
 	var level: int = AI_ALERT.get(s, 0)
 	if level > 0:
-		_alert[ai] = level
+		_alert[ai.get_instance_id()] = {"ai": ai, "level": level}
 	else:
-		_alert.erase(ai)
+		_alert.erase(ai.get_instance_id())
 
 ## 依目前的遊戲狀況決定音樂狀態（優先順序：結局 > 死亡 > Boss > 戰鬥 > 緊張 > 探索 > 主選單）。
 func compute_music_state() -> StringName:
 	if _ending != &"":
 		return _ending
 	var player: CombatComponent = null
-	for c in _creatures:
-		if _live(c) and c.faction == &"player":
-			player = c
+	for info in _creatures.values():
+		if _live(info.c) and info.c.faction == &"player":
+			player = info.c
 	if player != null and player.is_dead():
 		return &"death"
 	for bp in _bosses:
 		if _live(bp) and bp.engaged and not bp.combat.is_dead():
 			return &"boss_2" if bp.phase >= 2 else &"boss_1"
 	var top := 0
-	for ai in _alert:
-		if _live(ai) and not ai.combat.is_dead():
-			top = maxi(top, _alert[ai])
+	for e in _alert.values():
+		if _live(e.ai) and not e.ai.combat.is_dead():
+			top = maxi(top, e.level)
 	if top >= 2 or _combat_hold > 0.0:
 		return &"combat"
 	if top == 1 or _tension_hold > 0.0:
@@ -234,9 +280,9 @@ func compute_music_state() -> StringName:
 
 func update_music(delta: float) -> void:
 	var top := 0
-	for ai in _alert:
-		if _live(ai) and not ai.combat.is_dead():
-			top = maxi(top, _alert[ai])
+	for e in _alert.values():
+		if _live(e.ai) and not e.ai.combat.is_dead():
+			top = maxi(top, e.level)
 	if top >= 2:
 		_combat_hold = COMBAT_HOLD
 	else:
@@ -253,9 +299,13 @@ static func _live(n) -> bool:
 	return is_instance_valid(n) and (n as Node).is_inside_tree()
 
 func _prune() -> void:
-	for d in [_creatures, _alert, _blocked_frame]:
-		for k in (d as Dictionary).keys():
-			if not is_instance_valid(k):
-				d.erase(k)
+	for id in _creatures.keys():
+		if not is_instance_valid(_creatures[id].c):
+			_creatures.erase(id)
+			_blocked_frame.erase(id)
+	for id in _alert.keys():
+		if not is_instance_valid(_alert[id].ai):
+			_alert.erase(id)
 	_bosses = _bosses.filter(func(b): return is_instance_valid(b))
 	_menus = _menus.filter(func(m): return is_instance_valid(m))
+	_areas = _areas.filter(func(a): return is_instance_valid(a))
