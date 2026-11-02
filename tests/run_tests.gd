@@ -47,6 +47,8 @@ func _run_all() -> void:
 				if not c in existing:
 					root.remove_child(c)
 					c.free()
+			# 被清掉的導航網格要立刻從導航地圖移除，避免影響下一個測試
+			NavigationServer3D.map_force_update(root.get_world_3d().navigation_map)
 			if inst.failures.is_empty():
 				print("PASS   %s::%s" % [f, name])
 			else:

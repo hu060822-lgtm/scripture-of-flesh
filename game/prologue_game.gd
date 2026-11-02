@@ -66,6 +66,8 @@ func start_game(mode: String) -> void:
 func _build_world() -> void:
 	level = (load(LEVEL) as PackedScene).instantiate()
 	add_child(level)
+	# 敵人跨房間尋路用的導航網格（只從灰盒幾何烘焙，不含 Boss 大門）。
+	LevelNavigation.bake(level, level.get_node("Geometry"))
 	for s in get_tree().get_nodes_in_group(EnemySpawn.GROUP):
 		if level.is_ancestor_of(s):
 			(s as EnemySpawn).spawn(level)

@@ -1,13 +1,26 @@
 extends AiState
 ## 追擊：接近到偏好距離，時機到了就攻擊；受威脅時防禦或閃避；血量過低或沒有攻擊手段時撤退。
 
+## 走到最後已知位置這麼近還看不到目標，就改成搜索。
+const SEARCH_HANDOFF := 0.8
+
+func _lost(ai: EnemyAI) -> StringName:
+	ai.runtime.investigate_point = ai.runtime.last_known_position
+	return &"search"
+
 func update(ai: EnemyAI, _delta: float) -> StringName:
 	var t := ai.runtime.target
 	if t == null:
-		if ai.runtime.time_since_seen < ai.definition.memory_seconds:
-			ai.move_towards(ai.runtime.last_known_position)
-			return &""
-		return &"patrol"
+		return _lost(ai)
+	# 看不到（也聽不到）目標時不偷看真實位置：走到最後看到的地方，到了還沒發現就開始搜索。
+	if ai.runtime.time_since_seen > 0.0:
+		var lkp := ai.runtime.last_known_position
+		var to := lkp - ai.body().global_position
+		to.y = 0
+		if to.length() <= SEARCH_HANDOFF:
+			return _lost(ai)
+		ai.move_towards(lkp)
+		return &""
 	if not AttackSelector.has_any_attack(ai.combat):
 		return &"retreat"
 	if ai.hp_ratio() <= ai.definition.retreat_hp_ratio and ai.runtime.alert < 2.0:

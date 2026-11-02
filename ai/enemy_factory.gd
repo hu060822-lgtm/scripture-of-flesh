@@ -26,6 +26,9 @@ static func create(def: EnemyDefinition, creature_id: StringName) -> CharacterBo
 	ai.name = "EnemyAI"
 	ai.definition = def
 	body.add_child(ai)
+	var noise := NoiseEmitter.new()
+	noise.name = "NoiseEmitter"
+	body.add_child(noise)
 	if def.weapon != null:
 		body.ready.connect(func():
 			var eq: EquipmentComponent = body.get_node("EquipmentComponent")

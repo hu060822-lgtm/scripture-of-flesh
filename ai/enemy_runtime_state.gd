@@ -12,6 +12,8 @@ var home := Vector3.ZERO
 var patrol_point := Vector3.ZERO
 var decision_timer := 0.0
 var last_severed_part: StringName = &""
+## 搜索／調查的目標位置（聽到的聲響或最後看到目標的地方）。
+var investigate_point := Vector3.INF
 var special_target: Node3D
 var special_progress := 0.0
 
