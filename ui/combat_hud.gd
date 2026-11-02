@@ -63,6 +63,19 @@ func _process(_delta: float) -> void:
 		lines.append("出血 %.1f/s" % st.total_bleed_rate())
 	if player.vital_timer >= 0.0:
 		lines.append("窒息倒數 %.1f 秒" % player.vital_timer)
+	var mut: MutationComponent = player.body().get_node_or_null("MutationComponent")
+	if mut != null:
+		var stage := mut.current_stage()
+		lines.append("異化 %d%s" % [int(mut.value), ("　【%s】" % stage.display_name) if stage != null else ""])
+	var data: PlayerData = player.body().get_node_or_null("PlayerData")
+	if data != null:
+		lines.append("縫合包 ×%d（F）" % data.inventory.count("suture_kit"))
+		if data.is_suturing():
+			lines.append("縫合中：%s……" % st.get_part(data.suturing_part).def.display_name)
+	if controller != null:
+		var altar := controller.nearest_altar()
+		if altar != null:
+			lines.append(altar.prompt())
 	if player.is_dead():
 		lines.append("【死亡】")
 	_info.text = "\n".join(lines)

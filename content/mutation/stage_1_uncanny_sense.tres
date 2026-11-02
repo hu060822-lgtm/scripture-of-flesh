@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MutationStage" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://mutation/mutation_stage.gd" id="1_4cprs"]
+
+[resource]
+script = ExtResource("1_4cprs")
+id = &"stage_1_uncanny_sense"
+display_name = "異樣感知"
+threshold = 25.0
+description = "你開始「看見」別人體內的器官在跳動。戰術介面會顯示敵人內臟的狀態與剩餘的攻擊手段。有些人開始迴避你的視線。"
+effects = {
+"anatomical_sight": 1.0
+}
+story_flag = &"mutation_25"

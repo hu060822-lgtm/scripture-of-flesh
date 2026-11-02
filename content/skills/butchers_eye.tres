@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://progression/skill_definition.gd" id="1_kld3p"]
+
+[resource]
+script = ExtResource("1_kld3p")
+id = &"butchers_eye"
+display_name = "屠夫之眼"
+description = "骨鋸斧傷害 +10%。"
+cost = 1
+prerequisites = Array[StringName]([])
+effects = {
+"damage_scale:cleaver": 0.1
+}

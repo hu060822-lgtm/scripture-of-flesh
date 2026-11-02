@@ -8,6 +8,10 @@ func _init() -> void:
 	_save(_attack(&"kick", "踢擊", {"leg": 1}, {"CRUSH": 7.0, "FRACTURE": 2.0}, {"st": 14, "windup": 0.35, "recovery": 0.45, "reach": 1.3, "arc": 60, "aim": 0.6, "sever": 0.0}), "res://content/attacks/kick.tres")
 	_save(_attack(&"bite", "啃咬", {"bite": 1}, {"LACERATION": 6.0, "PIERCE": 2.0}, {"st": 12, "windup": 0.4, "recovery": 0.5, "reach": 0.9, "arc": 50, "sever": 0.3}), "res://content/attacks/bite.tres")
 
+	# 玩家經由異化或移植獲得的攻擊
+	_save(_attack(&"bone_spur", "骨刺穿出", {}, {"PIERCE": 10.0, "LACERATION": 4.0}, {"st": 16, "windup": 0.3, "recovery": 0.45, "reach": 1.3, "arc": 80, "sever": 0.5}), "res://content/attacks/bone_spur.tres")
+	_save(_attack(&"leap_kick", "反足飛踢", {"leap": 1}, {"CRUSH": 10.0, "PIERCE": 6.0}, {"st": 22, "windup": 0.45, "active": 0.2, "recovery": 0.6, "reach": 3.2, "arc": 40, "aim": 0.9, "sever": 0.4, "tags": ["lunge"], "cooldown": 2.0}), "res://content/attacks/leap_kick.tres")
+
 	# 敵人攻擊
 	_save(_attack(&"claw", "抓擊", {"grip": 1}, {"CUT": 7.0, "LACERATION": 4.0}, {"st": 12, "windup": 0.45, "recovery": 0.5, "reach": 1.3, "arc": 80, "sever": 0.4}), "res://content/attacks/claw.tres")
 	_save(_attack(&"grab_tear", "撕扯", {"grip": 2}, {"LACERATION": 12.0}, {"st": 20, "windup": 0.7, "recovery": 0.7, "reach": 1.2, "arc": 60, "sever": 0.9, "prefer": &"arm_l", "weight": 0.8}), "res://content/attacks/grab_tear.tres")

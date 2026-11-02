@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MutationStage" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://mutation/mutation_stage.gd" id="1_rkxu3"]
+
+[resource]
+script = ExtResource("1_rkxu3")
+id = &"stage_3_autonomous_flesh"
+display_name = "肉身自律"
+threshold = 75.0
+description = "你的肉體不再等你下令。受傷部位每秒自行再生 0.4 HP。你偶爾會發現手在你沒注意時動過。"
+effects = {
+"part_regen": 0.4
+}
+story_flag = &"mutation_75"

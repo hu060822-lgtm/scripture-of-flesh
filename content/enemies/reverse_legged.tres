@@ -1,24 +1,28 @@
-[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=10 format=3]
 
-[ext_resource type="Resource" path="res://content/anatomy/reverse_legged.tres" id="1_v4l5f"]
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_yfufq"]
-[ext_resource type="Resource" path="res://content/attacks/lunge.tres" id="3_5pjdc"]
-[ext_resource type="Resource" path="res://content/attacks/spur_kick.tres" id="4_e48fc"]
-[ext_resource type="Resource" path="res://content/attacks/claw.tres" id="5_h8gwq"]
-[ext_resource type="Resource" path="res://content/attacks/pounce_bite.tres" id="6_75ssc"]
-[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="7_85yn7"]
+[ext_resource type="Resource" path="res://content/anatomy/reverse_legged.tres" id="1_5kfqq"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_ti1ux"]
+[ext_resource type="Resource" path="res://content/attacks/lunge.tres" id="3_cerrr"]
+[ext_resource type="Resource" path="res://content/attacks/spur_kick.tres" id="4_fnvlc"]
+[ext_resource type="Resource" path="res://content/attacks/claw.tres" id="5_g8nql"]
+[ext_resource type="Resource" path="res://content/attacks/pounce_bite.tres" id="6_mtpjb"]
+[ext_resource type="Script" path="res://organ/organ_definition.gd" id="7_tcfrf"]
+[ext_resource type="Resource" path="res://content/organs/reverse_leg.tres" id="8_j6sdq"]
+[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="9_ud5h6"]
 
 [resource]
-script = ExtResource("7_85yn7")
+script = ExtResource("9_ud5h6")
 id = &"reverse_legged"
 display_name = "反足者"
-anatomy_profile = ExtResource("1_v4l5f")
-attacks = Array[ExtResource("2_yfufq")]([ExtResource("3_5pjdc"), ExtResource("4_e48fc"), ExtResource("5_h8gwq"), ExtResource("6_75ssc")])
+anatomy_profile = ExtResource("1_5kfqq")
+attacks = Array[ExtResource("2_ti1ux")]([ExtResource("3_cerrr"), ExtResource("4_fnvlc"), ExtResource("5_g8nql"), ExtResource("6_mtpjb")])
 max_hp = 70.0
 max_st = 80.0
 move_speed = 4.2
 sever_chance_scale = 1.0
 stagger_threshold = 10.0
+xp_reward = 60
+harvestable = Array[ExtResource("7_tcfrf")]([ExtResource("8_j6sdq")])
 sight_range = 11.0
 sight_fov_degrees = 140.0
 needs_vision = true

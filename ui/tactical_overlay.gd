@@ -86,6 +86,17 @@ static func text_for(tac: TacticalController) -> String:
 		var color := _status_color(p.status())
 		lines.append("%s[color=%s]%s　%d/%d　%s%s[/color]" % [mark, color, p.def.display_name, ceili(p.hp), int(p.def.max_hp),
 			AnatomyTypes.status_name(p.status()), ("　甲%d" % int(p.def.armor)) if p.def.armor > 0 else ""])
+	# 異化「異樣感知」：看見內臟狀態與敵人剩餘的攻擊手段
+	var mut: MutationComponent = c.body().get_node_or_null("MutationComponent")
+	if mut != null and mut.has_effect("anatomical_sight"):
+		for pid in st.part_ids():
+			var ip := st.get_part(pid)
+			if ip.def.is_internal:
+				lines.append("　[color=#7a8c4b]（內臟）%s　%d/%d　%s[/color]" % [ip.def.display_name, ceili(ip.hp), int(ip.def.max_hp), AnatomyTypes.status_name(ip.status())])
+		var names := PackedStringArray()
+		for a in target.available_attacks():
+			names.append(a.display_name)
+		lines.append("[color=#7a8c4b]剩餘攻擊手段：%s[/color]" % ("、".join(names) if not names.is_empty() else "無"))
 	var pv := tac.preview_light()
 	if pv != null and not pv.rejected:
 		var h := pv.hits[0]

@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_npg13"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_jlumw"]
 
 [resource]
-script = ExtResource("1_npg13")
+script = ExtResource("1_jlumw")
 id = &"double_grab"
 display_name = "雙手擒抓"
 required_capabilities = {

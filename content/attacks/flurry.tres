@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_2o4mu"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_cc3t6"]
 
 [resource]
-script = ExtResource("1_2o4mu")
+script = ExtResource("1_cc3t6")
 id = &"flurry"
 display_name = "千手亂擊"
 required_capabilities = {

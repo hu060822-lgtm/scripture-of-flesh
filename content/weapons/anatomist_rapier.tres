@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="WeaponDefinition" load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_uqjdt"]
-[ext_resource type="Script" path="res://equipment/weapon_definition.gd" id="2_8ps71"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_ttqio"]
+[ext_resource type="Script" path="res://equipment/weapon_definition.gd" id="2_xh4s3"]
 
-[sub_resource type="Resource" id="Resource_xugwe"]
-script = ExtResource("1_uqjdt")
+[sub_resource type="Resource" id="Resource_spa71"]
+script = ExtResource("1_ttqio")
 id = &"rapier_heavy"
 display_name = "探臟刺"
 required_capabilities = {}
@@ -27,8 +27,8 @@ cooldown = 0.0
 preferred_target_part = &""
 tags = PackedStringArray()
 
-[sub_resource type="Resource" id="Resource_ah11m"]
-script = ExtResource("1_uqjdt")
+[sub_resource type="Resource" id="Resource_8elrx"]
+script = ExtResource("1_ttqio")
 id = &"rapier_light"
 display_name = "刺擊"
 required_capabilities = {}
@@ -52,7 +52,7 @@ preferred_target_part = &""
 tags = PackedStringArray()
 
 [resource]
-script = ExtResource("2_8ps71")
+script = ExtResource("2_xh4s3")
 id = &"anatomist_rapier"
 display_name = "解剖刺劍"
 weapon_type = &"rapier"
@@ -64,5 +64,5 @@ sever_power = 0.4
 armor_penetration = 0.5
 bleed_multiplier = 1.0
 required_grip = 1
-light_attack = SubResource("Resource_ah11m")
-heavy_attack = SubResource("Resource_xugwe")
+light_attack = SubResource("Resource_8elrx")
+heavy_attack = SubResource("Resource_spa71")

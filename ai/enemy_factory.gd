@@ -5,6 +5,8 @@ extends RefCounted
 static func create(def: EnemyDefinition, creature_id: StringName) -> CharacterBody3D:
 	var body := PlaceholderBodyBuilder.build_creature(def.anatomy_profile, creature_id, def.attacks, &"enemy")
 	body.set_meta(&"enemy_id", def.id)
+	body.set_meta(&"xp_reward", def.xp_reward)
+	body.set_meta(&"harvestable", def.harvestable)
 	var anatomy: AnatomyComponent = body.get_node("AnatomyComponent")
 	anatomy.sever_chance_scale = def.sever_chance_scale
 	var combat: CombatComponent = body.get_node("CombatComponent")

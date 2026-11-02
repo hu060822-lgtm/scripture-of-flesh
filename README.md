@@ -2,7 +2,7 @@
 
 2.5D 日式黑暗奇幻 RPG。Godot **4.3** / GDScript，目標平台 PC。
 
-> 目前階段：**M5 戰術介面**。主場景暫定為戰鬥沙盒（測試用），有四種敵人。
+> 目前階段：**M6 身體成長**。主場景暫定為戰鬥沙盒（測試用），有四種敵人與一座縫合祭壇。
 
 ## 執行測試
 
@@ -18,6 +18,17 @@ headless 模式下會出現大量 `Parameter "m" is null`（mesh_storage）訊�
 
 WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）、Space 閃避、Shift 防禦、
 1/2/3 換武器（骨鋸斧／聖骸錘［雙手］／解剖刺劍）、E 撿起掉落的武器、F5 重置、F6 敵人 AI 開關。
+
+**身體成長**：E 在祭壇休息（完整修復含斷肢）／摘取屍體器官、T 在祭壇移植器官、F 緊急縫合（消耗縫合包，2.5 秒，被打中斷，異化 +6）、B 身體選單（屬性、技能、異化、部位、物品）。
+
+| 系統 | 內容 |
+| --- | --- |
+| 職業（起點） | 解剖師、義體騎士、肉巫、刑體師、縫合者；只決定起始屬性／武器／技能，之後自由分配 |
+| 屬性 | STR、DEX、VIT、PER、WIL、TEC，影響 HP/ST/AP、武器傷害、異化抗性、器官相容性 |
+| 技能樹 | 8 個技能，含前置條件 |
+| 武器熟練度 | 依武器類型累積，每級 +4% 傷害 |
+| 異化 0–100 | 25 異樣感知（戰術介面看見內臟與敵人剩餘攻擊）／50 骨刺增生（新攻擊、體力，但祭壇治療會加速異化）／75 肉身自律（部位再生）；各階段設定劇情旗標 |
+| 器官 | 縫屍者的手臂、反足（獲得飛踢）、觀察者之眼、多手人的心臟（出血減緩）、鐵製義肢（需 TEC 12，不排斥、不異化）。相容性擲骰失敗會排斥：部位壞死並額外異化 |
 
 **戰術介面（Tab）**：戰鬥減速到 10%（P 切換完全暫停）。自動選最近的敵人，點擊部位或 Q／R 切換部位，
 右側面板顯示每個部位的 HP、狀態、護甲，以及普通攻擊打在指定部位的預估傷害與斷肢機率。
@@ -52,7 +63,13 @@ WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）
 | `combat/` | `CombatComponent`（攻擊、防禦、閃避、硬直、出血、死亡）、`ResourcePools`（HP/ST/AP）、`AttackDefinition` |
 | `player/` | `PlayerController`（輸入 → 指令）、`TacticalController`（戰術介面）、`PlayerFactory` |
 | `game/` | `CameraRig`（固定斜俯視）、`Greybox`【暫代】灰盒工具 |
-| `ui/` | `CombatHud`、`TacticalOverlay` |
+| `ui/` | `CombatHud`、`TacticalOverlay`、`TransplantScreen`、`BodyMenu` |
+| `progression/` | `CharacterStats`、`ClassDefinition`、`SkillDefinition`、`ProgressionComponent` |
+| `mutation/` | `MutationStage`、`MutationComponent` |
+| `organ/` | `OrganDefinition`、`TransplantService`、`OrganRegistry` |
+| `inventory/` | `Inventory` |
+| `world/` | `StitchingAltar` |
+| `content/classes/`、`skills/`、`mutation/`、`organs/` | 職業、技能、異化階段、器官資料 |
 | `content/weapons/`、`content/attacks/` | 三種武器、徒手攻擊（拳、踢、咬） |
 | `creature/` | `AnatomyComponent`：把 AnatomyState 掛到場景，套用玩家斷肢倍率（D2） |
 | `dismemberment/` | `DismembermentController`、`Hurtbox`、`SeveredPart`（殘肢）、`AnimationSet` |
@@ -81,6 +98,8 @@ DamagePacket ─▶ DamageResolver.resolve()（不修改狀態）─▶ DamageRe
 - 人形是程序生成的膠囊體（`placeholder/`），每段是用 BoneAttachment3D 掛在骨骼上的剛體網格，不是蒙皮網格。
   正式模型只要遵守 `PlaceholderBodyBuilder` 註解中的命名慣例即可直接替換。
 - 還沒有 AnimationTree 與任何動畫：`AnimationSet` 只決定「該用哪一組動作」，沒有實際播放。
+- 器官移植演出是暫代的紅色閃光；正式的移植演出需要動畫。
+- 移植後的部位外觀沿用原本的膠囊體（只有資料、能力與名稱改變）。
 - 敵人移動是直線前進，沒有尋路（NavigationAgent3D 在 M7 視關卡需要加入）。
 - 敵人沒有動畫，飛撲只是快速位移。
 - 武器外觀是暫代方塊。手臂「功能失效」（未斷）時武器仍握在手上，但雙手武器在可用的手不足時無法揮動。

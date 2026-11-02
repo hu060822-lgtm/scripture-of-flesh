@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://progression/skill_definition.gd" id="1_37hxe"]
+
+[resource]
+script = ExtResource("1_37hxe")
+id = &"flesh_communion"
+display_name = "肉之交感"
+description = "器官相容性 +15%。"
+cost = 1
+prerequisites = Array[StringName]([])
+effects = {
+"compatibility": 0.15
+}

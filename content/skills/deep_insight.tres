@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://progression/skill_definition.gd" id="1_8mb5x"]
+
+[resource]
+script = ExtResource("1_8mb5x")
+id = &"deep_insight"
+display_name = "深層洞察"
+description = "命中時再多獲得 3 AP。"
+cost = 1
+prerequisites = Array[StringName]([&"anatomical_insight"])
+effects = {
+"ap_gain": 3.0
+}

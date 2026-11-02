@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_0mbgx"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_ij0pf"]
 
 [resource]
-script = ExtResource("1_0mbgx")
+script = ExtResource("1_ij0pf")
 id = &"swipe"
 display_name = "單手揮擊"
 required_capabilities = {

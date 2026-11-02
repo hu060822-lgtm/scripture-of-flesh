@@ -14,6 +14,9 @@ extends Resource
 @export var move_speed: float = 2.6
 @export var sever_chance_scale: float = 1.0
 @export var stagger_threshold: float = 12.0
+@export var xp_reward: int = 40
+## 死後可摘取的器官（捐贈部位必須完好）。
+@export var harvestable: Array[OrganDefinition] = []
 
 @export_group("Perception")
 @export var sight_range: float = 9.0

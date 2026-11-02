@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_qs0vs"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_qa6la"]
 
 [resource]
-script = ExtResource("1_qs0vs")
+script = ExtResource("1_qa6la")
 id = &"grab_tear"
 display_name = "撕扯"
 required_capabilities = {
