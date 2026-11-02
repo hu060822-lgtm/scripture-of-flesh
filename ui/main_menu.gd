@@ -8,6 +8,8 @@ extends Control
 const PROLOGUE := "res://scenes/prologue/prologue.tscn"
 const SANDBOX := "res://scenes/sandbox/combat_sandbox.tscn"
 const ART_TEST := "res://scenes/art_test/art_test.tscn"
+## 操作說明畫面（新手引導那邊的工作）。檔案存在時才顯示「操作說明」選項；以 load() 載入，避免檔案尚未合併時解析失敗。
+const CONTROLS := "res://ui/controls_screen.gd"
 const S := preload("res://art/ps1/ps1_style.gd")
 
 const FADE_IN := 1.2
@@ -18,6 +20,8 @@ const LOGO_SCALE := 2
 const MARKER := "†  "
 
 var continue_button: Button
+var audio_button: Button
+var controls_screen: Node
 var audio_panel: AudioSettingsPanel
 var screen: RetroScreen
 var chapel: TitleChapel
@@ -69,7 +73,9 @@ func _ready() -> void:
 	continue_button.disabled = not SaveSystem.exists()
 	_button(v, "戰鬥沙盒", func(): _leave(SANDBOX))
 	_button(v, "美術測試（PS1 風格）", func(): _leave(ART_TEST))
-	_button(v, "聲音設定", open_audio_settings)
+	if ResourceLoader.exists(CONTROLS):
+		_button(v, "操作說明", open_controls)
+	audio_button = _button(v, "聲音設定", open_audio_settings)
 	_button(v, "離開", func(): get_tree().quit())
 	_footer()
 	_fade = ColorRect.new()
@@ -238,11 +244,20 @@ func open_audio_settings() -> void:
 		audio_panel.add_theme_stylebox_override("panel", sb)
 		audio_panel.closed.connect(func():
 			_menu_box.show()
-			buttons[4].grab_focus())
+			audio_button.grab_focus())
 		add_child(audio_panel)
 		move_child(audio_panel, _fade.get_index())
 	_menu_box.hide()
 	audio_panel.show()
+
+func open_controls() -> void:
+	InputSetup.ensure_actions()  # 主選單不會先載入遊戲場景；先註冊按鍵，說明才會顯示實際的鍵位
+	if controls_screen == null or not is_instance_valid(controls_screen):
+		controls_screen = load(CONTROLS).new()
+		add_child(controls_screen)
+		if controls_screen.has_signal(&"closed"):
+			controls_screen.connect(&"closed", func(): buttons[0].grab_focus())
+	controls_screen.open()
 
 func new_game() -> void:
 	GameState.reset()

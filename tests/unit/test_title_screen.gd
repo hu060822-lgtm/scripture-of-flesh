@@ -1,7 +1,14 @@
 extends TestCase
 ## 主畫面（TitleChapel 3D 背景＋像素標題＋原有選項）與預設 360p 內部解析度。
 
-const LABELS := ["新遊戲", "繼續", "戰鬥沙盒", "美術測試（PS1 風格）", "聲音設定", "離開"]
+const BASE_LABELS := ["新遊戲", "繼續", "戰鬥沙盒", "美術測試（PS1 風格）", "聲音設定", "離開"]
+
+## 操作說明畫面合併後，選單會多一個「操作說明」（在聲音設定前）。
+static func labels() -> Array:
+	var l := BASE_LABELS.duplicate()
+	if ResourceLoader.exists(MainMenu.CONTROLS):
+		l.insert(4, "操作說明")
+	return l
 
 func _menu() -> MainMenu:
 	var m := MainMenu.new()
@@ -23,9 +30,10 @@ func test_project_window_is_integer_multiple_of_360p() -> void:
 
 func test_menu_keeps_all_entries_in_order() -> void:
 	var m := _menu()
-	assert_eq(m.buttons.size(), LABELS.size())
-	for i in LABELS.size():
-		assert_eq(String(m.buttons[i].get_meta(&"label")), LABELS[i])
+	var want := labels()
+	assert_eq(m.buttons.size(), want.size())
+	for i in want.size():
+		assert_eq(String(m.buttons[i].get_meta(&"label")), want[i])
 	assert_eq(m.continue_button, m.buttons[1])
 	assert_eq(m.continue_button.disabled, not SaveSystem.exists())
 
@@ -63,7 +71,7 @@ func test_audio_settings_hide_and_restore_menu() -> void:
 	assert_false(m._menu_box.visible)
 	m.audio_panel.close()
 	assert_true(m._menu_box.visible)
-	assert_true(m.buttons[4].has_focus(), "focus returns to 聲音設定")
+	assert_true(m.audio_button.has_focus(), "focus returns to 聲音設定")
 
 func test_chapel_contains_key_motifs() -> void:
 	var c := TitleChapel.new()
