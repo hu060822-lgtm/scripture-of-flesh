@@ -151,6 +151,11 @@ static func _layout_for(d: BodyPartDef) -> Dictionary:
 		var n := maxi(1, s.substr(5).to_int())
 		var side := 1.0 if s.begins_with("arm_l") else -1.0
 		return {"pos": Vector3(side * (0.32 + 0.06 * (n - 1)), 1.30 - 0.16 * (n - 1), 0.04 * (n - 1)), "shape": "capsule", "r": 0.05, "h": 0.62}
+	# 無面觀察者的眼柄：從胸口上方呈扇形伸出。
+	if s.begins_with("stalk_"):
+		var k := maxi(1, s.substr(6).to_int())
+		var ang := (float(k) - 2.5) * 0.45
+		return {"pos": Vector3(sin(ang) * 0.22, 1.66 + 0.04 * (k % 2), 0.08 + cos(ang) * 0.08), "shape": "sphere", "r": 0.05, "color": SOOT_BLACK}
 	return {"pos": Vector3(0, 1.0, 0), "shape": "sphere", "r": 0.1}
 
 static func _depth(profile: AnatomyProfile, d: BodyPartDef) -> int:

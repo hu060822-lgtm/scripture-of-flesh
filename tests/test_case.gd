@@ -22,6 +22,10 @@ func assert_false(cond: bool, msg: String = "expected false") -> void:
 		fail(msg)
 
 func assert_eq(actual, expected, msg: String = "") -> void:
+	if expected == null or actual == null:
+		if not (expected == null and actual == null):
+			fail("%s expected %s got %s" % [msg, expected, actual])
+		return
 	if typeof(actual) != typeof(expected) and not (_is_num(actual) and _is_num(expected)):
 		fail("%s expected %s (%s) got %s (%s)" % [msg, expected, type_string(typeof(expected)), actual, type_string(typeof(actual))])
 	elif actual != expected:

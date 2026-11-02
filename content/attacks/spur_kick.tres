@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_72rd5"]
+
+[resource]
+script = ExtResource("1_72rd5")
+id = &"spur_kick"
+display_name = "骨刺踢"
+required_capabilities = {
+"leg": 1
+}
+requires_weapon = false
+st_cost = 14.0
+ap_cost = 0.0
+windup = 0.4
+active = 0.1
+recovery = 0.5
+reach = 1.4
+arc_degrees = 70.0
+aim_height = 0.7
+damage = {
+"CUT": 3.0,
+"PIERCE": 8.0
+}
+damage_scale = 1.0
+sever_power = 0.4
+armor_penetration_bonus = 0.0
+stagger_threshold_bonus = 0.0
+ai_weight = 1.0
+cooldown = 0.0
+preferred_target_part = &""
+tags = PackedStringArray()

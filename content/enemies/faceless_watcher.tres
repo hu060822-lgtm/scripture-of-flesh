@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=6 format=3]
+
+[ext_resource type="Resource" path="res://content/anatomy/faceless.tres" id="1_o0k8n"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_5ni2o"]
+[ext_resource type="Resource" path="res://content/attacks/gaze.tres" id="3_rlpkx"]
+[ext_resource type="Resource" path="res://content/attacks/lash.tres" id="4_0hks4"]
+[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="5_xo262"]
+
+[resource]
+script = ExtResource("5_xo262")
+id = &"faceless_watcher"
+display_name = "無面觀察者"
+anatomy_profile = ExtResource("1_o0k8n")
+attacks = Array[ExtResource("2_5ni2o")]([ExtResource("3_rlpkx"), ExtResource("4_0hks4")])
+max_hp = 65.0
+max_st = 80.0
+move_speed = 2.0
+sever_chance_scale = 1.0
+stagger_threshold = 12.0
+sight_range = 12.0
+sight_fov_degrees = 220.0
+needs_vision = true
+hearing_range = 3.5
+memory_seconds = 4.0
+preferred_range = 5.0
+retreat_hp_ratio = 0.15
+defend_chance = 0.05
+dodge_chance = 0.15
+decision_interval = 0.35
+patrol_radius = 3.0
+special_behavior = &""
+dismember_react_seconds = 0.8

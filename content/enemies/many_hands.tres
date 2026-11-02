@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=8 format=3]
+
+[ext_resource type="Resource" path="res://content/anatomy/multi_armed.tres" id="1_1gqdb"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_m0qtl"]
+[ext_resource type="Resource" path="res://content/attacks/flurry.tres" id="3_i6mkh"]
+[ext_resource type="Resource" path="res://content/attacks/double_grab.tres" id="4_iwh6v"]
+[ext_resource type="Resource" path="res://content/attacks/swipe.tres" id="5_5w6iw"]
+[ext_resource type="Resource" path="res://content/attacks/bite.tres" id="6_avfes"]
+[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="7_62twh"]
+
+[resource]
+script = ExtResource("7_62twh")
+id = &"many_hands"
+display_name = "多手人"
+anatomy_profile = ExtResource("1_1gqdb")
+attacks = Array[ExtResource("2_m0qtl")]([ExtResource("3_i6mkh"), ExtResource("4_iwh6v"), ExtResource("5_5w6iw"), ExtResource("6_avfes")])
+max_hp = 110.0
+max_st = 120.0
+move_speed = 2.2
+sever_chance_scale = 1.0
+stagger_threshold = 16.0
+sight_range = 8.0
+sight_fov_degrees = 140.0
+needs_vision = true
+hearing_range = 3.0
+memory_seconds = 4.0
+preferred_range = 1.3
+retreat_hp_ratio = 0.15
+defend_chance = 0.3
+dodge_chance = 0.0
+decision_interval = 0.35
+patrol_radius = 3.0
+special_behavior = &""
+dismember_react_seconds = 0.8

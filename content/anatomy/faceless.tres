@@ -1,0 +1,284 @@
+[gd_resource type="Resource" script_class="AnatomyProfile" load_steps=17 format=3]
+
+[ext_resource type="Script" path="res://anatomy/body_part_def.gd" id="1_p3t7x"]
+[ext_resource type="Script" path="res://anatomy/anatomy_profile.gd" id="2_1jilq"]
+
+[sub_resource type="Resource" id="Resource_8wbkg"]
+script = ExtResource("1_p3t7x")
+id = &"chest"
+display_name = "胸腔"
+max_hp = 60.0
+armor = 0.0
+resistances = {
+"CUT": 0.8,
+"PIERCE": 0.7
+}
+functions = PackedStringArray("torso")
+detachable = false
+parent_id = &""
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray("heart", "lungs")
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"chest"
+mesh_segment = &"seg_chest"
+
+[sub_resource type="Resource" id="Resource_28bnt"]
+script = ExtResource("1_p3t7x")
+id = &"heart"
+display_name = "心臟"
+max_hp = 15.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("circulation")
+detachable = false
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = true
+vital = 1
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"heart"
+mesh_segment = &"seg_heart"
+
+[sub_resource type="Resource" id="Resource_apgma"]
+script = ExtResource("1_p3t7x")
+id = &"lungs"
+display_name = "肺臟"
+max_hp = 25.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("respiration")
+detachable = false
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = true
+vital = 2
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"lungs"
+mesh_segment = &"seg_lungs"
+
+[sub_resource type="Resource" id="Resource_3kbb7"]
+script = ExtResource("1_p3t7x")
+id = &"spine"
+display_name = "脊椎"
+max_hp = 40.0
+armor = 0.0
+resistances = {
+"CUT": 0.5,
+"FRACTURE": 1.2
+}
+functions = PackedStringArray("posture")
+detachable = false
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"spine"
+mesh_segment = &"seg_spine"
+
+[sub_resource type="Resource" id="Resource_1uirk"]
+script = ExtResource("1_p3t7x")
+id = &"abdomen"
+display_name = "腹部"
+max_hp = 45.0
+armor = 0.0
+resistances = {
+"PIERCE": 1.3
+}
+functions = PackedStringArray("core")
+detachable = false
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"abdomen"
+mesh_segment = &"seg_abdomen"
+
+[sub_resource type="Resource" id="Resource_mkv7o"]
+script = ExtResource("1_p3t7x")
+id = &"neck"
+display_name = "頸部"
+max_hp = 20.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray()
+detachable = false
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"neck"
+mesh_segment = &"seg_neck"
+
+[sub_resource type="Resource" id="Resource_gcxwe"]
+script = ExtResource("1_p3t7x")
+id = &"arm_l"
+display_name = "左臂"
+max_hp = 26.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "grip", "grip_l")
+detachable = true
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"arm_l"
+mesh_segment = &"seg_arm_l"
+
+[sub_resource type="Resource" id="Resource_64v45"]
+script = ExtResource("1_p3t7x")
+id = &"arm_r"
+display_name = "右臂"
+max_hp = 26.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "grip", "grip_r")
+detachable = true
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"arm_r"
+mesh_segment = &"seg_arm_r"
+
+[sub_resource type="Resource" id="Resource_xcpsh"]
+script = ExtResource("1_p3t7x")
+id = &"leg_l"
+display_name = "左腿"
+max_hp = 40.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("leg", "locomotion")
+detachable = true
+parent_id = &"abdomen"
+dependencies = PackedStringArray("spine")
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.8
+mutation_threshold = 60.0
+bone_name = &"leg_l"
+mesh_segment = &"seg_leg_l"
+
+[sub_resource type="Resource" id="Resource_l68am"]
+script = ExtResource("1_p3t7x")
+id = &"leg_r"
+display_name = "右腿"
+max_hp = 40.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("leg", "locomotion")
+detachable = true
+parent_id = &"abdomen"
+dependencies = PackedStringArray("spine")
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.8
+mutation_threshold = 60.0
+bone_name = &"leg_r"
+mesh_segment = &"seg_leg_r"
+
+[sub_resource type="Resource" id="Resource_imgbr"]
+script = ExtResource("1_p3t7x")
+id = &"stalk_1"
+display_name = "眼柄1"
+max_hp = 8.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("vision")
+detachable = true
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.8
+mutation_threshold = 60.0
+bone_name = &"stalk_1"
+mesh_segment = &"seg_stalk_1"
+
+[sub_resource type="Resource" id="Resource_j3igd"]
+script = ExtResource("1_p3t7x")
+id = &"stalk_2"
+display_name = "眼柄2"
+max_hp = 8.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("vision")
+detachable = true
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.8
+mutation_threshold = 60.0
+bone_name = &"stalk_2"
+mesh_segment = &"seg_stalk_2"
+
+[sub_resource type="Resource" id="Resource_yrwrj"]
+script = ExtResource("1_p3t7x")
+id = &"stalk_3"
+display_name = "眼柄3"
+max_hp = 8.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("vision")
+detachable = true
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.8
+mutation_threshold = 60.0
+bone_name = &"stalk_3"
+mesh_segment = &"seg_stalk_3"
+
+[sub_resource type="Resource" id="Resource_oa5mm"]
+script = ExtResource("1_p3t7x")
+id = &"stalk_4"
+display_name = "眼柄4"
+max_hp = 8.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("vision")
+detachable = true
+parent_id = &"chest"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.8
+mutation_threshold = 60.0
+bone_name = &"stalk_4"
+mesh_segment = &"seg_stalk_4"
+
+[resource]
+script = ExtResource("2_1jilq")
+id = &"faceless"
+display_name = "無面觀察者"
+parts = Array[ExtResource("1_p3t7x")]([SubResource("Resource_8wbkg"), SubResource("Resource_28bnt"), SubResource("Resource_apgma"), SubResource("Resource_3kbb7"), SubResource("Resource_1uirk"), SubResource("Resource_mkv7o"), SubResource("Resource_gcxwe"), SubResource("Resource_64v45"), SubResource("Resource_xcpsh"), SubResource("Resource_l68am"), SubResource("Resource_imgbr"), SubResource("Resource_j3igd"), SubResource("Resource_yrwrj"), SubResource("Resource_oa5mm")])

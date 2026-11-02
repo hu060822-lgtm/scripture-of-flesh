@@ -8,6 +8,9 @@ const V := BodyPartDef.VitalRule
 func _init() -> void:
 	_save(_humanoid(), "res://content/anatomy/humanoid.tres")
 	_save(_multi_armed(), "res://content/anatomy/multi_armed.tres")
+	_save(_stitcher(), "res://content/anatomy/stitcher.tres")
+	_save(_reverse_legged(), "res://content/anatomy/reverse_legged.tres")
+	_save(_faceless(), "res://content/anatomy/faceless.tres")
 	quit()
 
 func _save(p: AnatomyProfile, path: String) -> void:
@@ -76,5 +79,59 @@ func _multi_armed() -> AnatomyProfile:
 	for i in range(1, 4):
 		parts.append(_part(StringName("arm_l%d" % i), "左臂%d" % i, 22, {"parent": &"chest", "detach": true, "sever": 1.2, "fn": ["arm", "grip"]}))
 		parts.append(_part(StringName("arm_r%d" % i), "右臂%d" % i, 22, {"parent": &"chest", "detach": true, "sever": 1.2, "fn": ["arm", "grip"]}))
+	p.parts = parts
+	return p
+
+## 縫屍者：人形，但全身是縫合線拼成的。四肢縫線處容易斷（斷肢倍率高），胸腔有縫合皮甲。
+func _stitcher() -> AnatomyProfile:
+	var p := AnatomyProfile.new()
+	p.id = &"stitcher"
+	p.display_name = "縫屍者"
+	var parts: Array[BodyPartDef] = []
+	for d in _humanoid_parts():
+		if d.id in [&"arm_l", &"arm_r", &"leg_l", &"leg_r", &"jaw"]:
+			d.sever_multiplier *= 1.6
+			d.max_hp *= 0.85
+		if d.id == &"chest":
+			d.armor = 2.0
+		parts.append(d)
+	p.parts = parts
+	return p
+
+## 反足者：膝蓋反折的雙腿是牠的武器（leap 能力：飛撲），腿很硬但被破壞後只能爬行。
+func _reverse_legged() -> AnatomyProfile:
+	var p := AnatomyProfile.new()
+	p.id = &"reverse_legged"
+	p.display_name = "反足者"
+	var parts: Array[BodyPartDef] = []
+	for d in _humanoid_parts():
+		if d.id in [&"leg_l", &"leg_r"]:
+			d.max_hp = 55.0
+			d.armor = 3.0
+			d.sever_multiplier = 0.7
+			d.functions = PackedStringArray(["leg", "locomotion", "leap"])
+		elif d.id in [&"arm_l", &"arm_r"]:
+			d.max_hp = 18.0  # 萎縮的手臂
+		parts.append(d)
+	p.parts = parts
+	return p
+
+## 無面觀察者：沒有頭、眼、下顎。胸口長出四根眼柄提供視覺，失去全部眼柄後只能靠聽覺。
+func _faceless() -> AnatomyProfile:
+	var p := AnatomyProfile.new()
+	p.id = &"faceless"
+	p.display_name = "無面觀察者"
+	var parts: Array[BodyPartDef] = []
+	for d in _humanoid_parts():
+		if d.id in [&"head", &"eye_l", &"eye_r", &"jaw"]:
+			continue
+		if d.id == &"neck":
+			d.vital = V.NONE  # 沒有頭可以支撐
+			d.functions = PackedStringArray()
+		if d.id in [&"arm_l", &"arm_r"]:
+			d.max_hp = 26.0
+		parts.append(d)
+	for i in range(1, 5):
+		parts.append(_part(StringName("stalk_%d" % i), "眼柄%d" % i, 8, {"parent": &"chest", "detach": true, "sever": 1.8, "fn": ["vision"]}))
 	p.parts = parts
 	return p

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=7 format=3]
+
+[ext_resource type="Resource" path="res://content/anatomy/stitcher.tres" id="1_moiro"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_rngeo"]
+[ext_resource type="Resource" path="res://content/attacks/claw.tres" id="3_3ad1g"]
+[ext_resource type="Resource" path="res://content/attacks/grab_tear.tres" id="4_p08sw"]
+[ext_resource type="Resource" path="res://content/attacks/bite.tres" id="5_td7pc"]
+[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="6_2h7uh"]
+
+[resource]
+script = ExtResource("6_2h7uh")
+id = &"stitcher"
+display_name = "縫屍者"
+anatomy_profile = ExtResource("1_moiro")
+attacks = Array[ExtResource("2_rngeo")]([ExtResource("3_3ad1g"), ExtResource("4_p08sw"), ExtResource("5_td7pc")])
+max_hp = 85.0
+max_st = 80.0
+move_speed = 2.4
+sever_chance_scale = 1.0
+stagger_threshold = 12.0
+sight_range = 8.0
+sight_fov_degrees = 140.0
+needs_vision = true
+hearing_range = 3.0
+memory_seconds = 4.0
+preferred_range = 1.1
+retreat_hp_ratio = 0.15
+defend_chance = 0.1
+dodge_chance = 0.0
+decision_interval = 0.35
+patrol_radius = 3.0
+special_behavior = &"restitch"
+dismember_react_seconds = 0.8

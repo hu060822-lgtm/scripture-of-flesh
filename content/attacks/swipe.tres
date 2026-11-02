@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="AttackDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_0mbgx"]
+
+[resource]
+script = ExtResource("1_0mbgx")
+id = &"swipe"
+display_name = "單手揮擊"
+required_capabilities = {
+"grip": 1
+}
+requires_weapon = false
+st_cost = 10.0
+ap_cost = 0.0
+windup = 0.4
+active = 0.1
+recovery = 0.45
+reach = 1.4
+arc_degrees = 90.0
+aim_height = 1.3
+damage = {
+"CUT": 7.0
+}
+damage_scale = 1.0
+sever_power = 0.4
+armor_penetration_bonus = 0.0
+stagger_threshold_bonus = 0.0
+ai_weight = 1.0
+cooldown = 0.0
+preferred_target_part = &""
+tags = PackedStringArray()
