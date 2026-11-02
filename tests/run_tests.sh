@@ -5,8 +5,14 @@
 set -uo pipefail
 GODOT="${GODOT:-godot}"
 cd "$(dirname "$0")/.."
-"$GODOT" --headless --path . --editor --quit >/dev/null 2>&1 || true
 out="$(mktemp)"
+# 匯入專案；任何腳本的解析錯誤（包括測試沒有載入的腳本）也算失敗。
+"$GODOT" --headless --path . --editor --quit > "$out" 2>&1 || true
+if grep -q "SCRIPT ERROR" "$out"; then
+  grep -A2 "SCRIPT ERROR" "$out"
+  echo "FAILED: script errors while importing the project."
+  exit 1
+fi
 "$GODOT" --headless --path . -s tests/run_tests.gd 2>&1 | tee "$out"
 code=${PIPESTATUS[0]}
 if grep -q "SCRIPT ERROR" "$out"; then

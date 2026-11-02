@@ -1,0 +1,68 @@
+[gd_resource type="Resource" script_class="WeaponDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="1_def4l"]
+[ext_resource type="Script" path="res://equipment/weapon_definition.gd" id="2_of3ni"]
+
+[sub_resource type="Resource" id="Resource_r3es4"]
+script = ExtResource("1_def4l")
+id = &"cleaver_heavy"
+display_name = "斷骨下劈"
+required_capabilities = {}
+requires_weapon = true
+st_cost = 25.0
+ap_cost = 25.0
+windup = 0.7
+active = 0.1
+recovery = 0.6
+reach = 1.9
+arc_degrees = 50.0
+aim_height = 1.3
+damage = {}
+damage_scale = 1.8
+sever_power = 1.5
+armor_penetration_bonus = 0.0
+stagger_threshold_bonus = 0.0
+ai_weight = 1.0
+cooldown = 0.0
+preferred_target_part = &""
+tags = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_jefa3"]
+script = ExtResource("1_def4l")
+id = &"cleaver_light"
+display_name = "橫劈"
+required_capabilities = {}
+requires_weapon = true
+st_cost = 18.0
+ap_cost = 0.0
+windup = 0.35
+active = 0.1
+recovery = 0.4
+reach = 1.8
+arc_degrees = 100.0
+aim_height = 1.3
+damage = {}
+damage_scale = 1.0
+sever_power = 1.0
+armor_penetration_bonus = 0.0
+stagger_threshold_bonus = 0.0
+ai_weight = 1.0
+cooldown = 0.0
+preferred_target_part = &""
+tags = PackedStringArray()
+
+[resource]
+script = ExtResource("2_of3ni")
+id = &"bone_saw_cleaver"
+display_name = "骨鋸斧"
+weapon_type = &"cleaver"
+damage = {
+"CUT": 16.0,
+"LACERATION": 4.0
+}
+sever_power = 1.5
+armor_penetration = 0.1
+bleed_multiplier = 1.2
+required_grip = 1
+light_attack = SubResource("Resource_jefa3")
+heavy_attack = SubResource("Resource_r3es4")
