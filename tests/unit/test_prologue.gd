@@ -6,6 +6,7 @@ const SAVE := "user://test_prologue_save.json"
 func _game(mode: String = "new") -> PrologueGame:
 	var g := PrologueGame.new()
 	g.autostart = false
+	g.play_opening = false
 	g.save_path = SAVE
 	tree.root.add_child(g)
 	g.start_game(mode)
@@ -53,7 +54,44 @@ func test_level_contains_required_content() -> void:
 		assert_true(lvl.get_node_or_null("Geometry/" + room) != null, room)
 	assert_true(lvl.get_node_or_null("Markers/BossSpawn") != null)
 	assert_true(lvl.get_node_or_null("Interactables/Item_item_umbilical_key") != null)
+	for id in ["note_register", "note_stitcher", "note_stripping", "note_magdalene"]:
+		assert_true(lvl.get_node_or_null("Interactables/Note_" + id) != null, "note %s placed" % id)
+	assert_true(lvl.get_node_or_null("Interactables/NPC_Ignatius") != null, "dying priest placed")
+	assert_eq(lvl.get_node("Triggers/Trigger_enter_corridor").dialogue_id, "corridor_thought")
 	lvl.free()
+
+func test_new_game_plays_opening_and_boss_lines() -> void:
+	var g := PrologueGame.new()
+	g.autostart = false
+	g.save_path = SAVE
+	tree.root.add_child(g)
+	g.start_game("new")
+	assert_true(g.dialogue.is_open(), "opening narration plays on a new game")
+	assert_eq(g.dialogue.runner.data.get("id"), "prologue_opening")
+	var guard := 0
+	while g.dialogue.runner.active and guard < 10:
+		g.dialogue.runner.advance(); guard += 1
+	assert_false(g.dialogue.is_open())
+	assert_eq(TimeScale.mode, TimeScale.Mode.NORMAL)
+	var bp: BossPhaseComponent = g.boss.get_node("BossPhase")
+	bp.phase_changed.emit(2)
+	assert_eq(g.toast.text, g.boss_line(&"kneel"))
+	GameState.set_flag(&"knows_mother")
+	assert_true("伊蓮" in g.boss_line(&"defeated"))
+	g.queue_free()
+	_cleanup()
+
+func test_continue_does_not_replay_opening() -> void:
+	var g := _game()
+	g.queue_free()
+	var g2 := PrologueGame.new()
+	g2.autostart = false
+	g2.save_path = SAVE
+	tree.root.add_child(g2)
+	g2.start_game("continue")
+	assert_false(g2.dialogue.is_open())
+	g2.queue_free()
+	_cleanup()
 
 func test_new_game_starts_unarmed_and_class_choice_through_agnes() -> void:
 	var g := _game()
@@ -108,8 +146,9 @@ func test_boss_fight_and_ending() -> void:
 	GameState.set_flag(&"chapel_open")
 	assert_true(arena.check())
 	assert_true(g.dialogue.is_open(), "mother_intro plays")
-	g.dialogue.runner.advance()
-	g.dialogue.runner.advance()  # action start_boss
+	var guard := 0
+	while g.dialogue.runner.active and guard < 10:
+		g.dialogue.runner.advance(); guard += 1  # 最後一句觸發 start_boss
 	assert_false(g.dialogue.is_open())
 	assert_true(g.boss_intro != null and g.boss_intro.playing, "boss intro cinematic plays after the dialogue")
 	assert_eq(TimeScale.mode, TimeScale.Mode.PAUSE, "combat paused during the intro")
@@ -130,7 +169,8 @@ func test_boss_fight_and_ending() -> void:
 	g.ending_reached.connect(func(id): ends.append(id))
 	womb.interact(g.player)
 	g.dialogue.runner.choose(0)
-	g.dialogue.runner.advance()
+	while g.dialogue.runner.active and guard < 20:
+		g.dialogue.runner.advance(); guard += 1
 	assert_eq(ends, ["burn"])
 	assert_true(GameState.has_flag(&"ending_burn"))
 	_cleanup()

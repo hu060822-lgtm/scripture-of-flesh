@@ -1,0 +1,40 @@
+{
+ "id": "antechamber_thought",
+ "start": "b",
+ "nodes": {
+  "b": {
+   "branches": [
+    {
+     "if": {
+      "flag": "knows_mother"
+     },
+     "next": "know"
+    },
+    {
+     "if": {
+      "flag": "read_register"
+     },
+     "next": "reg"
+    },
+    {
+     "next": "df"
+    }
+   ]
+  },
+  "df": {
+   "speaker": "",
+   "text": "門後傳來規律的低鳴，像一顆巨大的心臟。你胸口的心跳，不知不覺跟上了它的節奏。",
+   "next": ""
+  },
+  "reg": {
+   "speaker": "",
+   "text": "門後傳來規律的低鳴。你胸口的心跳跟上了它的節奏。你想起名冊上那一行字：院長親自提供。",
+   "next": ""
+  },
+  "know": {
+   "speaker": "",
+   "text": "門後傳來規律的低鳴。你胸口的心跳跟上了它的節奏。伊蓮——你不知道這個名字是從哪裡浮上來的，但你的心臟知道。",
+   "next": ""
+  }
+ }
+}

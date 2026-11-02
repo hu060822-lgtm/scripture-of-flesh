@@ -181,6 +181,17 @@ func _inscription(id: String, pos: Vector3, yaw: float = 0.0) -> void:
 	d.rotation_degrees.y = yaw
 	level.get_node("Interactables").add_child(d)
 
+## 劇情筆記（散落的紙頁）：可重複閱讀，第一次閱讀時設定劇情旗標。
+func _note(id: String, pos: Vector3) -> void:
+	var d = DialogueInteractable.new()
+	d.name = "Note_%s" % id
+	d.object_id = StringName(id)
+	d.dialogue_id = id
+	d.kind = "note"
+	d.prompt_text = "E：閱讀紙頁"
+	d.position = pos
+	level.get_node("Interactables").add_child(d)
+
 func _pedestal(weapon: String, pos: Vector3) -> void:
 	var p = WeaponPedestal.new()
 	p.name = "Pedestal_%s" % weapon
@@ -233,6 +244,7 @@ func _build() -> void:
 	level.get_node("Interactables").add_child(agnes)
 	_inscription("inscription_delivery", Vector3(4.5, 0, -4.5), 0.0)
 	_altar(&"altar_delivery", Vector3(3.5, 0, 3.5))
+	_note("note_register", Vector3(-4.5, 0, -1.6))
 	_item("item_delivery_suture", "suture_kit", 1, Vector3(4.5, 0, 0))
 	_trigger(&"enter_delivery", Vector3(0, 0, 2), 3.0, "白色產房")
 	_light("Light_Delivery", Vector3(0, 3.5, 0), Color("fff4e0"), 1.6, 12.0)
@@ -244,7 +256,8 @@ func _build() -> void:
 	_spawn(&"corridor_stitcher_1", "stitcher", Vector3(0.8, 0, -14), 180.0)
 	_spawn(&"corridor_stitcher_2", "stitcher", Vector3(-1.2, 0, -22), 180.0)
 	_inscription("inscription_corridor", Vector3(-2.5, 0, -9), 90.0)
-	_trigger(&"enter_corridor", Vector3(0, 0, -8), 2.5, "縫合迴廊")
+	_note("note_stitcher", Vector3(-2.2, 0, -14.2))
+	_trigger(&"enter_corridor", Vector3(0, 0, -8), 2.5, "縫合迴廊", "corridor_thought")
 	_light("Light_Corridor_1", Vector3(0, 3.2, -10), Color("d0a070"), 0.9, 7.0)
 	_light("Light_Corridor_2", Vector3(0, 3.2, -21), Color("d0a070"), 0.9, 7.0)
 
@@ -261,6 +274,17 @@ func _build() -> void:
 	_pedestal("bone_saw_cleaver", Vector3(-8, 0, -28.5))
 	_inscription("inscription_courtyard", Vector3(0, 0, -34.2), 0.0)
 	_altar(&"altar_courtyard", Vector3(8, 0, -28.5))
+	var priest = DialogueInteractable.new()
+	priest.name = "NPC_Ignatius"
+	priest.object_id = &"npc_ignatius"
+	priest.kind = "npc"
+	priest.dialogue_id = "ignatius_talk"
+	priest.repeat_dialogue_id = "ignatius_dead"
+	priest.first_done_flag = &"met_ignatius"
+	priest.prompt_text = "E：靠近垂死的司祭"
+	priest.position = Vector3(8.6, 0, -31.2)
+	priest.rotation_degrees.y = -120
+	level.get_node("Interactables").add_child(priest)
 	_item("item_courtyard_suture", "suture_kit", 1, Vector3(-8.5, 0, -44.5))
 	_trigger(&"enter_courtyard", Vector3(0, 0, -28), 3.0, "反足者庭院")
 	_light("Light_Courtyard", Vector3(0, 5.0, -36), Color("a0a8c0"), 1.0, 16.0)
@@ -274,6 +298,7 @@ func _build() -> void:
 	_spawn(&"archive_watcher_2", "faceless_watcher", Vector3(-14, 0, -33), 90.0)
 	_pedestal("anatomist_rapier", Vector3(-22.5, 0, -31))
 	_inscription("inscription_archive", Vector3(-17, 0, -30.6), 180.0)
+	_note("note_stripping", Vector3(-12.5, 0, -38.5))
 	_item("item_archive_suture", "suture_kit", 2, Vector3(-22.5, 0, -42))
 	_trigger(&"enter_archive", Vector3(-11.5, 0, -36), 2.5, "觀察者藏書室")
 	_light("Light_Archive", Vector3(-17, 3.2, -36), Color("80a070"), 0.8, 10.0)
@@ -286,6 +311,7 @@ func _build() -> void:
 	_pedestal("reliquary_hammer", Vector3(22, 0, -31))
 	_item("item_umbilical_key", "umbilical_key", 1, Vector3(21, 0, -36))
 	_inscription("inscription_sacristy", Vector3(17, 0, -41.4), 0.0)
+	_note("note_magdalene", Vector3(13.2, 0, -41.5))
 	_trigger(&"enter_sacristy", Vector3(11.5, 0, -36), 2.5, "多手人聖器室")
 	_light("Light_Sacristy", Vector3(17, 3.2, -36), Color("c06050"), 0.9, 10.0)
 
@@ -302,7 +328,7 @@ func _build() -> void:
 	level.get_node("Interactables").add_child(gate)
 	_room("Antechamber", Vector3(0, 0, -52), Vector2(8, 12), {"s": [0.0, 4.0], "n": [0.0, 4.0]}, Color("6a5a50"))
 	_altar(&"altar_antechamber", Vector3(2.8, 0, -50))
-	_trigger(&"enter_antechamber", Vector3(0, 0, -49), 2.5, "禮拜堂前廳")
+	_trigger(&"enter_antechamber", Vector3(0, 0, -49), 2.5, "禮拜堂前廳", "antechamber_thought")
 	_light("Light_Antechamber", Vector3(0, 3.2, -52), Color("e0b080"), 0.9, 8.0)
 
 	# 7. 母親的禮拜堂：z -58 .. -84

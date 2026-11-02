@@ -5,13 +5,56 @@
   "n1": {
    "speaker": "行走的母親",
    "text": "……第七百三十一個……你回來了……",
-   "next": "n2"
+   "next": "b"
   },
   "n2": {
    "speaker": "行走的母親",
    "text": "把手給我。把腳給我。把眼睛給我。回到我裡面來，孩子。",
    "next": "",
    "action": "start_boss"
+  },
+  "b": {
+   "branches": [
+    {
+     "if": {
+      "flag": "knows_mother"
+     },
+     "next": "named"
+    },
+    {
+     "next": "n2"
+    }
+   ]
+  },
+  "named": {
+   "speaker": "行走的母親",
+   "text": "回來吧……媽媽一直在這裡……一直、一直在這裡……",
+   "choices": [
+    {
+     "text": "瑪德蓮。",
+     "next": "nm1"
+    },
+    {
+     "text": "我不是妳的孩子。",
+     "next": "nm2"
+    }
+   ]
+  },
+  "nm1": {
+   "speaker": "行走的母親",
+   "text": "……那個名字……好久……沒有人叫了……",
+   "next": "nm3"
+  },
+  "nm3": {
+   "speaker": "行走的母親",
+   "text": "伊蓮。伊蓮。妳的心跳好吵。回來，讓媽媽再抱一次。",
+   "next": "",
+   "action": "start_boss"
+  },
+  "nm2": {
+   "speaker": "行走的母親",
+   "text": "每個孩子都這麼說。然後，他們都回來了。",
+   "next": "n2"
   }
  }
 }

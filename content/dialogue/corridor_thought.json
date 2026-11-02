@@ -1,0 +1,73 @@
+{
+ "id": "corridor_thought",
+ "start": "b",
+ "nodes": {
+  "b": {
+   "branches": [
+    {
+     "if": {
+      "class": "stitcher"
+     },
+     "next": "st"
+    },
+    {
+     "if": {
+      "class": "anatomist"
+     },
+     "next": "an"
+    },
+    {
+     "if": {
+      "class": "mutilator"
+     },
+     "next": "mu"
+    },
+    {
+     "if": {
+      "class": "prosthetic_knight"
+     },
+     "next": "pk"
+    },
+    {
+     "if": {
+      "class": "flesh_witch"
+     },
+     "next": "fw"
+    },
+    {
+     "next": "df"
+    }
+   ]
+  },
+  "st": {
+   "speaker": "",
+   "text": "地上的線頭讓你的手指發癢。你想把它們一根一根撿起來，縫回某個東西上。",
+   "next": ""
+  },
+  "an": {
+   "speaker": "",
+   "text": "你下意識地讀著牆上的血跡，判斷哪一道是從頸動脈噴出來的。你不記得自己學過這個。",
+   "next": ""
+  },
+  "mu": {
+   "speaker": "",
+   "text": "迴廊深處傳來剪刀開合的聲音。你的手握緊了，像在等它靠近。",
+   "next": ""
+  },
+  "pk": {
+   "speaker": "",
+   "text": "你的關節發出細小的摩擦聲。你突然很想念鐵的冰冷。",
+   "next": ""
+  },
+  "fw": {
+   "speaker": "",
+   "text": "牆裡有東西在低語。你聽得懂，而且它們在叫一個名字——一個你不記得、卻會回頭的名字。",
+   "next": ""
+  },
+  "df": {
+   "speaker": "",
+   "text": "迴廊深處傳來剪刀開合的聲音。你兩手空空，連自己的手還記得什麼都不知道。",
+   "next": ""
+  }
+ }
+}

@@ -17,6 +17,8 @@ const ENDINGS := {
 }
 
 @export var save_path: String = SaveSystem.DEFAULT_PATH
+## 新遊戲開始時播放開場旁白（測試與模擬可關閉，以免對話框擋住流程）。
+@export var play_opening: bool = true
 ## 測試用：不建立 UI 以外的視覺效果也能運作；false 時不自動在 _ready 開始（由測試呼叫 start_game）。
 @export var autostart: bool = true
 
@@ -61,6 +63,8 @@ func start_game(mode: String) -> void:
 		(player.get_node("PlayerData") as PlayerData).inventory.items.clear()
 		save_now()
 		show_toast("白色產房")
+		if play_opening:
+			open_dialogue("prologue_opening")
 
 # ---------- 世界 ----------
 
@@ -95,7 +99,11 @@ func _spawn_boss() -> void:
 	boss.rotation.y = PI
 	level.add_child(boss)
 	set_boss_active(false)
-	(boss.get_node("BossPhase") as BossPhaseComponent).defeated.connect(_on_boss_defeated)
+	var bp: BossPhaseComponent = boss.get_node("BossPhase")
+	bp.defeated.connect(_on_boss_defeated)
+	# Boss 戰中的台詞只用字幕顯示，不暫停戰鬥。
+	bp.phase_changed.connect(func(ph): if ph == 2: show_toast(boss_line(&"kneel")))
+	bp.cords_severed.connect(func(): show_toast(boss_line(&"cords")))
 
 func set_boss_active(on: bool) -> void:
 	if boss == null or not is_instance_valid(boss):
@@ -111,9 +119,21 @@ func _on_creature_killed(victim: Node, _killer: Node) -> void:
 	if b != null and b.has_meta(&"spawn_id"):
 		GameState.killed[StringName(b.get_meta(&"spawn_id"))] = true
 
+## Boss 戰中的字幕台詞（依劇情旗標變化）。
+func boss_line(moment: StringName) -> String:
+	var knows := GameState.has_flag(&"knows_mother")
+	match moment:
+		&"kneel":
+			return "母親：「為什麼……要讓媽媽跪下……」"
+		&"cords":
+			return "母親：「孩子們……我聽不見孩子們了……」"
+		&"defeated":
+			return "母親：「……伊蓮……妳好溫暖……」" if knows else "母親：「……好冷……我的孩子們……」"
+	return ""
+
 func _on_boss_defeated() -> void:
 	boss_bar.hide_boss()
-	show_toast("行走的母親　倒下了")
+	show_toast(boss_line(&"defeated"))
 	save_now()
 
 # ---------- 玩家 ----------

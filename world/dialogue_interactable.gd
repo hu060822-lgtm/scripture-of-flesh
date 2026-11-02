@@ -1,12 +1,12 @@
 class_name DialogueInteractable
 extends Interactable
-## 銘文或 NPC：互動時開啟對話。NPC 第一次對話後改用 repeat_dialogue_id。
+## 銘文、筆記或 NPC：互動時開啟對話。NPC 第一次對話後改用 repeat_dialogue_id。
 
 @export var dialogue_id: String = ""
 @export var repeat_dialogue_id: String = ""
 ## 第一次對話完成的旗標（例如 met_agnes）；設定後改用 repeat_dialogue_id。
 @export var first_done_flag: StringName = &""
-@export_enum("inscription", "npc") var kind: String = "inscription"
+@export_enum("inscription", "npc", "note") var kind: String = "inscription"
 
 func current_dialogue() -> String:
 	if repeat_dialogue_id != "" and first_done_flag != &"" and GameState.has_flag(first_done_flag):
@@ -30,6 +30,11 @@ func _build_placeholder() -> void:
 		hood.radius = 0.18
 		hood.height = 0.36
 		Interactable.placeholder_mesh(self, hood, Vector3(0, 1.75, 0), Color("e8e2d6"), "Hood")
+	elif kind == "note":
+		# 【暫代】散落在地上的紙頁
+		var page := BoxMesh.new()
+		page.size = Vector3(0.32, 0.02, 0.42)
+		Interactable.placeholder_mesh(self, page, Vector3(0, 0.02, 0), Color("e9dcb8"), "Page")
 	else:
 		var slab := BoxMesh.new()
 		slab.size = Vector3(0.9, 1.2, 0.18)
