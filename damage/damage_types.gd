@@ -48,3 +48,18 @@ const NECROSIS_HP_PER_SEC := 0.05
 
 static func name_of(t: int) -> String:
 	return Type.keys()[t]
+
+## 把以名稱為 key 的傷害表（資料檔用）轉成以 Type 為 key（DamagePacket 用），並乘上倍率。
+static func from_names(named: Dictionary, scale: float = 1.0) -> Dictionary:
+	var out := {}
+	for k in named:
+		var t := Type.keys().find(String(k))
+		if t >= 0:
+			out[t] = float(out.get(t, 0.0)) + float(named[k]) * scale
+	return out
+
+static func merge(a: Dictionary, b: Dictionary) -> Dictionary:
+	var out := a.duplicate()
+	for t in b:
+		out[t] = float(out.get(t, 0.0)) + float(b[t])
+	return out

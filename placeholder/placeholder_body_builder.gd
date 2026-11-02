@@ -28,11 +28,26 @@ const LAYOUT := {
 	&"leg_r":   {"pos": Vector3(-0.10, 0.45, 0), "shape": "capsule", "r": 0.08, "h": 0.90},
 }
 
-## 建立完整的暫代生物：身體 + AnatomyComponent + EquipmentComponent + DismembermentController。
-static func build_creature(profile: AnatomyProfile, creature_id: StringName) -> Node3D:
-	var root := Node3D.new()
+const CREATURE_LAYER := 1 << 1  # 物理層 2：生物本體（移動碰撞）
+const WORLD_LAYER := 1 << 0      # 物理層 1：場景
+
+## 建立完整的暫代生物：CharacterBody3D 本體 + 身體 + AnatomyComponent + EquipmentComponent
+## + DismembermentController + CombatComponent。
+static func build_creature(profile: AnatomyProfile, creature_id: StringName,
+		natural_attacks: Array[AttackDefinition] = [], faction: StringName = &"enemy") -> CharacterBody3D:
+	var root := CharacterBody3D.new()
 	root.name = String(creature_id)
 	root.set_meta(&"placeholder", true)
+	root.collision_layer = CREATURE_LAYER
+	root.collision_mask = WORLD_LAYER | CREATURE_LAYER
+	var col := CollisionShape3D.new()
+	col.name = "BodyCollision"
+	var cap := CapsuleShape3D.new()
+	cap.radius = 0.32
+	cap.height = 1.8
+	col.shape = cap
+	col.position = Vector3(0, 0.9, 0)
+	root.add_child(col)
 	var body := build_body(profile)
 	root.add_child(body)
 
@@ -49,6 +64,12 @@ static func build_creature(profile: AnatomyProfile, creature_id: StringName) -> 
 	var ctrl := DismembermentController.new()
 	ctrl.name = "DismembermentController"
 	root.add_child(ctrl)
+
+	var combat := CombatComponent.new()
+	combat.name = "CombatComponent"
+	combat.natural_attacks = natural_attacks
+	combat.faction = faction
+	root.add_child(combat)
 	return root
 
 static func build_body(profile: AnatomyProfile) -> Node3D:
