@@ -2,8 +2,8 @@ extends Node
 ## 聲音總管（autoload: AudioManager）。
 ## - 建立匯流排：Master ← Music／Ambience／SFX／UI／Voice。
 ## - play(cue_id, at) 播放音效：隨機變體與音高、冷卻、同 cue 發聲上限、3D 定位。
-## - 音樂狀態（探索／緊張／戰鬥／Boss…）由 AudioDirector 決定，這裡記錄並發出訊號；
-##   實際的分層音樂在 A3 加入。
+## - 音樂狀態（探索／緊張／戰鬥／Boss…）由 AudioDirector 決定，交給 MusicMixer 淡入淡出各層。
+## - 房間環境音由 AmbiencePlayer 交叉淡變。
 ## - 音量設定存在 user://settings.cfg 的 [audio] 區段。
 ## 沒有音檔的 cue 是【暫代】靜音：照常記錄在 history，不發聲。
 
@@ -26,6 +26,9 @@ var music_state: StringName = &"silence"
 var settings_path := SETTINGS_PATH
 var rng := RandomNumberGenerator.new()
 var director: AudioDirector
+var music: MusicMixer
+var ambience: AmbiencePlayer
+var ambience_id: StringName = &""
 
 var _now := 0.0
 var _last_time := {}     # cue id -> 上次播放時間
@@ -49,6 +52,10 @@ func _ready() -> void:
 		add_child(p)
 		_pool_3d.append(p)
 	load_settings()
+	music = MusicMixer.new()
+	add_child(music)
+	ambience = AmbiencePlayer.new()
+	add_child(ambience)
 	director = AudioDirector.new()
 	director.manager = self
 	add_child(director)
@@ -163,7 +170,15 @@ func set_music_state(state: StringName) -> void:
 		return
 	var old := music_state
 	music_state = state
+	if music != null:
+		music.apply_state(state)
 	music_state_changed.emit(old, state)
+
+## 房間環境音；&"" 為無。
+func set_ambience(id: StringName) -> void:
+	ambience_id = id
+	if ambience != null:
+		ambience.set_ambience(id)
 
 # ---------- 音量設定 ----------
 
