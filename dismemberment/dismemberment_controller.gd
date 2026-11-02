@@ -21,6 +21,8 @@ const BONE_COLLAPSED_SCALE := Vector3(0.0001, 0.0001, 0.0001)
 
 var animation_set := {}
 var _creature: Node3D
+## 修復用：每個部位分段網格的原始複本與掛載位置（在任何斷肢發生前建立）。
+var _segment_templates := {}  # part_id -> [Node3D 複本, 父節點 NodePath, Transform3D]
 
 func _ready() -> void:
 	_creature = get_parent() as Node3D
@@ -41,6 +43,10 @@ func _ready() -> void:
 			var grip := _find("grip_%s" % d.id)
 			if grip != null:
 				equipment.anchors[d.id] = grip
+	for d in anatomy.profile.parts:
+		var seg := segment_for(d.id)
+		if seg != null:
+			_segment_templates[d.id] = [seg.duplicate(), _creature.get_path_to(seg.get_parent()), seg.transform]
 	_on_capabilities_changed(anatomy.state.capabilities())
 
 func hurtbox_for(part_id: StringName) -> Hurtbox:
@@ -117,8 +123,8 @@ func _on_capabilities_changed(caps: CapabilitySet) -> void:
 		animation_set = s
 		animation_set_changed.emit(s)
 
+## 修復（縫合、移植）：重建分段網格、恢復骨骼與受擊區域、移除斷面。
 func _on_part_restored(part_id: StringName) -> void:
-	# 【未實作】修復後重建網格與骨架屬於 M6（肢體修復）。目前只恢復資料與受擊區域。
 	for id in [part_id] + anatomy.state.descendants_of(part_id):
 		var hb := hurtbox_for(id)
 		if hb != null:
@@ -127,4 +133,18 @@ func _on_part_restored(part_id: StringName) -> void:
 		var idx := skeleton.find_bone(String(def.bone_name))
 		if idx >= 0:
 			skeleton.set_bone_pose_scale(idx, Vector3.ONE)
-	push_warning("DismembermentController: visual restore of %s not implemented yet (M6)" % part_id)
+		var existing := segment_for(id)
+		if (existing == null or not _creature.is_ancestor_of(existing)) and _segment_templates.has(id):
+			var tpl: Array = _segment_templates[id]
+			var parent := _creature.get_node_or_null(tpl[1])
+			if parent != null:
+				var seg: Node3D = (tpl[0] as Node3D).duplicate()
+				parent.add_child(seg)
+				seg.transform = tpl[2]
+	var marker := _find("stump_%s" % part_id)
+	if marker != null:
+		var cap := marker.get_node_or_null("cap")
+		if cap != null:
+			marker.remove_child(cap)
+			cap.queue_free()
+	_on_capabilities_changed(anatomy.state.capabilities())

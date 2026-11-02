@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=8 format=3]
+
+[ext_resource type="Resource" path="res://content/anatomy/reverse_legged.tres" id="1_v4l5f"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_yfufq"]
+[ext_resource type="Resource" path="res://content/attacks/lunge.tres" id="3_5pjdc"]
+[ext_resource type="Resource" path="res://content/attacks/spur_kick.tres" id="4_e48fc"]
+[ext_resource type="Resource" path="res://content/attacks/claw.tres" id="5_h8gwq"]
+[ext_resource type="Resource" path="res://content/attacks/pounce_bite.tres" id="6_75ssc"]
+[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="7_85yn7"]
+
+[resource]
+script = ExtResource("7_85yn7")
+id = &"reverse_legged"
+display_name = "反足者"
+anatomy_profile = ExtResource("1_v4l5f")
+attacks = Array[ExtResource("2_yfufq")]([ExtResource("3_5pjdc"), ExtResource("4_e48fc"), ExtResource("5_h8gwq"), ExtResource("6_75ssc")])
+max_hp = 70.0
+max_st = 80.0
+move_speed = 4.2
+sever_chance_scale = 1.0
+stagger_threshold = 10.0
+sight_range = 11.0
+sight_fov_degrees = 140.0
+needs_vision = true
+hearing_range = 3.0
+memory_seconds = 4.0
+preferred_range = 3.5
+retreat_hp_ratio = 0.15
+defend_chance = 0.0
+dodge_chance = 0.3
+decision_interval = 0.35
+patrol_radius = 3.0
+special_behavior = &""
+dismember_react_seconds = 0.8

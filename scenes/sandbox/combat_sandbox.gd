@@ -1,7 +1,9 @@
 extends Node3D
-## 【測試場景】戰鬥沙盒：玩家 vs 不會動的木樁敵人（AI 在 M4）。
+## 【測試場景】戰鬥沙盒：玩家 vs 四種敵人（縫屍者、反足者、無面觀察者、多手人）。
 ## WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（AP）、Space 閃避、Shift 防禦、
-## 1/2/3 換武器、E 撿武器、F5 重置。
+## 1/2/3 換武器、E 撿武器、F5 重置。F6 切換「敵人 AI 開／關」（關掉時敵人變成木樁）。
+
+var _ai_enabled := true
 
 var _player: CharacterBody3D
 var _rig: CameraRig
@@ -26,16 +28,28 @@ func _reset() -> void:
 	_hud = CombatHud.new()
 	_hud.player = _player.get_node("CombatComponent")
 	add_child(_hud)
-	var dummies := [
-		["res://content/anatomy/humanoid.tres", &"dummy_humanoid", Vector3(-1.5, 0, -3)],
-		["res://content/anatomy/multi_armed.tres", &"dummy_many_hands", Vector3(1.5, 0, -3)],
+	var enemies := [
+		["stitcher", Vector3(-4, 0, -6)],
+		["reverse_legged", Vector3(4, 0, -9)],
+		["faceless_watcher", Vector3(0, 0, -11)],
+		["many_hands", Vector3(-1, 0, -5)],
 	]
-	for d in dummies:
-		var e := PlaceholderBodyBuilder.build_creature(load(d[0]), d[1])
-		add_child(e)
-		e.global_position = d[2]
+	for d in enemies:
+		var e := EnemyFactory.create(load("res://content/enemies/%s.tres" % d[0]), StringName(d[0]))
+		e.position = d[1]  # 先設定位置再加入場景，避免生成時與玩家重疊被物理推開
 		e.rotation.y = PI
+		add_child(e)
+		_set_ai(e, _ai_enabled)
+
+func _set_ai(e: Node, on: bool) -> void:
+	var ai := e.get_node_or_null("EnemyAI")
+	if ai != null:
+		ai.process_mode = Node.PROCESS_MODE_INHERIT if on else Node.PROCESS_MODE_DISABLED
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F5:
 		_reset()
+	elif event is InputEventKey and event.pressed and event.keycode == KEY_F6:
+		_ai_enabled = not _ai_enabled
+		for c in get_children():
+			_set_ai(c, _ai_enabled)
