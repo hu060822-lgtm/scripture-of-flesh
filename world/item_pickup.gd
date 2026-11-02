@@ -4,6 +4,8 @@ extends Interactable
 
 @export var item_id: String = ""
 @export var count: int = 1
+## 拾取後附在訊息後面的提示（例如「在祭壇按 T 移植」）。
+@export var hint_text: String = ""
 
 func _init() -> void:
 	once = true
@@ -16,7 +18,10 @@ func _do(player: Node3D) -> bool:
 	if data == null or item_id == "":
 		return false
 	data.inventory.add(item_id, count)
-	data.message.emit("獲得 %s ×%d" % [Inventory.display_name(item_id), count])
+	var msg := "獲得 %s ×%d" % [Inventory.display_name(item_id), count]
+	if hint_text != "":
+		msg += "　—　" + hint_text
+	data.message.emit(msg)
 	return true
 
 func _on_used() -> void:

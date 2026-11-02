@@ -7,7 +7,7 @@ extends Node
 ## 器官 id -> 外觀變體（CreatureModels._model_for）
 const ORGAN_VARIANTS := {
 	&"iron_arm": &"iron_arm", &"stitched_arm": &"stitched_arm", &"reverse_leg": &"reverse_leg",
-	&"watcher_eye": &"watcher_eye",
+	&"watcher_eye": &"watcher_eye", &"agnes_arm": &"stitched_arm",
 }
 
 var creature: Node3D

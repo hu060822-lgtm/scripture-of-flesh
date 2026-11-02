@@ -19,6 +19,9 @@ var intent: StringName = &""
 var strafe_side := 1.0
 var since_attack := INF
 var special_target: Node3D
+## 縫屍者帶著同伴的殘肢時：同伴與部位 id（序章提案 C）。
+var carry_owner: CombatComponent
+var carry_part: StringName = &""
 var special_progress := 0.0
 ## 特殊行為被打斷後的冷卻秒數（縫屍者不會立刻再去縫）。
 var special_cooldown := 0.0

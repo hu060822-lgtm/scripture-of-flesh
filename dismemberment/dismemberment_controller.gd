@@ -99,6 +99,8 @@ func _on_part_severed(top_id: StringName, ids: PackedStringArray) -> void:
 			seg.get_parent().remove_child(seg)
 			gib.add_child(seg)
 			seg.transform = pair[1]
+		if anatomy.profile != null:
+			LimbRelic.attach_if_relic(gib, anatomy.profile.id, top_id)
 	# 4. 骨架：斷離骨骼縮為零，避免殘留變形
 	for id in ids:
 		var def := anatomy.profile.get_part(StringName(id))

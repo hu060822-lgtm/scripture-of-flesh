@@ -14,6 +14,8 @@ extends Node
 signal phase_changed(phase: int)
 signal summoned(add: Node3D)
 signal cords_severed
+## 序章提案 H：砍斷一條臍帶（remaining = 剩下幾條）。母親會踉蹌，下一次生產延後。
+signal cord_cut(remaining: int)
 signal defeated
 # ---- AI-4（給動畫／音效：只發訊號）----
 ## 開始一段連段，ids 為整串招式。
@@ -27,6 +29,9 @@ const KNEEL_STILTS := 2
 const KNEEL_DROP := 1.25
 const SUMMON_INTERVAL := 9.0
 const MAX_ADDS := 2
+## 序章提案 H：每砍斷一條臍帶，生產間隔增加的秒數，以及當下母親踉蹌的秒數。
+const SUMMON_DELAY_PER_CORD := 4.0
+const CORD_STAGGER_SECONDS := 1.4
 const KNEEL_SPEED_FACTOR := 0.55
 ## 跪下的演出時間（秒，戰鬥時間）。
 const KNEEL_TIME := 1.0
@@ -59,6 +64,7 @@ var summon_timer := SUMMON_INTERVAL * 0.5
 var combat: CombatComponent
 var ai: EnemyAI
 var _cords_reported := false
+var _last_cords := -1
 var _add_counter := 0
 ## AI-4 狀態
 var combo_queue: Array[StringName] = []
@@ -75,6 +81,7 @@ func _ready() -> void:
 	ai = get_parent().get_node("EnemyAI")
 	# 每隻 Boss 使用自己的定義副本，跪下時可以調整速度而不影響資源檔。
 	ai.definition = ai.definition.duplicate()
+	_last_cords = cords()
 	combat.anatomy.state.capabilities_changed.connect(func(_c): _check_phase())
 	combat.died.connect(func(_c): _on_died())
 	combat.action_changed.connect(_on_action_changed)
@@ -109,9 +116,20 @@ func advance(delta: float) -> void:
 		return
 	summon_timer -= delta
 	if summon_timer <= 0.0:
-		summon_timer = SUMMON_INTERVAL
+		summon_timer = summon_interval()
 		if adds.size() < MAX_ADDS:
 			summon()
+
+## 目前的生產間隔：每斷一條臍帶就變慢（序章提案 H）。
+func summon_interval() -> float:
+	return SUMMON_INTERVAL + float(cords_lost()) * SUMMON_DELAY_PER_CORD
+
+func cords_lost() -> int:
+	var total := 0
+	for d in combat.anatomy.profile.parts:
+		if "tether" in d.functions:
+			total += 1
+	return maxi(0, total - cords())
 
 func summon() -> Node3D:
 	_add_counter += 1
@@ -134,6 +152,10 @@ func summon() -> Node3D:
 func _check_phase() -> void:
 	if combat.is_dead():
 		return
+	var c := cords()
+	if _last_cords >= 0 and c < _last_cords:
+		_on_cord_cut(c)
+	_last_cords = c
 	if cords() <= 0 and not _cords_reported:
 		_cords_reported = true
 		GameState.set_flag(&"mother_cords_cut")
@@ -141,6 +163,14 @@ func _check_phase() -> void:
 		enrage()
 	if phase == 1 and stilts() <= KNEEL_STILTS:
 		_kneel()
+
+func _on_cord_cut(remaining: int) -> void:
+	summon_timer += SUMMON_DELAY_PER_CORD
+	var saved := combat.stagger_duration
+	combat.stagger_duration = CORD_STAGGER_SECONDS
+	combat._stagger()
+	combat.stagger_duration = saved
+	cord_cut.emit(remaining)
 
 func _kneel() -> void:
 	phase = 2

@@ -18,5 +18,7 @@ extends Resource
 @export var mutation_cost: float = 10.0
 ## 需要的最低技術（義肢）。
 @export var min_tec: int = 0
+## 必定相容（劇情給予的器官，例如阿格妮絲縫的手臂：序章第一次移植不會被排斥）。
+@export var guaranteed: bool = false
 ## 從屍體摘取時，捐贈者身上必須仍然完好的部位。
 @export var harvest_part: StringName = &""

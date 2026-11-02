@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="OrganDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://organ/organ_definition.gd" id="1_16lcs"]
+[ext_resource type="Script" path="res://anatomy/body_part_def.gd" id="2_xdp8t"]
+
+[sub_resource type="Resource" id="Resource_iti4c"]
+script = ExtResource("2_xdp8t")
+id = &""
+display_name = ""
+max_hp = 42.0
+armor = 1.0
+resistances = {
+"CUT": 0.75
+}
+functions = PackedStringArray("arm", "grip")
+detachable = true
+parent_id = &""
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.3
+mutation_threshold = 60.0
+bone_name = &""
+mesh_segment = &""
+
+[resource]
+script = ExtResource("1_16lcs")
+id = &"agnes_arm"
+display_name = "阿格妮絲縫的手臂"
+description = "阿格妮絲用最細的線縫好、留給你的手臂。針腳整齊得像祈禱，它會聽你的話。"
+slots = PackedStringArray("arm_l", "arm_r")
+template = SubResource("Resource_iti4c")
+origin = &"abomination"
+base_compatibility = 1.0
+mutation_cost = 2.0
+min_tec = 0
+harvest_part = &""
+guaranteed = true

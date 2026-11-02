@@ -42,6 +42,9 @@ const EYE_HEIGHT_RATIO := 0.85
 const TARGET_AIM_HEIGHT := 1.0
 ## 隔牆聽到的聲響半徑倍率。
 const OCCLUDED_HEARING := 0.5
+## freeze_when_watched：目標視線與「目標→我」夾角在這個角度內、距離在這之內就算被看著。
+const WATCHED_HALF_ANGLE := 55.0
+const WATCHED_RANGE := 14.0
 
 @export var definition: EnemyDefinition
 @export var gravity: float = 18.0
@@ -59,6 +62,8 @@ var locomotion_mode: StringName = &"idle"
 var _initial_vision := 0
 var _initial_locomotion := 0
 var _home_set := false
+## 正被目標看著而定住（freeze_when_watched）。給動畫、除錯與測試讀取。
+var frozen_by_gaze := false
 
 func _ready() -> void:
 	combat = body().get_node("CombatComponent")
@@ -82,9 +87,15 @@ func state() -> StringName:
 
 func _physics_process(delta: float) -> void:
 	var sd := TimeScale.scaled(delta)
+	var yaw_before := body().rotation.y
 	advance(sd)
 	var b := body()
 	var v := desired_velocity
+	if frozen_by_gaze:
+		v = Vector3.ZERO
+		b.rotation.y = yaw_before
+	elif definition.freeze_when_watched:
+		v *= definition.unwatched_speed_factor
 	if combat.current_attack != null and combat.current_attack.tags.has("lunge") and combat.action == CombatComponent.Action.ACTIVE:
 		v = -b.global_transform.basis.z * LUNGE_SPEED
 	elif combat.action == CombatComponent.Action.DODGE:
@@ -127,6 +138,7 @@ func advance(delta: float) -> void:
 	runtime.since_attack += delta
 	runtime.special_cooldown = maxf(0.0, runtime.special_cooldown - delta)
 	perceive(delta)
+	_update_gaze_freeze()
 	habits.observe(combat, runtime.target)
 	var next: StringName = _states[runtime.state_name].update(self, delta)
 	if next != &"" and next != runtime.state_name:
@@ -176,6 +188,31 @@ func perceive(delta: float) -> void:
 		runtime.time_since_seen += delta
 		if runtime.target != null and (runtime.target.is_dead() or runtime.time_since_seen > definition.memory_seconds):
 			runtime.target = null
+
+## 序章提案 C：無面觀察者被目標看著時定住。
+func _update_gaze_freeze() -> void:
+	var was := frozen_by_gaze
+	frozen_by_gaze = definition.freeze_when_watched and not combat.is_dead() and vision_count() > 0 \
+		and runtime.target != null and is_watched_by(runtime.target)
+	if frozen_by_gaze != was:
+		bark.emit(&"frozen" if frozen_by_gaze else &"unfrozen")
+
+## other 是否正面對著我（視線夾角內、距離內、沒有被牆擋住）。
+func is_watched_by(other: CombatComponent) -> bool:
+	if other == null or other.is_dead():
+		return false
+	var ob := other.body()
+	var to_me := body().global_position - ob.global_position
+	to_me.y = 0
+	if to_me.length() > WATCHED_RANGE or to_me.length() < 0.01:
+		return false
+	var fwd := -ob.global_transform.basis.z
+	fwd.y = 0
+	if fwd.length() < 0.01:
+		return false
+	if fwd.normalized().dot(to_me.normalized()) < cos(deg_to_rad(WATCHED_HALF_ANGLE)):
+		return false
+	return has_line_of_sight(ob.global_position + Vector3.UP * TARGET_AIM_HEIGHT)
 
 func can_detect(other: CombatComponent) -> bool:
 	return can_see(other) or can_hear(other)
