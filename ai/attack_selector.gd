@@ -18,6 +18,39 @@ static func select(combat: CombatComponent, distance: float, rng: RandomNumberGe
 			return a
 	return candidates.back()
 
+## 戰術版選招（AI-2）：
+##  - 目標有破綻時偏好前搖短的招式（趁隙）。
+##  - 目標在防禦（或常防禦）時偏好耐力壓迫大的招式，削破防禦。
+static func select_for(ai: EnemyAI, distance: float) -> AttackDefinition:
+	var candidates := usable_in_range(ai.combat, distance)
+	if candidates.is_empty():
+		return null
+	var t := ai.runtime.target
+	var open := Tactics.opening(ai, t) if t != null else 0.0
+	var guard := 0.0
+	if t != null:
+		guard = maxf(1.0 if t.blocking else 0.0, ai.habits.block_rate) * ai.definition.adaptivity
+	var weights: Array[float] = []
+	var total := 0.0
+	for a in candidates:
+		var w := weight_of(a)
+		w *= 1.0 + open * ai.definition.punish_skill * clampf(1.0 - a.windup, 0.0, 1.0) * 2.0
+		w *= 1.0 + guard * clampf(total_damage(a) / 15.0, 0.0, 2.0)
+		weights.append(w)
+		total += w
+	var roll := ai.rng.randf() * total
+	for i in candidates.size():
+		roll -= weights[i]
+		if roll <= 0.0:
+			return candidates[i]
+	return candidates.back()
+
+static func total_damage(a: AttackDefinition) -> float:
+	var t := 0.0
+	for k in a.damage:
+		t += float(a.damage[k])
+	return t * a.damage_scale
+
 static func usable_in_range(combat: CombatComponent, distance: float) -> Array[AttackDefinition]:
 	var out: Array[AttackDefinition] = []
 	for a in combat.available_attacks():

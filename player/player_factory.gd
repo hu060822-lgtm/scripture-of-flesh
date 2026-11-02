@@ -44,6 +44,9 @@ static func create(weapon_paths: Array = WEAPONS, class_path: String = DEFAULT_C
 	data.name = "PlayerData"
 	body.add_child(data)
 	body.add_child(ctrl)
+	var noise := NoiseEmitter.new()
+	noise.name = "NoiseEmitter"
+	body.add_child(noise)
 	var tac := TacticalController.new()
 	tac.name = "TacticalController"
 	body.add_child(tac)

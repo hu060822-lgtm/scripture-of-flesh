@@ -18,6 +18,25 @@
 - 按鍵：F1 效果開關（對照）、F2 解析度、F3 抖色、F4 頂點抖動、F5 重置、F6 敵人 AI、Esc 主選單。
 - 截圖：`xvfb-run -s "-screen 0 1280x720x24" godot --rendering-driver opengl3 --path . -s tests/sim/art_shots.gd -- <資料夾>`
 
+## 聲音（A1：架構）
+
+- `AudioManager`（autoload）：匯流排 Master ← Music／Ambience／SFX／UI／Voice（SFX 與 Ambience 預留低通濾波，A4 低血量悶聲用；Master 有限幅器）。
+  `play(cue_id, at)` 會隨機選變體與音高，並處理冷卻、同一 cue 的發聲上限，以及 3D 定位。
+- `SoundCatalog`：cue 定義表。音檔放到 `audio/sfx/<cue_id>/` 就會自動載入，不需要改程式。**目前還沒有音檔**，所有 cue 都是【暫代】靜音。
+- `AudioDirector`：監聽場景樹，自動接上戰鬥、解剖、Boss、縫合、移植、祭壇、拾取、門、按鈕的 signal，不必修改那些系統。腳步聲依移動距離觸發。
+  音樂狀態依序判斷：結局 > 死亡 > Boss（boss_1／boss_2）> 戰鬥 > 緊張 > 探索 > 主選單。戰鬥結束後戰鬥音樂會再維持 4 秒。
+- `MusicMixer`（A3）：10 個同長的 stem 同時循環，依音樂狀態淡入淡出（`MIXES` 表）。
+  探索時是走音的八音盒搖籃曲；緊張時搖籃曲退遠，低鳴與倒放人聲浮上來；戰鬥時只剩心跳與悶擊。
+  Boss 戰時母親哼同一首搖籃曲，跪伏後哼唱崩壞。死亡時音樂抽空，只留一聲低鳴；離院結局是同一首曲子的大調版本。
+- `AmbiencePlayer`（A3）：房間環境音交叉淡變，依玩家離最近的區域觸發點決定（【暫代】近似）。
+- `PsycheAudio`（A4，只作用在玩家身上）：
+  - HP 降到 30% 以下時，音效與環境音逐漸變悶，5% 時最悶（低通 600 Hz）。
+  - 自己的肢體被斷時會耳鳴，世界另外變悶 3 秒。
+  - 異化 ≥ 25 時，身邊會出現聽不清楚的低語：異化 25 時約每 36 秒一次，100 時約每 8 秒一次，而且越來越大聲。
+- 重新產生音樂：`python3 tools/music_synth/generate_music.py`（需要 numpy；有 ffmpeg 時輸出 .ogg）。
+- 主選單 →「聲音設定」：六條音量滑桿，設定存在 `user://settings.cfg`。
+- 素材來源與授權見 `audio/SOURCES.md`。
+
 ## 序章流程
 
 白色產房醒來（赤手）→ 與助產修女阿格妮絲對話，以「手還記得什麼」選擇職業（取得職業武器與縫合包）
@@ -97,7 +116,7 @@ WASD 移動、滑鼠瞄準、左鍵普通攻擊、右鍵特殊技（消耗 AP）
 | `scenes/prologue/` | `prologue_level.tscn`（由 `tools/generate_prologue_level.gd` 產生，之後直接在編輯器修改）、`prologue.tscn` |
 | `anatomy/` | `BodyPartDef`、`AnatomyProfile`（Resource）；`AnatomyState`、`BodyPartState`、`CapabilitySet`（即時狀態） |
 | `damage/` | `DamageTypes`（八種損傷與係數）、`DamagePacket`、`DamageResolver`、`DamageResult` |
-| `ai/` | `EnemyDefinition`、`EnemyRuntimeState`、`EnemyAI`（狀態機）、`ai/states/` 各狀態、`AttackSelector`、`EnemyFactory` |
+| `ai/` | `EnemyDefinition`、`EnemyRuntimeState`、`EnemyAI`（狀態機）、`ai/states/` 各狀態、`AttackSelector`、`EnemyFactory`、`AiNavigator`（尋路）、`ai/perception/NoiseEmitter`（聲響）、`ai/tactics/`（`Tactics` 戰術評分、`TargetHabits` 玩家習慣、`PartTargeting` 瞄準傷口）、`ai/squad/`（`AttackTokens` 攻擊令牌、`Squad` 包圍站位） |
 | `content/enemies/` | 四種敵人資料 |
 | `combat/` | `CombatComponent`（攻擊、防禦、閃避、硬直、出血、死亡）、`ResourcePools`（HP/ST/AP）、`AttackDefinition` |
 | `player/` | `PlayerController`（輸入 → 指令）、`TacticalController`（戰術介面）、`PlayerFactory` |
@@ -164,7 +183,8 @@ DamagePacket ─▶ DamageResolver.resolve()（不修改狀態）─▶ DamageRe
   正式模型只要遵守 `PlaceholderBodyBuilder` 註解中的命名慣例即可直接替換。
 - 動畫是【程序生成】的關鍵格（`CreatureAnimationLibrary`），不是手工動畫；手肘、手指、脊椎沒有獨立骨骼（每個部位一根骨骼）。
 - 移植後的部位外觀會改變，但心臟等內部器官（多手人之心）沒有外觀。異化階段（骨刺等）還沒有外觀變化。
-- 敵人移動是直線前進，沒有尋路（NavigationAgent3D 在 M7 視關卡需要加入）。
+- 敵人尋路：序章載入時以 `LevelNavigation` 從灰盒碰撞體烘焙導航網格，敵人沿路徑跨房間追擊；沙盒沒有導航網格時退回直線移動。敵人間距用簡單的分離轉向，不是 RVO。
+- 敵人 AI 除錯：遊戲中按 F9 顯示每隻敵人的狀態／意圖／攻擊令牌／Boss 階段與連段。
 - 飛撲的位移仍由 AI 直接移動身體；動畫只提供蓄力與撲出的姿勢。
 - 武器是程序生成的低多邊形模型（`WeaponModels`）。手臂「功能失效」（未斷）時武器仍握在手上，但雙手武器在可用的手不足時無法揮動。
 - 命中判定是幾何扇形計算（不使用物理碰撞），方便戰術減速與測試；之後若需要精確武器軌跡再改。
