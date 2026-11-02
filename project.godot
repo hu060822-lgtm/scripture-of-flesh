@@ -18,6 +18,11 @@ TimeScale="*res://core/time_scale_service.gd"
 GameState="*res://core/game_state.gd"
 AudioManager="*res://audio/audio_manager.gd"
 
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
 [rendering]
 
 renderer/rendering_method="forward_plus"

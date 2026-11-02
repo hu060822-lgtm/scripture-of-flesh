@@ -5,12 +5,13 @@ extends SubViewportContainer
 ## world 是 3D 內容的父節點。
 
 const POST := preload("res://art/ps1/ps1_post.gdshader")
-## 可切換的垂直解析度（F2）。
+## 可切換的垂直解析度（F2）。預設 360p（遊玩回饋：240p 太糊）。
 const HEIGHTS := [240, 360, 480]
+const DEFAULT_HEIGHT := 360
 
 var viewport: SubViewport
 var world: Node3D
-var height_index := 0
+var height_index := HEIGHTS.find(DEFAULT_HEIGHT)
 var effects_enabled := true
 
 func _init() -> void:

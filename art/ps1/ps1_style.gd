@@ -17,7 +17,8 @@ const GREY_PINK := Color("b9a3a0")
 
 ## 全域設定（美術測試的 F 鍵切換）。
 static var jitter_enabled := true
-static var snap_resolution := Vector2(320, 240)
+## 頂點抖動的格點；預設對應 360p 畫面（RetroScreen 會依實際解析度覆寫）。
+static var snap_resolution := Vector2(320, 180)
 
 static var _textures := {}
 static var _materials := {}
