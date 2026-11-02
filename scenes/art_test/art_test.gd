@@ -84,9 +84,6 @@ func reset() -> void:
 func _finish_creature(c: CharacterBody3D, pos: Vector3, yaw: float) -> void:
 	c.position = pos
 	c.rotation.y = yaw
-	var anim := RetroAnimator.new()
-	anim.name = "RetroAnimator"
-	c.add_child(anim)
 	screen.world.add_child(c)
 	(c.get_node("DismembermentController") as DismembermentController).cap_builder = PS1Style.build_stump_cap
 

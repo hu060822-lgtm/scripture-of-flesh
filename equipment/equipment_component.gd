@@ -9,6 +9,9 @@ signal weapon_dropped(part_id: StringName, weapon: Node3D)
 var anchors := {}
 var held := {}  # part_id -> Node3D
 
+## 握持角度：手臂自然下垂時武器朝前下方（-65°）。揮擊時手臂前擺，武器跟著轉到水平或高舉。
+const GRIP_PITCH_DEGREES := -65.0
+
 func equip(part_id: StringName, weapon: Node3D) -> bool:
 	var anchor: Node3D = anchors.get(part_id)
 	if anchor == null or held.has(part_id):
@@ -16,6 +19,7 @@ func equip(part_id: StringName, weapon: Node3D) -> bool:
 	if weapon.get_parent() != null:
 		weapon.get_parent().remove_child(weapon)
 	anchor.add_child(weapon)
+	weapon.transform = Transform3D(Basis(Vector3.RIGHT, deg_to_rad(GRIP_PITCH_DEGREES)), Vector3.ZERO)
 	held[part_id] = weapon
 	return true
 
@@ -44,9 +48,9 @@ func free_arm(state: AnatomyState) -> StringName:
 			return pid
 	return &""
 
-## 以武器資料建立【暫代】外觀並裝備。
+## 以武器資料建立外觀（程序生成的低多邊形模型）並裝備。
 func equip_definition(def: WeaponDefinition, part_id: StringName) -> Node3D:
-	var node := make_placeholder_visual(def)
+	var node := make_visual(def)
 	if not equip(part_id, node):
 		node.free()
 		return null
@@ -61,23 +65,8 @@ func unequip(part_id: StringName) -> Node3D:
 	w.get_parent().remove_child(w)
 	return w
 
-static func make_placeholder_visual(def: WeaponDefinition) -> Node3D:
-	var root := Node3D.new()
-	root.name = "Weapon_%s" % def.id
-	root.set_meta(&"weapon_def", def)
-	var mi := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	match def.weapon_type:
-		&"hammer": bm.size = Vector3(0.18, 0.18, 0.9)
-		&"rapier": bm.size = Vector3(0.025, 0.025, 1.0)
-		_: bm.size = Vector3(0.12, 0.04, 0.7)
-	mi.mesh = bm
-	mi.position = Vector3(0, 0, -bm.size.z * 0.5)
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color("8c7a4b")  # 陳舊金
-	mi.material_override = mat
-	root.add_child(mi)
-	return root
+static func make_visual(def: WeaponDefinition) -> Node3D:
+	return WeaponModels.build(def)
 
 ## 部位斷離時呼叫。回傳掉落的武器（沒有則為 null）。
 func drop_from(part_id: StringName, world_parent: Node) -> Node3D:
@@ -98,6 +87,6 @@ func drop_from(part_id: StringName, world_parent: Node) -> Node3D:
 	body.global_transform = xf
 	weapon.get_parent().remove_child(weapon)
 	body.add_child(weapon)
-	weapon.transform = Transform3D.IDENTITY
+	weapon.transform = Transform3D(Basis(), Vector3(0, 0, 0.35))  # 碰撞盒置中於武器長度
 	weapon_dropped.emit(part_id, weapon)
 	return weapon

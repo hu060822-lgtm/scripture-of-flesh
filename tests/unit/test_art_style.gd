@@ -44,7 +44,7 @@ func test_art_test_scene_builds() -> void:
 	tree.root.add_child(scene)
 	assert_eq(scene.enemies.size(), 2)
 	assert_true(scene.camera is FixedCamera)
-	assert_true(scene.player.get_node_or_null("RetroAnimator") != null)
+	assert_true(scene.player.get_node_or_null("CreatureAnimator") != null)
 	scene.screen.toggle_effects()
 	assert_false(scene.screen.effects_enabled)
 	scene.screen.toggle_effects()

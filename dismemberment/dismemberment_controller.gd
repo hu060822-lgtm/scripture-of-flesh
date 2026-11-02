@@ -124,8 +124,8 @@ func _on_part_severed(top_id: StringName, ids: PackedStringArray) -> void:
 		cap.name = "cap"
 		marker.add_child(cap)
 		# 斷面的 +Y 朝向關節外側（從父部位中心指向斷口）
-		if marker.position.length() > 0.001:
-			cap.basis = Basis(Quaternion(Vector3.UP, marker.position.normalized()))
+		var outward: Vector3 = marker.get_meta(&"outward", marker.position.normalized() if marker.position.length() > 0.001 else Vector3.UP)
+		cap.basis = Basis(Quaternion(Vector3.UP, outward.normalized()))
 	severed_visuals_applied.emit(top_id, ids)
 
 func _on_capabilities_changed(caps: CapabilitySet) -> void:
