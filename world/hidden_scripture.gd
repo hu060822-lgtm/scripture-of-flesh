@@ -41,18 +41,12 @@ func _player() -> Node3D:
 func _set_revealed(on: bool) -> void:
 	_visible_now = on
 	for c in get_children():
-		if c is MeshInstance3D:
+		if c is Node3D:
 			c.visible = on
 
 func is_revealed() -> bool:
 	return _visible_now
 
 func _build_placeholder() -> void:
-	# 【暫代】牆上發著陳舊金光的經文
-	var slab := BoxMesh.new()
-	slab.size = Vector3(1.4, 1.0, 0.04)
-	var mi := Interactable.placeholder_mesh(self, slab, Vector3(0, 1.4, 0), Color("c9a27a"), "Glyphs")
-	var mat := mi.material_override as StandardMaterial3D
-	mat.emission_enabled = true
-	mat.emission = Color("c9a27a")
-	mat.emission_energy_multiplier = 1.2
+	# 牆上發著陳舊金光的經文（PropModels.hidden_glyphs）
+	add_child(PropModels.hidden_glyphs())

@@ -35,10 +35,8 @@ func _do(player: Node3D) -> bool:
 	return super._do(player)
 
 func _build_placeholder() -> void:
-	# 【暫代】發著微弱金光的羊皮紙
-	var leaf := BoxMesh.new()
-	leaf.size = Vector3(0.3, 0.02, 0.4)
-	Interactable.placeholder_mesh(self, leaf, Vector3(0, 0.03, 0), Color("d9c27a"), "Leaf")
+	# 發著微弱金光的羊皮紙（PropModels.scripture_leaf）＋一點點光，讓它在暗處被看見
+	add_child(PropModels.scripture_leaf())
 	var glow := OmniLight3D.new()
 	glow.name = "Glow"
 	glow.light_color = Color("c9a24a")
