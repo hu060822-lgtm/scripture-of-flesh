@@ -27,14 +27,19 @@ func _do(player: Node3D) -> bool:
 	return true
 
 func _on_used() -> void:
-	var shown := get_node_or_null("Weapon")
+	var shown := find_child("Weapon", true, false)
 	if shown != null:
 		shown.visible = false
 
 func _build_placeholder() -> void:
-	var base := BoxMesh.new()
-	base.size = Vector3(0.7, 0.9, 0.7)
-	Interactable.placeholder_mesh(self, base, Vector3(0, 0.45, 0), Color("cfc8b8"))
-	var blade := BoxMesh.new()
-	blade.size = Vector3(0.08, 0.9, 0.18)
-	Interactable.placeholder_mesh(self, blade, Vector3(0, 1.35, 0), Color("8a8070"), "Weapon")
+	# 哥德式石座＋實際的武器模型（拿走後只剩台座）
+	add_child(PropModels.pedestal(weapon()))
+	_shown = find_child("Weapon", true, false)
+
+## 武器在台上緩慢旋轉（PS1 式的展示品），從斜俯視鏡頭也看得出刀身形狀。
+const SPIN_SPEED := 0.7
+var _shown: Node3D
+
+func _process(delta: float) -> void:
+	if _shown != null and _shown.visible:
+		_shown.rotation.y = wrapf(_shown.rotation.y + delta * SPIN_SPEED, 0.0, TAU)

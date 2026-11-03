@@ -28,6 +28,8 @@ const LOOKS := {
 	&"frozen_stitcher": {"skin": [Color("9aa4ac"), "stitched"], "cloth": [Color("d8dde0"), "cloth"], "trim": Color("4e1612"), "apron": true, "sutures": true},
 	# 阿格妮絲：產房的修女兼接生者。奶油黃頭巾、煤灰黑修女服、陳舊金念珠。
 	&"agnes": {"skin": [Color("d6bfb6"), "skin"], "cloth": [Color("2a2725"), "cloth"], "hood_cloth": [Color("e2d4a4"), "cloth"], "trim": Color("a8863f"), "clothed": true, "hood": true},
+	# 伊格納：垂死的縫合司祭。灰粉而發青的皮膚、頭皮上的縫線、煤灰黑司祭袍、乾涸紅聖帶。
+	&"ignatius": {"skin": [Color("a8968f"), "stitched"], "cloth": [Color("2a2725"), "cloth"], "trim": Color("6e1f19"), "clothed": true, "robe": true, "sutures": true},
 	# 連體修女（主線精英）：灰粉色的皮膚、煤灰黑修女服、奶油黃頭巾，眼睛被一條沾血的布縫住。
 	&"conjoined_nun": {"skin": [Color("c8b0aa"), "skin"], "cloth": [Color("2a2725"), "cloth"], "hood_cloth": [Color("e2d4a4"), "cloth"], "trim": Color("a8863f"), "clothed": true, "hood": true, "blindfold": true},
 	# 分裂後的兩位修女：同一套衣服，但身體一側被撕開（torn = 原本連著對方的那一側，+1 左／-1 右）。

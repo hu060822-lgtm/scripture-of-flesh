@@ -25,12 +25,27 @@ func _do(player: Node3D) -> bool:
 	return true
 
 func _on_used() -> void:
+	set_process(false)
 	for c in get_children():
-		if c is MeshInstance3D:
+		if c is Node3D:
 			c.visible = false
 
 func _build_placeholder() -> void:
-	var m := SphereMesh.new()
-	m.radius = 0.15
-	m.height = 0.3
-	Interactable.placeholder_mesh(self, m, Vector3(0, 0.4, 0), Color("a04a3e"))
+	add_child(PropModels.item(item_id, count))
+	_glints.clear()
+	for n in find_children("*", "MeshInstance3D", true, false):
+		if n.has_meta(PropModels.GLINT_META):
+			_glints.append([n, (n as Node3D).scale])
+
+## 「可以撿」的提示：關鍵部位（針、鑰匙、眼球…）每 1.6 秒微微脹一下（PS1 式的低幀率脈動）。
+const GLINT_PERIOD := 1.6
+var _glints: Array = []  # [MeshInstance3D, 原本的 scale]
+var _t := 0.0
+
+func _process(delta: float) -> void:
+	if _glints.is_empty():
+		return
+	_t += delta
+	var on := fmod(_t, GLINT_PERIOD) < 0.25
+	for g in _glints:
+		(g[0] as Node3D).scale = (g[1] as Vector3) * (1.15 if on else 1.0)
