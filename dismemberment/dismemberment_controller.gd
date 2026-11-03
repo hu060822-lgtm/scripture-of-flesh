@@ -130,6 +130,33 @@ func _on_part_severed(top_id: StringName, ids: PackedStringArray) -> void:
 		cap.basis = Basis(Quaternion(Vector3.UP, outward.normalized()))
 	severed_visuals_applied.emit(top_id, ids)
 
+## 身體狀態一開始就有斷離的部位時（例如連體修女分裂後延續的斷肢），讓外觀與碰撞跟上：
+## 移除分段網格、停用受擊區域、骨骼縮為零、接上斷面。不生成殘肢（殘肢早就掉在地上了）。
+func sync_severed_visuals() -> void:
+	var st := anatomy.state
+	for pid in st.part_ids():
+		var p := st.get_part(pid)
+		if not p.severed:
+			continue
+		var hb := hurtbox_for(pid)
+		if hb != null:
+			hb.deactivate()
+		var seg := segment_for(pid)
+		if seg != null:
+			seg.get_parent().remove_child(seg)
+			seg.queue_free()
+		var idx := skeleton.find_bone(String(p.def.bone_name))
+		if idx >= 0:
+			skeleton.set_bone_pose_scale(idx, BONE_COLLAPSED_SCALE)
+		var top := p.def.parent_id == &"" or not st.get_part(p.def.parent_id).severed
+		var marker := _find("stump_%s" % pid)
+		if top and marker != null and marker.get_node_or_null("cap") == null and cap_builder.is_valid():
+			var cap: Node3D = cap_builder.call(pid)
+			cap.name = "cap"
+			marker.add_child(cap)
+			var outward: Vector3 = marker.get_meta(&"outward", Vector3.UP)
+			cap.basis = Basis(Quaternion(Vector3.UP, outward.normalized()))
+
 func _on_capabilities_changed(caps: CapabilitySet) -> void:
 	var s := AnimationSet.from_capabilities(caps)
 	if s != animation_set:

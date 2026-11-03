@@ -395,6 +395,53 @@ def boss_defeated(rng, v):
     return finish(dsp.reverb(x, rng, 2.5, 0.45, 2500, 0.05), -1.0)
 
 
+# ======================================================================== 精英：連體修女
+
+def _step_curve(d, notes):
+    """notes: [(起點秒, 頻率)]，回傳以短滑音連接的階梯音高曲線（給 _voice 用）。"""
+    pts = []
+    for i, (t, f) in enumerate(notes):
+        if i > 0:
+            pts.append((max(0.0, t - 0.06), notes[i - 1][1]))
+        pts.append((t, f))
+    pts.append((d, notes[-1][1]))
+    return pts
+
+
+@cue(2, "雙聲聖歌：兩個女聲用同一口氣哼搖籃曲，第二個聲音慢半拍、高一個小二度（不和諧），氣聲很重")
+def twin_hymn(rng, v):
+    d = 3.9
+    base = U(rng, 300, 330)
+    # 下行的搖籃曲片段（兩種變體）
+    steps = [1.0, 0.89, 0.84, 0.75, 0.84] if v == 0 else [0.84, 1.0, 0.89, 0.75, 0.67]
+    notes = [(i * 0.72, base * k) for i, k in enumerate(steps)]
+    vow = [(0, VOWELS["u"]), (1.4, VOWELS["o"]), (2.6, VOWELS["u"]), (d, VOWELS["u"])]
+    a = _voice(d, _step_curve(d, notes), vow, rng, vib_rate=5.2, vib_depth=0.012, breath=0.35, jitter=0.015)
+    lag = 0.09
+    b_notes = [(t + lag, f * 1.059 * 1.004) for t, f in notes]  # 小二度、再走音一點
+    b = _voice(d, _step_curve(d, b_notes), vow, rng, vib_rate=4.7, vib_depth=0.018, breath=0.45, jitter=0.02)
+    env = env_points(d, [(0, 0), (0.3, 0.8), (3.1, 0.7), (d, 0)])
+    x = (a * 0.9 + b * 0.7) * env
+    return finish(dsp.reverb(lowpass(x, 3200), rng, 2.4, 0.5, 2500, 0.05), -4.0)
+
+
+@cue(2, "分裂：粗縫線一根根崩斷、濕黏的撕裂，然後兩聲重疊的尖叫（一高一低、互相走音）")
+def twin_split(rng, v):
+    d = 2.6
+    pops = mix(*[(thump(0.06, U(rng, 600, 900), 200, 0.015, rng, click=1.0), 0.05 + i * U(rng, 0.05, 0.08), 0.6) for i in range(6)])
+    tear = stick_slip(0.55, rng, [(0, 40), (0.55, 140)], [(0, 400), (0.55, 900)], q=4, jitter=0.6)
+    tear *= env_points(0.55, [(0, 0), (0.1, 1), (0.55, 0.4)])
+    wet = squelch(0.9, rng, 420, bubbles=30) * env_exp(0.9, 0.3)
+    shriek_d = 1.8
+    f1 = [(0, 520), (0.25, 880), (1.0, 760), (shriek_d, 420)]
+    s1 = _voice(shriek_d, f1, [(0, VOWELS["a"]), (1.0, VOWELS["ae"]), (shriek_d, VOWELS["a"])], rng, vib_rate=7.0, vib_depth=0.03, breath=0.3, jitter=0.05)
+    f2 = [(t, f * 0.71) for t, f in f1]  # 低一個增四度：最刺耳的音程
+    s2 = _voice(shriek_d, f2, [(0, VOWELS["e"]), (1.0, VOWELS["a"]), (shriek_d, VOWELS["o"])], rng, vib_rate=5.5, vib_depth=0.04, breath=0.4, jitter=0.06)
+    senv = env_points(shriek_d, [(0, 0), (0.08, 1), (1.2, 0.7), (shriek_d, 0)])
+    x = mix((norm(pops), 0, 0.5), (tear, 0.1, 0.6), (wet, 0.45, 0.7), (s1 * senv, 0.5, 0.8), (s2 * senv, 0.58, 0.7))
+    return finish(dsp.reverb(softclip(norm(x), 1.4), rng, 1.8, 0.4, 2800, 0.04)[:n_samples(d + 1.0)], -0.5)
+
+
 # ======================================================================== UI
 
 @cue(2, "滑過選項：很小的骨頭輕敲聲")

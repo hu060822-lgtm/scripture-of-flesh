@@ -1,0 +1,53 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=9 format=3]
+
+[ext_resource type="Resource" path="res://content/anatomy/conjoined_half_a.tres" id="1_oo0rl"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_vytfs"]
+[ext_resource type="Resource" path="res://content/attacks/grab_tear.tres" id="3_0lg3n"]
+[ext_resource type="Resource" path="res://content/attacks/double_grab.tres" id="4_xv4mi"]
+[ext_resource type="Resource" path="res://content/attacks/claw.tres" id="5_3rj1q"]
+[ext_resource type="Resource" path="res://content/attacks/bite.tres" id="6_m48rp"]
+[ext_resource type="Script" path="res://organ/organ_definition.gd" id="7_bqvsi"]
+[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="8_eiaub"]
+
+[resource]
+script = ExtResource("8_eiaub")
+id = &"nun_sister_a"
+display_name = "左修女"
+anatomy_profile = ExtResource("1_oo0rl")
+attacks = Array[ExtResource("2_vytfs")]([ExtResource("3_0lg3n"), ExtResource("4_xv4mi"), ExtResource("5_3rj1q"), ExtResource("6_m48rp")])
+max_hp = 110.0
+max_st = 100.0
+move_speed = 6.4
+sever_chance_scale = 1.0
+stagger_threshold = 16.0
+xp_reward = 80
+harvestable = Array[ExtResource("7_bqvsi")]([])
+collision_radius = 0.32
+collision_height = 1.8
+visual_scale = 1.0
+sight_range = 10.0
+sight_fov_degrees = 200.0
+needs_vision = false
+hearing_range = 8.0
+memory_seconds = 30.0
+preferred_range = 1.1
+retreat_hp_ratio = 0.0
+defend_chance = 0.0
+dodge_chance = 0.15
+decision_interval = 0.25
+patrol_radius = 0.5
+special_behavior = &""
+dismember_react_seconds = 0.4
+freeze_when_watched = false
+unwatched_speed_factor = 1.0
+aggression = 0.9
+caution = 0.1
+patience = 0.2
+flank_tendency = 0.8
+hit_and_run = 0.6
+punish_skill = 0.6
+adaptivity = 0.4
+injured_target_bias = 0.5
+uses_attack_token = true
+alarm_radius = 0.0
+preferred_target_parts = PackedStringArray()

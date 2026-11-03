@@ -1,0 +1,411 @@
+[gd_resource type="Resource" script_class="AnatomyProfile" load_steps=23 format=3]
+
+[ext_resource type="Script" path="res://anatomy/body_part_def.gd" id="1_86ufs"]
+[ext_resource type="Script" path="res://anatomy/anatomy_profile.gd" id="2_asi5s"]
+
+[sub_resource type="Resource" id="Resource_86ie4"]
+script = ExtResource("1_86ufs")
+id = &"pelvis"
+display_name = "共用的骨盆"
+max_hp = 80.0
+armor = 0.0
+resistances = {
+"CUT": 0.8,
+"FRACTURE": 1.1
+}
+functions = PackedStringArray("core", "posture")
+detachable = false
+parent_id = &""
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"pelvis"
+mesh_segment = &"seg_pelvis"
+
+[sub_resource type="Resource" id="Resource_0cns7"]
+script = ExtResource("1_86ufs")
+id = &"leg_l"
+display_name = "左修女的腿"
+max_hp = 45.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("leg", "locomotion")
+detachable = true
+parent_id = &"pelvis"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.8
+mutation_threshold = 60.0
+bone_name = &"leg_l"
+mesh_segment = &"seg_leg_l"
+
+[sub_resource type="Resource" id="Resource_f4uml"]
+script = ExtResource("1_86ufs")
+id = &"leg_r"
+display_name = "右修女的腿"
+max_hp = 45.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("leg", "locomotion")
+detachable = true
+parent_id = &"pelvis"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.8
+mutation_threshold = 60.0
+bone_name = &"leg_r"
+mesh_segment = &"seg_leg_r"
+
+[sub_resource type="Resource" id="Resource_sd7ru"]
+script = ExtResource("1_86ufs")
+id = &"seam"
+display_name = "連接兩人的縫線"
+max_hp = 70.0
+armor = 0.0
+resistances = {
+"CRUSH": 0.4,
+"CUT": 1.5,
+"FRACTURE": 0.3,
+"LACERATION": 1.3,
+"PIERCE": 1.1
+}
+functions = PackedStringArray()
+detachable = true
+parent_id = &"pelvis"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"seam"
+mesh_segment = &"seg_seam"
+
+[sub_resource type="Resource" id="Resource_3far6"]
+script = ExtResource("1_86ufs")
+id = &"chest_a"
+display_name = "左修女的胸腔"
+max_hp = 55.0
+armor = 0.0
+resistances = {
+"CUT": 0.8,
+"PIERCE": 0.7
+}
+functions = PackedStringArray("torso")
+detachable = false
+parent_id = &"pelvis"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray("heart_a", "lungs_a")
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"chest_a"
+mesh_segment = &"seg_chest_a"
+
+[sub_resource type="Resource" id="Resource_dqrjk"]
+script = ExtResource("1_86ufs")
+id = &"heart_a"
+display_name = "左修女的心臟"
+max_hp = 15.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("circulation")
+detachable = false
+parent_id = &"chest_a"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = true
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"heart_a"
+mesh_segment = &"seg_heart_a"
+
+[sub_resource type="Resource" id="Resource_msmlh"]
+script = ExtResource("1_86ufs")
+id = &"lungs_a"
+display_name = "左修女的肺臟"
+max_hp = 22.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("respiration")
+detachable = false
+parent_id = &"chest_a"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = true
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"lungs_a"
+mesh_segment = &"seg_lungs_a"
+
+[sub_resource type="Resource" id="Resource_ksxcf"]
+script = ExtResource("1_86ufs")
+id = &"neck_a"
+display_name = "左修女的頸部"
+max_hp = 30.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("head_support")
+detachable = false
+parent_id = &"chest_a"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"neck_a"
+mesh_segment = &"seg_neck_a"
+
+[sub_resource type="Resource" id="Resource_56ms7"]
+script = ExtResource("1_86ufs")
+id = &"head_a"
+display_name = "左修女的頭"
+max_hp = 55.0
+armor = 4.0
+resistances = {
+"CUT": 0.8,
+"PIERCE": 0.7
+}
+functions = PackedStringArray("cognition")
+detachable = true
+parent_id = &"neck_a"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.35
+mutation_threshold = 60.0
+bone_name = &"head_a"
+mesh_segment = &"seg_head_a"
+
+[sub_resource type="Resource" id="Resource_65njw"]
+script = ExtResource("1_86ufs")
+id = &"jaw_a"
+display_name = "左修女的下顎"
+max_hp = 10.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("bite", "speech")
+detachable = true
+parent_id = &"head_a"
+dependencies = PackedStringArray("head_a")
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"jaw_a"
+mesh_segment = &"seg_jaw_a"
+
+[sub_resource type="Resource" id="Resource_lmaun"]
+script = ExtResource("1_86ufs")
+id = &"arm_l_a"
+display_name = "左修女的外側手臂"
+max_hp = 28.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "grip")
+detachable = true
+parent_id = &"chest_a"
+dependencies = PackedStringArray("head_a")
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.2
+mutation_threshold = 60.0
+bone_name = &"arm_l_a"
+mesh_segment = &"seg_arm_l_a"
+
+[sub_resource type="Resource" id="Resource_bpfiy"]
+script = ExtResource("1_86ufs")
+id = &"arm_r_a"
+display_name = "左修女的內側手臂"
+max_hp = 22.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "grip")
+detachable = true
+parent_id = &"chest_a"
+dependencies = PackedStringArray("head_a")
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.4
+mutation_threshold = 60.0
+bone_name = &"arm_r_a"
+mesh_segment = &"seg_arm_r_a"
+
+[sub_resource type="Resource" id="Resource_v6o4o"]
+script = ExtResource("1_86ufs")
+id = &"chest_b"
+display_name = "右修女的胸腔"
+max_hp = 55.0
+armor = 0.0
+resistances = {
+"CUT": 0.8,
+"PIERCE": 0.7
+}
+functions = PackedStringArray("torso")
+detachable = false
+parent_id = &"pelvis"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray("heart_b", "lungs_b")
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"chest_b"
+mesh_segment = &"seg_chest_b"
+
+[sub_resource type="Resource" id="Resource_i1jk0"]
+script = ExtResource("1_86ufs")
+id = &"heart_b"
+display_name = "右修女的心臟"
+max_hp = 15.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("circulation")
+detachable = false
+parent_id = &"chest_b"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = true
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"heart_b"
+mesh_segment = &"seg_heart_b"
+
+[sub_resource type="Resource" id="Resource_5quyh"]
+script = ExtResource("1_86ufs")
+id = &"lungs_b"
+display_name = "右修女的肺臟"
+max_hp = 22.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("respiration")
+detachable = false
+parent_id = &"chest_b"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = true
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"lungs_b"
+mesh_segment = &"seg_lungs_b"
+
+[sub_resource type="Resource" id="Resource_dftkm"]
+script = ExtResource("1_86ufs")
+id = &"neck_b"
+display_name = "右修女的頸部"
+max_hp = 30.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("head_support")
+detachable = false
+parent_id = &"chest_b"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"neck_b"
+mesh_segment = &"seg_neck_b"
+
+[sub_resource type="Resource" id="Resource_l661l"]
+script = ExtResource("1_86ufs")
+id = &"head_b"
+display_name = "右修女的頭"
+max_hp = 55.0
+armor = 4.0
+resistances = {
+"CUT": 0.8,
+"PIERCE": 0.7
+}
+functions = PackedStringArray("cognition")
+detachable = true
+parent_id = &"neck_b"
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 0.35
+mutation_threshold = 60.0
+bone_name = &"head_b"
+mesh_segment = &"seg_head_b"
+
+[sub_resource type="Resource" id="Resource_b3juy"]
+script = ExtResource("1_86ufs")
+id = &"jaw_b"
+display_name = "右修女的下顎"
+max_hp = 10.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("bite", "speech")
+detachable = true
+parent_id = &"head_b"
+dependencies = PackedStringArray("head_b")
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &"jaw_b"
+mesh_segment = &"seg_jaw_b"
+
+[sub_resource type="Resource" id="Resource_0x8jr"]
+script = ExtResource("1_86ufs")
+id = &"arm_r_b"
+display_name = "右修女的外側手臂"
+max_hp = 28.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "grip")
+detachable = true
+parent_id = &"chest_b"
+dependencies = PackedStringArray("head_b")
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.2
+mutation_threshold = 60.0
+bone_name = &"arm_r_b"
+mesh_segment = &"seg_arm_r_b"
+
+[sub_resource type="Resource" id="Resource_mu2op"]
+script = ExtResource("1_86ufs")
+id = &"arm_l_b"
+display_name = "右修女的內側手臂"
+max_hp = 22.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("arm", "grip")
+detachable = true
+parent_id = &"chest_b"
+dependencies = PackedStringArray("head_b")
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.4
+mutation_threshold = 60.0
+bone_name = &"arm_l_b"
+mesh_segment = &"seg_arm_l_b"
+
+[resource]
+script = ExtResource("2_asi5s")
+id = &"conjoined"
+display_name = "連體修女"
+parts = Array[ExtResource("1_86ufs")]([SubResource("Resource_86ie4"), SubResource("Resource_0cns7"), SubResource("Resource_f4uml"), SubResource("Resource_sd7ru"), SubResource("Resource_3far6"), SubResource("Resource_dqrjk"), SubResource("Resource_msmlh"), SubResource("Resource_ksxcf"), SubResource("Resource_56ms7"), SubResource("Resource_65njw"), SubResource("Resource_lmaun"), SubResource("Resource_bpfiy"), SubResource("Resource_v6o4o"), SubResource("Resource_i1jk0"), SubResource("Resource_5quyh"), SubResource("Resource_dftkm"), SubResource("Resource_l661l"), SubResource("Resource_b3juy"), SubResource("Resource_0x8jr"), SubResource("Resource_mu2op")])

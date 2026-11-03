@@ -40,6 +40,7 @@ var SecretWall: GDScript
 var ScareTrigger: GDScript
 var SilenceZone: GDScript
 var ScripturePage: GDScript
+var ConjoinedSpawn: GDScript
 var _done := false
 
 func _process(_delta: float) -> bool:
@@ -66,6 +67,7 @@ func _run() -> void:
 	ScareTrigger = load("res://world/scare_trigger.gd")
 	SilenceZone = load("res://world/silence_zone.gd")
 	ScripturePage = load("res://world/scripture_page.gd")
+	ConjoinedSpawn = load("res://world/conjoined_spawn.gd")
 	level = Node3D.new()
 	level.name = "PrologueLevel"
 	geo = _group("Geometry")
@@ -499,6 +501,24 @@ func _build_chapel() -> void:
 	var a := _area("Antechamber")
 	_box_room(a, -4, 4, -46, -58, 0.0, 4.0, {"n": [[4.0, 4.0]]}, Color("6a5a50"), ["s"])
 	_altar(&"altar_antechamber", Vector3(2.8, 0, -50))
+	# 主線必遇的精英：連體修女背對入口站在禮拜堂門前唱詩。打倒她（或分裂後的兩位）之前，
+	# 門口被一層肉膜封住，前廳的祭壇也不能用（不能在戰鬥中途回滿）。
+	level.get_node("Altars/Altar_altar_antechamber").require_flag = &"conjoined_defeated"
+	var nun = ConjoinedSpawn.new()
+	nun.name = "Spawn_antechamber_conjoined"
+	nun.spawn_id = &"antechamber_conjoined"
+	nun.enemy_path = "res://content/enemies/conjoined_nun.tres"
+	nun.defeat_flag = &"conjoined_defeated"
+	nun.position = Vector3(0, 0, -54.5)
+	nun.facing_degrees = 0.0
+	level.get_node("Spawns").add_child(nun)
+	var seal = SecretWall.new()
+	seal.name = "FleshSeal_Chapel"
+	seal.open_flag = &"conjoined_defeated"
+	seal.size = Vector3(4.4, 4.0, 0.35)
+	seal.color = Color("7a2a22")
+	seal.position = Vector3(0, 0, -58)
+	level.get_node("Secrets").add_child(seal)
 	_trigger(&"enter_antechamber", Vector3(0, 0, -49), 2.5, "禮拜堂前廳", "antechamber_thought")
 	_light("Light_Antechamber", Vector3(0, 3.2, -52), Color("e0b080"), 0.9, 8.0)
 	_room("Chapel", Vector3(0, 0, -71), Vector2(22, 26), {"s": [0.0, 4.0]}, Color("5a4a44"))

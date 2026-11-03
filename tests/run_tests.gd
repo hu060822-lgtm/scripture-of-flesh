@@ -23,6 +23,10 @@ func _run_all() -> void:
 	for f in files:
 		if not (f.begins_with("test_") and f.ends_with(".gd")):
 			continue
+		# 只跑部分檔案：TEST_FILTER=conjoined godot ... -s tests/run_tests.gd
+		var filt := OS.get_environment("TEST_FILTER")
+		if filt != "" and not f.contains(filt):
+			continue
 		var script: GDScript = load(TEST_DIR.path_join(f))
 		if script == null or not script.can_instantiate():
 			print("ERROR  could not load %s" % f)

@@ -9,6 +9,8 @@ signal surgery_requested(player: Node3D)
 const GROUP := &"interactables"
 @export var altar_id: StringName = &"altar"
 @export var interact_radius: float = 2.0
+## 這個旗標成立前不能使用（例如前廳的祭壇：打倒連體修女之前不能在戰鬥中途回滿）。空字串 = 隨時可用。
+@export var require_flag: StringName = &""
 
 func _ready() -> void:
 	add_to_group(GROUP)
@@ -29,7 +31,12 @@ func _ready() -> void:
 func prompt() -> String:
 	return "E：在縫合祭壇休息（修復身體）　T：器官移植"
 
+func is_usable() -> bool:
+	return require_flag == &"" or GameState.has_flag(require_flag)
+
 func in_range(player: Node3D) -> bool:
+	if not is_usable():
+		return false
 	return player.global_position.distance_to(global_position) <= interact_radius
 
 ## 休息：依深度順序修復所有部位（父部位先），回滿 HP／ST，清除出血。

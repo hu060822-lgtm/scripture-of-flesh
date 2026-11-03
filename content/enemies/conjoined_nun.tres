@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=10 format=3]
+
+[ext_resource type="Resource" path="res://content/anatomy/conjoined.tres" id="1_ttuc5"]
+[ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_rp7ar"]
+[ext_resource type="Resource" path="res://content/attacks/flurry.tres" id="3_n71pu"]
+[ext_resource type="Resource" path="res://content/attacks/double_grab.tres" id="4_itae0"]
+[ext_resource type="Resource" path="res://content/attacks/grab_tear.tres" id="5_8fk8o"]
+[ext_resource type="Resource" path="res://content/attacks/claw.tres" id="6_gs0hw"]
+[ext_resource type="Resource" path="res://content/attacks/bite.tres" id="7_yeked"]
+[ext_resource type="Script" path="res://organ/organ_definition.gd" id="8_y4r3x"]
+[ext_resource type="Script" path="res://ai/enemy_definition.gd" id="9_5c28p"]
+
+[resource]
+script = ExtResource("9_5c28p")
+id = &"conjoined_nun"
+display_name = "連體修女"
+anatomy_profile = ExtResource("1_ttuc5")
+attacks = Array[ExtResource("2_rp7ar")]([ExtResource("3_n71pu"), ExtResource("4_itae0"), ExtResource("5_8fk8o"), ExtResource("6_gs0hw"), ExtResource("7_yeked")])
+max_hp = 240.0
+max_st = 160.0
+move_speed = 2.1
+sever_chance_scale = 1.0
+stagger_threshold = 60.0
+xp_reward = 260
+harvestable = Array[ExtResource("8_y4r3x")]([])
+collision_radius = 0.55
+collision_height = 2.0
+visual_scale = 1.08
+sight_range = 10.0
+sight_fov_degrees = 360.0
+needs_vision = false
+hearing_range = 9.0
+memory_seconds = 30.0
+preferred_range = 1.2
+retreat_hp_ratio = 0.0
+defend_chance = 0.2
+dodge_chance = 0.0
+decision_interval = 0.3
+patrol_radius = 0.5
+special_behavior = &"conjoined"
+dismember_react_seconds = 0.5
+freeze_when_watched = false
+unwatched_speed_factor = 1.0
+aggression = 0.8
+caution = 0.1
+patience = 0.3
+flank_tendency = 0.0
+hit_and_run = 0.0
+punish_skill = 0.6
+adaptivity = 0.5
+injured_target_bias = 0.5
+uses_attack_token = true
+alarm_radius = 0.0
+preferred_target_parts = PackedStringArray()
