@@ -74,6 +74,16 @@ const NEAR_MUSIC_GAP := 5.0
 ## 庭院與聖器室範圍：這裡面的敵人在追逐中縮在原地。
 const COWER_ZONE := AABB(Vector3(-10.5, -1.0, -47.0), Vector3(45.0, 4.5, 22.0))
 
+## 帶路點（ChaseGuide 的箭頭依序指向）：通道出口 → 西側樓梯口 → 高台（樓梯頂）。東梯被肉封住，所以不走那邊。
+const GUIDE := [
+	[Vector3(10.0, 0.0, -40.0), "穿過通道"],
+	[Vector3(-4.5, 0.0, -36.8), "西側樓梯"],
+	[Vector3(-4.5, 2.0, -29.6), "逃上高台"],
+]
+## 高台祭壇上的光柱：讓終點從庭院與通道都看得到。
+const BEAM_ALTAR := "Altars/Altar_altar_courtyard"
+const BEAM_COLOR := Color("f2e6c4")
+
 @export var spawn_marker: NodePath = NodePath("Markers/MotherChaseSpawn")
 @export var barrier_marker: NodePath = NodePath("Markers/ChaseFleshBarrier")
 ## 安全區：庭院南側的高台（y 高於 escape_min_y，z 大於 escape_min_z）。
@@ -96,6 +106,10 @@ var hum: AudioStreamPlayer3D
 var cowering: Array = []
 var lights := {}  # light instance id -> {light, energy, radius, floor, t}（t：-1 亮著、>=0 熄滅中、INF 已熄）
 var end_reason: StringName = &""
+var beam: Node3D
+var _beam_mat: StandardMaterial3D
+var _beam_light: OmniLight3D
+var _beam_flash := -1.0
 var _phase_t := 0.0
 var _lunge_cd := 0.0
 var _lunge_dir := Vector3.ZERO
@@ -130,6 +144,7 @@ func advance(delta: float) -> void:
 		return
 	_advance_lights(delta)
 	_advance_flesh(delta)
+	_advance_beam(delta)
 	if phase == Phase.RETREAT:
 		_advance_retreat(delta)
 		_update_cord()
@@ -266,6 +281,7 @@ func start() -> void:
 	_build_cord()
 	_build_hum()
 	_build_barrier()
+	_build_beam()
 	_collect_lights()
 	_cower_enemies(true)
 	_set_phase(Phase.BURST)
@@ -445,6 +461,7 @@ func finish(reason: StringName) -> void:
 	if ctrl != null:
 		ctrl.input_enabled = true
 	_cower_enemies(false)
+	_beam_flash = 0.0
 	_set_phase(Phase.RETREAT)
 	_cue(&"cord_snap", mother)
 	ended.emit(reason)
@@ -480,6 +497,74 @@ func _end_retreat() -> void:
 	if barrier != null and is_instance_valid(barrier):
 		barrier.set_meta(&"wither", 0.0)
 	_restore_t = 0.0
+
+# ---------- 帶路 ----------
+
+## 目前要去的帶路點索引（0 通道出口、1 西側樓梯口、2 高台）。
+func guide_index() -> int:
+	var p := player.global_position
+	if p.x > 9.0:
+		return 0
+	if p.y > 0.6 or (p.x < -2.5 and p.x > -6.5 and p.z > -37.5):
+		return 2  # 已經在西梯上（或高台上）
+	return 1
+
+func guide_target() -> Vector3:
+	return GUIDE[guide_index()][0]
+
+func guide_label() -> String:
+	return GUIDE[guide_index()][1]
+
+## 光柱：半透明、不受光照的圓柱＋暖光，追逐中脈動；逃脫時亮一下再淡出。
+func _build_beam() -> void:
+	var altar := level.get_node_or_null(BEAM_ALTAR) as Node3D
+	if altar == null:
+		return
+	beam = Node3D.new()
+	beam.name = "ChaseSafeBeam"
+	var mi := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.7
+	cyl.bottom_radius = 0.9
+	cyl.height = 14.0
+	cyl.radial_segments = 8
+	cyl.rings = 1
+	mi.mesh = cyl
+	mi.position = Vector3(0, 7.0, 0)
+	_beam_mat = StandardMaterial3D.new()
+	_beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	_beam_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	_beam_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_beam_mat.albedo_color = Color(BEAM_COLOR, 0.25)
+	mi.material_override = _beam_mat
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	beam.add_child(mi)
+	_beam_light = OmniLight3D.new()
+	_beam_light.light_color = BEAM_COLOR
+	_beam_light.light_energy = 1.2
+	_beam_light.omni_range = 7.0
+	_beam_light.position = Vector3(0, 1.5, 0)
+	beam.add_child(_beam_light)
+	beam.position = altar.global_position
+	level.add_child(beam)
+
+func _advance_beam(delta: float) -> void:
+	if beam == null or not is_instance_valid(beam):
+		return
+	if _beam_flash >= 0.0:
+		_beam_flash += delta
+		var k := clampf(1.0 - (_beam_flash - 0.3) / 2.2, 0.0, 1.0)
+		var flash := 1.0 if _beam_flash < 0.3 else k
+		_beam_mat.albedo_color.a = 0.6 * flash
+		_beam_light.light_energy = 3.0 * flash
+		if _beam_flash > 2.5:
+			beam.queue_free()
+			beam = null
+		return
+	var pulse := 0.5 + 0.5 * sin(elapsed * 4.0)
+	_beam_mat.albedo_color.a = 0.18 + 0.14 * pulse
+	_beam_light.light_energy = 0.9 + 0.6 * pulse
 
 # ---------- 臍帶、哼唱、肉牆、肉塊 ----------
 

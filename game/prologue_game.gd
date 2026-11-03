@@ -30,6 +30,7 @@ var boss_intro: BossIntro
 var mother_chase: MotherChase
 var hud: CombatHud
 var injury: InjuryOverlay
+var chase_guide: ChaseGuide
 var hallucinations: HallucinationDirector
 var dialogue: DialogueBox
 var boss_bar: BossBar
@@ -170,7 +171,7 @@ func _setup_mother_chase() -> void:
 var _chase_dodge_hinted := false
 
 func _on_mother_chase_started() -> void:
-	show_toast("她撞破了牆。東側樓梯被肉封死了——繞到西側樓梯，逃上高台的祭壇！")
+	show_toast("她撞破了牆。東側樓梯被肉封死了——跟著箭頭繞到西側樓梯，逃上有光柱的高台！")
 
 func _on_mother_chase_caught(count: int, lethal: bool) -> void:
 	if lethal:
@@ -178,7 +179,11 @@ func _on_mother_chase_caught(count: int, lethal: bool) -> void:
 	else:
 		show_toast("她抓住你了——狂按 E 掙脫！")
 
-func _on_mother_chase_ended(_reason: StringName) -> void:
+func _on_mother_chase_ended(reason: StringName) -> void:
+	if chase_guide != null:
+		chase_guide.active = false
+		if reason == &"escaped":
+			chase_guide.show_banner("逃脫", "臍帶繃緊，把母親拖回了黑暗裡")
 	show_toast("臍帶繃緊，把母親拖回了黑暗裡")
 	if rig != null:
 		rig.bias = Vector3.ZERO
@@ -186,10 +191,30 @@ func _on_mother_chase_ended(_reason: StringName) -> void:
 		injury.dread = 0.0
 		injury.threat = 0.0
 
+## 帶路箭頭：把目前的帶路點投影到畫面上。
+func _update_chase_guide() -> void:
+	if chase_guide == null or rig == null or rig.camera == null or not rig.camera.is_inside_tree():
+		return
+	var cam := rig.camera
+	var vp := cam.get_viewport().get_visible_rect().size
+	var target := mother_chase.guide_target() + Vector3(0, 0.3, 0)
+	var behind := cam.is_position_behind(target)
+	var sp := cam.unproject_position(target)
+	if behind:
+		sp = vp - sp
+	var m := 40.0
+	chase_guide.on_screen = not behind and sp.x > m and sp.y > m and sp.x < vp.x - m and sp.y < vp.y - m
+	chase_guide.target_screen = sp
+	chase_guide.label = mother_chase.guide_label()
+	chase_guide.active = true
+
 ## 追逐中每格：畫面壓迫、威脅方向、鏡頭往她那一側偏。
 func _update_chase_fx() -> void:
 	if mother_chase == null or not is_instance_valid(mother_chase) or not mother_chase.active:
+		if chase_guide != null:
+			chase_guide.active = false
 		return
+	_update_chase_guide()
 	var m := mother_chase.mother
 	if m == null or not is_instance_valid(m) or player == null or not is_instance_valid(player):
 		return
@@ -322,6 +347,9 @@ func _build_ui() -> void:
 	hud.player = player.get_node("CombatComponent")
 	hud.controller = ctrl
 	add_child(hud)
+	chase_guide = ChaseGuide.new()
+	chase_guide.name = "ChaseGuide"
+	add_child(chase_guide)
 	injury = InjuryOverlay.new()
 	injury.name = "InjuryOverlay"
 	injury.player = player.get_node("CombatComponent")

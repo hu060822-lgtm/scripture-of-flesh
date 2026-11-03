@@ -285,3 +285,53 @@ func test_mother_has_chase_animation_clips() -> void:
 	anim.play_override(&"chase_run")
 	assert_eq(anim.current_clip, &"chase_run")
 	e.queue_free()
+
+func test_guide_points_through_the_passage_then_west_stairs_then_terrace() -> void:
+	var g := _game()
+	var mc := _start(g)
+	g.player.global_position = Vector3(22, 0, -40)
+	assert_eq(mc.guide_index(), 0, "in the sacristy → passage exit")
+	g.player.global_position = Vector3(6, 0, -40)
+	assert_eq(mc.guide_index(), 1, "in the courtyard → west stairs, not the sealed east stairs")
+	assert_true(mc.guide_target().x < 0.0)
+	g.player.global_position = Vector3(-4.5, 1.0, -33)
+	assert_eq(mc.guide_index(), 2, "on the stairs → terrace")
+	assert_true(mc.is_safe(MotherChase.GUIDE[2][0] + Vector3(0, 0.1, 0)), "the last guide point is inside the safe zone")
+	g._update_chase_fx()
+	assert_true(g.chase_guide.active, "arrow shown during the chase")
+	assert_eq(g.chase_guide.label, "逃上高台")
+	_cleanup_save()
+
+func test_safe_beam_marks_the_goal_and_escape_shows_a_banner() -> void:
+	var g := _game()
+	var mc := _start(g)
+	assert_true(mc.beam != null and is_instance_valid(mc.beam), "light beam on the terrace altar")
+	var altar: Node3D = g.level.get_node(MotherChase.BEAM_ALTAR)
+	assert_true(mc.beam.global_position.distance_to(altar.global_position) < 0.1)
+	assert_true(mc.is_safe(altar.global_position + Vector3(0, 0.1, 0)), "the beam stands inside the safe zone")
+	g.player.global_position = Vector3(-4.5, 2.0, -29.0)
+	mc.advance(0.05)
+	assert_eq(mc.end_reason, &"escaped")
+	assert_true(g.chase_guide.banner_visible(), "逃脫 banner")
+	assert_eq(g.chase_guide.banner.text, "逃脫")
+	g._update_chase_fx()
+	assert_false(g.chase_guide.active, "arrow gone after the chase")
+	for i in 80:
+		mc.advance(0.05)
+	assert_true(mc.beam == null, "beam flashes then fades away")
+	_cleanup_save()
+
+func test_offscreen_arrow_sticks_to_the_screen_edge() -> void:
+	var cg := ChaseGuide.new()
+	tree.root.add_child(cg)
+	var view := Vector2(1280, 720)
+	cg.on_screen = false
+	cg.target_screen = Vector2(-900, 360)
+	var pose: Array = cg.arrow_pose(view)
+	assert_near((pose[0] as Vector2).x, ChaseGuide.EDGE_MARGIN, 0.5, "pinned to the left edge")
+	assert_true((pose[1] as Vector2).x < -0.9, "points left")
+	cg.on_screen = true
+	cg.target_screen = Vector2(600, 400)
+	pose = cg.arrow_pose(view)
+	assert_eq(pose[1], Vector2.DOWN, "on screen: points down at the target")
+	cg.queue_free()
