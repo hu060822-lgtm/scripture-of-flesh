@@ -1,0 +1,72 @@
+{
+ "id": "ignatius_return",
+ "start": "b",
+ "nodes": {
+  "b": {
+   "branches": [
+    {
+     "if": {
+      "flag": "ignatius_absolved"
+     },
+     "next": "dead"
+    },
+    {
+     "if": {
+      "flag": "ignatius_quest",
+      "has_item": "first_suture"
+     },
+     "next": "t1"
+    },
+    {
+     "if": {
+      "flag": "ignatius_quest"
+     },
+     "next": "wait"
+    },
+    {
+     "next": "dead"
+    }
+   ]
+  },
+  "dead": {
+   "speaker": "",
+   "text": "伊格納靠著柱子，已經不動了。他的右手還握著一把沒有刃的手術刀。",
+   "next": ""
+  },
+  "wait": {
+   "speaker": "執刀司祭伊格納",
+   "text": "……冷藏室。藏書室南邊的坡道往下。那裡很冷，孩子，冷到連死人都會醒著。",
+   "next": ""
+  },
+  "t1": {
+   "speaker": "執刀司祭伊格納",
+   "text": "……就是這卷。你看，它還是白的。縫過那麼多肉，它還是白的。",
+   "next": "t2"
+  },
+  "t2": {
+   "speaker": "執刀司祭伊格納",
+   "text": "那顆心……是我取出來的。伊蓮斷氣的那晚，瑪德蓮抱著她不肯放手。她說：『不要埋她。把她的心留下來，等一個身體。』",
+   "next": "t3"
+  },
+  "t3": {
+   "speaker": "執刀司祭伊格納",
+   "text": "我照做了。我把心放進冰裡。之後七年，每到伊蓮生日，院長都會下去，對著冰櫃唱同一首搖籃曲。",
+   "next": "t4"
+  },
+  "t4": {
+   "speaker": "執刀司祭伊格納",
+   "text": "……我解不開了，手已經不聽我的。拿去吧。用它縫你自己的時候，就不會那麼痛。",
+   "next": "t5",
+   "action": "take_item:first_suture:1"
+  },
+  "t5": {
+   "speaker": "",
+   "text": "他把線纏在你的手腕上，打了一個很小的結，然後就不動了。",
+   "next": "",
+   "set": {
+    "ignatius_absolved": true
+   },
+   "action": "learn_skill:first_suture"
+  }
+ }
+}

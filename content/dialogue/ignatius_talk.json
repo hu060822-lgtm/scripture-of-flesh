@@ -104,11 +104,19 @@
   "bye": {
    "speaker": "執刀司祭伊格納",
    "text": "……拿去。替我……讓那扇門後的聲音停下來。",
-   "next": "",
+   "next": "quest",
    "set": {
     "met_ignatius": true
    },
    "action": "give_item:suture_kit:1"
+  },
+  "quest": {
+   "speaker": "執刀司祭伊格納",
+   "text": "……還有一件事。藏書室底下的冷藏室，院長女兒的冰櫃旁邊，有一卷線。縫她進胎房剩下的。拿來給我……我想在死前，親手把它解開。",
+   "next": "",
+   "set": {
+    "ignatius_quest": true
+   }
   }
  }
 }

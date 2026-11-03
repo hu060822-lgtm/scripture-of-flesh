@@ -1,0 +1,11 @@
+{
+ "id": "cold_storage_thought",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "",
+   "text": "空氣冷得像針，連呼吸都有聲音。胸口的心卻跳得更快了——它記得這裡。",
+   "next": ""
+  }
+ }
+}

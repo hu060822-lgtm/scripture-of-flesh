@@ -5,6 +5,8 @@ extends RefCounted
 ## 排斥時，壞死量 = (1 - 相容性) × 部位最大 HP × 此係數。
 const REJECTION_NECROSIS := 0.6
 const REJECTION_EXTRA_MUTATION := 0.5
+## 完好摘下的器官（捐贈部位 HP ≥ 60%）移植時加上的相容性。
+const FRESH_BONUS := 0.15
 
 class Prediction:
 	var allowed := true
@@ -12,8 +14,8 @@ class Prediction:
 	var compatibility := 0.0
 	var mutation := 0.0
 
-static func compatibility(organ: OrganDefinition, progression: ProgressionComponent) -> float:
-	var c := organ.base_compatibility
+static func compatibility(organ: OrganDefinition, progression: ProgressionComponent, bonus: float = 0.0) -> float:
+	var c := organ.base_compatibility + bonus
 	if organ.origin == &"mechanical" or organ.guaranteed:
 		return 1.0
 	if progression != null:
@@ -21,7 +23,7 @@ static func compatibility(organ: OrganDefinition, progression: ProgressionCompon
 	return clampf(c, 0.05, 1.0)
 
 static func predict(organ: OrganDefinition, slot: StringName, state: AnatomyState,
-		progression: ProgressionComponent, mutation: MutationComponent) -> Prediction:
+		progression: ProgressionComponent, mutation: MutationComponent, bonus: float = 0.0) -> Prediction:
 	var p := Prediction.new()
 	if not slot in organ.slots or state.get_part(slot) == null:
 		p.allowed = false
@@ -36,7 +38,7 @@ static func predict(organ: OrganDefinition, slot: StringName, state: AnatomyStat
 		p.allowed = false
 		p.reason = "技術不足（需要 TEC %d）" % organ.min_tec
 		return p
-	p.compatibility = compatibility(organ, progression)
+	p.compatibility = compatibility(organ, progression, bonus)
 	p.mutation = organ.mutation_cost * (1.0 - (mutation.resistance() if mutation != null else 0.0))
 	return p
 
@@ -68,9 +70,9 @@ class Outcome:
 
 ## 執行移植。相容性擲骰失敗＝排斥：器官仍然接上，但部位累積壞死並額外異化。
 static func perform(organ: OrganDefinition, slot: StringName, state: AnatomyState,
-		progression: ProgressionComponent, mutation: MutationComponent, rng: RandomNumberGenerator) -> Outcome:
+		progression: ProgressionComponent, mutation: MutationComponent, rng: RandomNumberGenerator, bonus: float = 0.0) -> Outcome:
 	var o := Outcome.new()
-	var pred := predict(organ, slot, state, progression, mutation)
+	var pred := predict(organ, slot, state, progression, mutation, bonus)
 	if not pred.allowed:
 		o.reason = pred.reason
 		return o

@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="OrganDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://organ/organ_definition.gd" id="1_hw7d0"]
+[ext_resource type="Script" path="res://anatomy/body_part_def.gd" id="2_0rg2m"]
+
+[sub_resource type="Resource" id="Resource_icrn1"]
+script = ExtResource("2_0rg2m")
+id = &""
+display_name = ""
+max_hp = 18.0
+armor = 0.0
+resistances = {}
+functions = PackedStringArray("circulation", "restless_heart")
+detachable = false
+parent_id = &""
+dependencies = PackedStringArray()
+internal_parts = PackedStringArray()
+is_internal = false
+vital = 0
+sever_multiplier = 1.0
+mutation_threshold = 60.0
+bone_name = &""
+mesh_segment = &""
+
+[resource]
+script = ExtResource("1_hw7d0")
+id = &"unborn_heart"
+display_name = "未生者的心臟"
+description = "從沒出生過的心臟，一刻也停不下來。體力回復得更快，胸口也總是在發燙。"
+slots = PackedStringArray("heart")
+template = SubResource("Resource_icrn1")
+origin = &"abomination"
+base_compatibility = 0.55
+mutation_cost = 10.0
+min_tec = 0
+guaranteed = false
+harvest_part = &"heart"

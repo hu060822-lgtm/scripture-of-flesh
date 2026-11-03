@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="EnemyDefinition" load_steps=8 format=3]
 
 [ext_resource type="Resource" path="res://content/anatomy/unborn.tres" id="1_deq10"]
 [ext_resource type="Script" path="res://combat/attack_definition.gd" id="2_gw1xo"]
@@ -6,6 +6,7 @@
 [ext_resource type="Resource" path="res://content/attacks/claw.tres" id="4_xxshv"]
 [ext_resource type="Script" path="res://organ/organ_definition.gd" id="5_iviha"]
 [ext_resource type="Script" path="res://ai/enemy_definition.gd" id="6_a2sxj"]
+[ext_resource type="Resource" path="res://content/organs/unborn_heart.tres" id="6_lowe4"]
 
 [resource]
 script = ExtResource("6_a2sxj")
@@ -19,7 +20,7 @@ move_speed = 5.5
 sever_chance_scale = 1.4
 stagger_threshold = 6.0
 xp_reward = 5
-harvestable = Array[ExtResource("5_iviha")]([])
+harvestable = Array[ExtResource("5_iviha")]([ExtResource("6_lowe4")])
 collision_radius = 0.2
 collision_height = 0.8
 visual_scale = 0.45
@@ -36,6 +37,8 @@ decision_interval = 0.35
 patrol_radius = 3.0
 special_behavior = &""
 dismember_react_seconds = 0.8
+freeze_when_watched = false
+unwatched_speed_factor = 1.0
 aggression = 0.9
 caution = 0.0
 patience = 0.1
@@ -43,4 +46,7 @@ flank_tendency = 0.4
 hit_and_run = 0.0
 punish_skill = 0.3
 adaptivity = 0.0
+injured_target_bias = 0.4
+uses_attack_token = true
+alarm_radius = 10.0
 preferred_target_parts = PackedStringArray("leg_l", "leg_r")

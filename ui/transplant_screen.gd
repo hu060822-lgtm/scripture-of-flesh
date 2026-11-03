@@ -95,7 +95,7 @@ static func options_for(p: Node3D) -> Array:
 	var mut: MutationComponent = p.get_node_or_null("MutationComponent")
 	for organ in data.inventory.organs():
 		for slot in organ.slots:
-			var pred := TransplantService.predict(organ, StringName(slot), combat.anatomy.state, prog, mut)
+			var pred := TransplantService.predict(organ, StringName(slot), combat.anatomy.state, prog, mut, fresh_bonus(data, organ))
 			out.append([organ, StringName(slot), pred])
 	return out
 
@@ -104,10 +104,15 @@ static func perform(p: Node3D, organ: OrganDefinition, slot: StringName, rng: Ra
 	var data: PlayerData = p.get_node("PlayerData")
 	var combat: CombatComponent = p.get_node("CombatComponent")
 	var o := TransplantService.perform(organ, slot, combat.anatomy.state,
-		p.get_node_or_null("ProgressionComponent"), p.get_node_or_null("MutationComponent"), rng)
+		p.get_node_or_null("ProgressionComponent"), p.get_node_or_null("MutationComponent"), rng, fresh_bonus(data, organ))
 	if o.success:
 		data.inventory.remove("organ:%s" % organ.id)
+		data.inventory.remove(PlayerData.fresh_key(organ.id))
 	return o
+
+## 有完好摘下的同種器官時，移植相容性提高（先用完好的那一個）。
+static func fresh_bonus(data: PlayerData, organ: OrganDefinition) -> float:
+	return TransplantService.FRESH_BONUS if data.inventory.count(PlayerData.fresh_key(organ.id)) > 0 else 0.0
 
 ## 播放移植過場（介面暫時隱藏，過場結束後回來）。
 func play_cutscene(organ: OrganDefinition, slot: StringName, outcome: TransplantService.Outcome) -> void:

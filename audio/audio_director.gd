@@ -29,6 +29,7 @@ const AREA_AMBIENCE := {
 	&"enter_sacristy": &"sacristy",
 	&"enter_antechamber": &"chapel",
 	&"chapel_arena": &"chapel",
+	&"enter_cold_storage": &"corridor",
 }
 const START_AMBIENCE := &"ward"
 const DEFAULT_STRIDE := 1.6
@@ -141,7 +142,7 @@ func _hook_combat(c: CombatComponent) -> void:
 		_cue(&"guard_break" if broken else &"block", b))
 	c.dodged.connect(func(_att): _cue(&"dodge", b))
 	c.staggered.connect(func(): _cue(&"stagger", b))
-	c.died.connect(func(_cause): _cue(&"death_player" if c.faction == &"player" else &"death_enemy", b))
+	c.died.connect(func(cause): if cause != "decor": _cue(&"death_player" if c.faction == &"player" else &"death_enemy", b))
 	_rehook_anatomy(c)
 
 ## 讀檔會換掉 AnatomyState，所以每幀檢查並重新接上。
@@ -213,6 +214,17 @@ func update_psyche(delta: float) -> void:
 	var hp := p.pools.hp / maxf(1.0, p.pools.max_hp)
 	ps.update(delta, hp, mut.value if mut != null else 0.0, p.body())
 
+## 玩家是否站在靜默區裡（SilenceZone）。
+func player_silenced() -> bool:
+	var p := _player()
+	if p == null or p.is_dead() or not p.body().is_inside_tree():
+		return false
+	var pos := p.body().global_position
+	for z in get_tree().get_nodes_in_group(SilenceZone.GROUP):
+		if _live(z) and (z as SilenceZone).contains(pos):
+			return true
+	return false
+
 ## 玩家所在區域的環境音；沒有玩家或沒有區域時回傳 &""。
 func area_ambience() -> StringName:
 	var player: CombatComponent = null
@@ -252,7 +264,9 @@ func _physics_process(delta: float) -> void:
 	update_music(delta)
 	update_psyche(delta)
 	var amb := area_ambience()
-	if amb != &"":
+	if compute_music_state() == &"silence" and player_silenced():
+		_ambience(&"")
+	elif amb != &"":
 		_ambience(amb)
 
 func _step(c: CombatComponent, _delta: float) -> void:
@@ -295,6 +309,8 @@ func compute_music_state() -> StringName:
 	for e in _alert.values():
 		if _live(e.ai) and not e.ai.combat.is_dead():
 			top = maxi(top, e.level)
+	if top == 0 and _combat_hold <= 0.0 and _tension_hold <= 0.0 and player_silenced():
+		return &"silence"
 	if top >= 2 or _combat_hold > 0.0:
 		return &"combat"
 	if top == 1 or _tension_hold > 0.0:

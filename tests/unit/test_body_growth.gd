@@ -206,7 +206,9 @@ func test_harvest_needs_intact_donor_part() -> void:
 	ec.anatomy.state.sever_part(&"stalk_1")  # 捐贈部位被砍掉了
 	ec.receive_hit(H.no_sever(&"chest", {T.CUT: 200.0}), _combat(p))
 	assert_true(ec.is_dead())
-	assert_false(_data(p).try_harvest(), "eye stalk destroyed")
+	assert_true(_data(p).try_harvest(), "tells the player the eye was ruined")
+	assert_eq(_data(p).inventory.count("organ:watcher_eye"), 0, "eye stalk destroyed")
+	assert_false(_data(p).try_harvest(), "only told once")
 	var e2 := EnemyFactory.create(load("res://content/enemies/many_hands.tres"), &"mh2")
 	e2.position = Vector3(-1, 0, 0)
 	tree.root.add_child(e2)
