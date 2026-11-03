@@ -8,6 +8,9 @@ const ITEM_NAMES := {
 	"suture_kit": "緊急縫合包",
 	"umbilical_key": "臍帶鑰匙",
 	"blood_vial": "濁血瓶",
+	"relic_hand": "多手人的斷手",
+	"relic_eye": "觀察者的眼柄",
+	"relic_leg": "反足者的斷腿",
 }
 
 var items := {}  # id(String) -> count

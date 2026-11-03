@@ -10,11 +10,17 @@ const MAX_ACTIVE := 24
 
 var part_id: StringName
 var source_creature_id: StringName
+## 可以撿起來當道具的殘肢（LimbRelic）不會自動清除，也不計入數量上限。
+var keep := false
 
 func _ready() -> void:
 	add_to_group(GROUP)
 	if lifetime > 0.0:
-		get_tree().create_timer(lifetime).timeout.connect(queue_free)
+		get_tree().create_timer(lifetime).timeout.connect(_expire)
+
+func _expire() -> void:
+	if not keep:
+		queue_free()
 
 ## 生成殘肢。visual 會被重新設為此 RigidBody 的子節點，並保留世界座標。
 static func spawn(parent: Node, visual: Node3D, at: Transform3D, id: StringName,
@@ -49,7 +55,7 @@ static func _visual_aabb(n: Node3D) -> AABB:
 static func _enforce_limit(tree: SceneTree) -> void:
 	if tree == null:
 		return
-	var gibs := tree.get_nodes_in_group(GROUP)
+	var gibs := tree.get_nodes_in_group(GROUP).filter(func(g): return not (g is SeveredPart and g.keep))
 	var excess := gibs.size() - MAX_ACTIVE
 	for i in excess:
 		gibs[i].queue_free()

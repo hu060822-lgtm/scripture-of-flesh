@@ -44,6 +44,11 @@ extends Resource
 @export var special_behavior: StringName = &""
 ## 斷肢反應持續秒數。
 @export var dismember_react_seconds: float = 0.8
+## 序章提案 C（無面觀察者）：目標正看著它時不能移動也不能轉身，只能凝視；目標背對它時移動得更快。
+## 眼柄全滅（失明）後不再受影響。
+@export var freeze_when_watched: bool = false
+## 沒被看著時的移動倍率（只在 freeze_when_watched 時使用）。
+@export var unwatched_speed_factor: float = 1.0
 
 @export_group("Tactics")
 ## 以下為 AI-2 戰術個性（0..1）。【暫代】初值，未經遊玩測試；全域難度見 Tactics.difficulty。

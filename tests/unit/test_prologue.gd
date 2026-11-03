@@ -35,7 +35,7 @@ func test_level_contains_required_content() -> void:
 			dialogue_ids.append(n.dialogue_id)
 			if n.repeat_dialogue_id != "":
 				dialogue_ids.append(n.repeat_dialogue_id)
-		if n is BossGate:
+		if n is BossGate and not n is ShortcutGate:
 			dialogue_ids.append(n.locked_dialogue_id)
 			dialogue_ids.append(n.open_dialogue_id)
 	for n in lvl.get_node("Triggers").get_children():

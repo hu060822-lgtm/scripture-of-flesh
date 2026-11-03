@@ -144,6 +144,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		var data: PlayerData = body().get_node_or_null("PlayerData")
 		if data != null:
 			data.start_suture()
+	elif event.is_action_pressed(&"throw_limb"):
+		throw_limb()
 	elif event.is_action_pressed(&"surgery"):
 		var altar := nearest_altar()
 		if altar != null:
@@ -152,6 +154,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		for i in 3:
 			if event.is_action_pressed(StringName("weapon_%d" % (i + 1))):
 				switch_weapon(i)
+
+## G 鍵：丟出背包裡的殘肢（反足者的腿優先），落地發出聲響引開敵人。沒有殘肢時回傳 null。
+func throw_limb() -> ThrownLimb:
+	var data: PlayerData = body().get_node_or_null("PlayerData")
+	if data == null or combat.action != CombatComponent.Action.IDLE:
+		return null
+	for id in LimbRelic.THROWABLE:
+		if data.inventory.remove(id):
+			var aim = _mouse_ground_point()
+			var dir: Vector3 = (aim - body().global_position) if aim != null else -body().global_transform.basis.z
+			return ThrownLimb.throw_from(body(), id, dir)
+	return null
 
 ## 指定部位攻擊的 AP 消耗（戰術介面）。AP 不足時改為自動選擇部位。
 const TARGETED_AP_COST := 10.0

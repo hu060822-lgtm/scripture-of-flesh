@@ -14,7 +14,7 @@ class Prediction:
 
 static func compatibility(organ: OrganDefinition, progression: ProgressionComponent) -> float:
 	var c := organ.base_compatibility
-	if organ.origin == &"mechanical":
+	if organ.origin == &"mechanical" or organ.guaranteed:
 		return 1.0
 	if progression != null:
 		c += progression.stats.compatibility_bonus() + progression.effect_total("compatibility")
