@@ -30,7 +30,10 @@ static func request(ai: EnemyAI, target: CombatComponent) -> bool:
 	var list := holders(target)
 	if ai in list:
 		return true
-	if list.size() >= max_attackers:
+	var cap := max_attackers
+	if ai.definition.squad_attackers > 0:
+		cap = mini(cap, ai.definition.squad_attackers)
+	if list.size() >= cap:
 		return false
 	list.append(ai)
 	_holders[target.get_instance_id()] = list

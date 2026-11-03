@@ -18,7 +18,10 @@ func should_spawn() -> bool:
 func spawn(parent: Node) -> CharacterBody3D:
 	if not should_spawn():
 		return null
-	var e := EnemyFactory.create(load(enemy_path), spawn_id)
+	# 新手難度曲線：越前面的敵人越溫和
+	var progress := DifficultyCurve.progress_for(spawn_id, global_position)
+	var e := EnemyFactory.create(DifficultyCurve.apply(load(enemy_path), progress), spawn_id)
+	e.set_meta(&"difficulty_progress", progress)
 	e.position = global_position
 	e.rotation.y = deg_to_rad(facing_degrees)
 	e.set_meta(&"spawn_id", spawn_id)

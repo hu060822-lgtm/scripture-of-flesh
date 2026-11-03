@@ -30,6 +30,8 @@ var dialogue: DialogueBox
 var boss_bar: BossBar
 var transplant: TransplantScreen
 var body_menu: BodyMenu
+var controls: ControlsScreen
+var hints: TutorialHints
 var toast: Label
 var overlay_label: Label
 var ending_id := ""
@@ -229,10 +231,18 @@ func _build_ui() -> void:
 		(a as StitchingAltar).surgery_requested.connect(func(pl): transplant.open(pl))
 	body_menu = BodyMenu.new()
 	add_child(body_menu)
+	controls = ControlsScreen.new()
+	controls.name = "ControlsScreen"
+	add_child(controls)
+	hints = TutorialHints.new()
+	hints.name = "TutorialHints"
+	add_child(hints)
+	hints.bind(player)
 	var ai_debug := AiDebugOverlay.new()
 	ai_debug.name = "AiDebugOverlay"
 	add_child(ai_debug)
 	dialogue = DialogueBox.new()
+	hints.dialogue = dialogue
 	add_child(dialogue)
 	dialogue.action_requested.connect(_on_dialogue_action)
 	boss_bar = BossBar.new()
@@ -282,6 +292,14 @@ func _process(delta: float) -> void:
 			respawn()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if controls != null and controls.is_open():
+		if event.is_action_pressed(&"pause_menu") or event.is_action_pressed(&"help"):
+			controls.close()
+			get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed(&"help") and controls != null and (dialogue == null or not dialogue.is_open()):
+		controls.open()
+		return
 	if event.is_action_pressed(&"pause_menu"):
 		if dialogue != null and dialogue.is_open():
 			return
