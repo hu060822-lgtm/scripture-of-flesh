@@ -29,6 +29,7 @@ var rig: CameraRig
 var boss_intro: BossIntro
 var mother_chase: MotherChase
 var hud: CombatHud
+var injury: InjuryOverlay
 var dialogue: DialogueBox
 var boss_bar: BossBar
 var transplant: TransplantScreen
@@ -266,6 +267,10 @@ func _build_ui() -> void:
 	hud.player = player.get_node("CombatComponent")
 	hud.controller = ctrl
 	add_child(hud)
+	injury = InjuryOverlay.new()
+	injury.name = "InjuryOverlay"
+	injury.player = player.get_node("CombatComponent")
+	add_child(injury)
 	var tac: TacticalController = player.get_node("TacticalController")
 	tac.camera = rig.camera
 	tac.toggled.connect(func(on): rig.in_combat = on)
