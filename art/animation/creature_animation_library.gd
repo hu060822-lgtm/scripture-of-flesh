@@ -15,10 +15,18 @@ extends RefCounted
 ##   反應：hit、stagger、sever、dodge、death
 ##   攻擊：<風格>_windup／_active／_recovery，長度 1 秒，由 CreatureAnimator 依攻擊資料的
 ##        前搖／判定／收招秒數縮放，畫面與命中時序完全同步。單臂風格另以手臂區分：<風格>@<arm_id>_<階段>。
+##   姿態變體：<片段>~prone（倒地／爬行：失去雙腿時）、<片段>~kneel（Boss 跪伏後）。
+##        反應與攻擊都有變體，倒在地上的身體會「在地上」受擊、出手，不會先站起來。
 ## 動畫以 linear 內插，播放端（CreatureAnimator）以 12fps 逐格推進，保留 PS1 低幀數的頓挫感。
 
 const SKELETON_PATH := "Body/Skeleton"
 const PHASES := ["windup", "active", "recovery"]
+## 姿態：倒地（爬行）與跪伏。
+const PRONE := &"prone"
+const KNEEL := &"kneel"
+## 有姿態變體的基本片段（爬行狀態本身就是趴姿，不需要變體）。
+const PRONE_CLIPS := [&"hit", &"stagger", &"sever", &"dodge"]  # death~prone 另外手工設計
+const KNEEL_CLIPS := [&"idle", &"walk", &"limp", &"block", &"hit", &"stagger", &"sever", &"dodge", &"death"]
 
 static var _cache := {}
 
@@ -34,19 +42,24 @@ static func for_profile(profile: AnatomyProfile) -> AnimationLibrary:
 	_cache[key] = lib
 	return lib
 
-## 攻擊片段名稱。arm_id 為空代表全身風格。
-static func attack_clip_name(style: StringName, arm_id: StringName, phase: String) -> StringName:
-	if arm_id == &"":
-		return StringName("%s_%s" % [style, phase])
-	return StringName("%s@%s_%s" % [style, arm_id, phase])
+## 攻擊片段名稱。arm_id 為空代表全身風格；posture 為空代表站姿。
+static func attack_clip_name(style: StringName, arm_id: StringName, phase: String, posture: StringName = &"") -> StringName:
+	var base := "%s_%s" % [style, phase] if arm_id == &"" else "%s@%s_%s" % [style, arm_id, phase]
+	return posture_clip(StringName(base), posture)
+
+## 片段的姿態變體名稱。
+static func posture_clip(clip: StringName, posture: StringName) -> StringName:
+	if posture == &"":
+		return clip
+	return StringName("%s~%s" % [clip, posture])
 
 ## 確保攻擊片段存在（三個階段）。回傳 false 代表這個身體無法產生該風格（例如沒有手臂的單臂風格）。
-static func ensure_attack(profile: AnatomyProfile, style: StringName, arm_id: StringName) -> bool:
+static func ensure_attack(profile: AnatomyProfile, style: StringName, arm_id: StringName, posture: StringName = &"") -> bool:
 	var lib := for_profile(profile)
-	if lib.has_animation(attack_clip_name(style, arm_id, "windup")):
+	if lib.has_animation(attack_clip_name(style, arm_id, "windup", posture)):
 		return true
 	var b := new(profile)
-	var clips := b.attack_clips(style, arm_id)
+	var clips := b.attack_clips(style, arm_id, posture)
 	if clips.is_empty():
 		return false
 	for clip in clips:
@@ -193,11 +206,75 @@ static func _merge(a: Dictionary, b: Dictionary) -> Dictionary:
 
 ## 循環步態：在 n 個關鍵格上取樣 f(phase 0..1)。
 func _cycle(length: float, n: int, f: Callable) -> Animation:
+	return _clip(length, true, _cycle_keys(length, n, f))
+
+func _cycle_keys(length: float, n: int, f: Callable) -> Array:
 	var keys := []
 	for i in n + 1:
 		var t := float(i) / float(n)
 		keys.append([t * length, f.call(t)])
-	return _clip(length, true, keys)
+	return keys
+
+# ---------- 姿態變體 ----------
+
+## 把站姿的關鍵格轉成某姿態。attack：這些關鍵格是攻擊的蓄力／出手姿勢（手臂維持出手方向）。
+func _posture_keys(keys: Array, posture: StringName, attack: bool = false) -> Array:
+	var out := []
+	for k in keys:
+		out.append([k[0], _posture_pose(k[1], posture, attack)])
+	return out
+
+func _posture_pose(pose: Dictionary, posture: StringName, attack: bool) -> Dictionary:
+	if posture == PRONE:
+		return _prone_pose(pose, attack)
+	if posture == KNEEL:
+		return _kneel_pose(pose)
+	return pose
+
+## 倒地姿態：整個骨架趴下（與 crawl 相同的 $rot／$pos），手臂以爬行的前伸姿勢為基準，
+## 頭抬起看前方，腿拖在後面。攻擊時出手的手臂換算成「趴著時」的角度：趴下讓身體前傾 72 度，
+## 所以手臂相對角度加 72 才會指向原本的世界方向（再限制在不穿進地面的範圍）。
+func _prone_pose(pose: Dictionary, attack: bool) -> Dictionary:
+	var out := {}
+	for id in pose:
+		if id is StringName:
+			out[id] = pose[id]
+	for a in arms:
+		var v: Vector3 = pose.get(a, Vector3.ZERO)
+		if attack and pose.has(a):
+			out[a] = Vector3(clampf(72.0 + v.x, 110.0, 235.0), v.y, v.z)
+		else:
+			out[a] = Vector3(150.0 + v.x * 0.35, 15.0 + v.y * 0.5, v.z)
+	for h in heads:
+		out[h] = Vector3(-35.0, 0, 0) + (pose.get(h, Vector3.ZERO) as Vector3) * 0.5
+	for l in legs:
+		out[l] = Vector3(-5.0 + (pose.get(l, Vector3.ZERO) as Vector3).x * 0.15, 0, 0)
+	if root_id != &"" and pose.has(root_id):
+		var r: Vector3 = pose[root_id]
+		out[root_id] = Vector3(r.x * 0.3, r.y * 0.5, r.z)
+	var rot: Vector3 = pose.get("$rot", Vector3.ZERO)
+	var pos: Vector3 = pose.get("$pos", Vector3.ZERO)
+	out["$rot"] = Vector3(-72.0, 0, 0) + rot * 0.25
+	out["$pos"] = _prone_offset() + Vector3(pos.x, clampf(pos.y * 0.3, -0.03, 0.1), pos.z)
+	return out
+
+## 跪伏姿態（Boss 第二階段）：身體已由 BossPhaseComponent 降低，這裡只維持前傾、低頭，
+## 出手與受擊時軀幹不會回到直立。
+func _kneel_pose(pose: Dictionary) -> Dictionary:
+	var out := pose.duplicate()
+	if root_id != &"":
+		out[root_id] = (pose.get(root_id, Vector3.ZERO) as Vector3) + Vector3(22.0, 0, 0)
+	for h in heads:
+		out[h] = (pose.get(h, Vector3.ZERO) as Vector3) + Vector3(12.0, 0, 0)
+	return out
+
+## 加入片段與它的姿態變體。
+func _add_clip(out: Array, name: StringName, length: float, loop: bool, keys: Array) -> void:
+	out.append([name, _clip(length, loop, keys)])
+	if name in PRONE_CLIPS:
+		out.append([posture_clip(name, PRONE), _clip(length, loop, _posture_keys(keys, PRONE))])
+	if name in KNEEL_CLIPS:
+		out.append([posture_clip(name, KNEEL), _clip(length, loop, _posture_keys(keys, KNEEL))])
 
 func _leg_phase(id: StringName) -> float:
 	var c: Vector3 = frames[id]["center"]
@@ -214,7 +291,7 @@ func _sway(pose: Dictionary, t: float, amount: float) -> void:
 
 func base_clips() -> Array:
 	var out := []
-	out.append([&"idle", _cycle(2.0, 8, func(t):
+	_add_clip(out, &"idle", 2.0, true, _cycle_keys(2.0, 8, func(t):
 		var p := {}
 		if root_id != &"": p[root_id] = Vector3(sin(TAU * t) * 2.0, 0, 0)
 		for h in heads: p[h] = Vector3(-sin(TAU * t) * 2.0, 0, sin(TAU * t * 0.5) * 3.0)
@@ -222,8 +299,8 @@ func base_clips() -> Array:
 		for c in cradles: p[c] = Vector3(35.0 + sin(TAU * t) * 3.0, -10.0, 0)
 		if jaw != &"": p[jaw] = Vector3(maxf(0.0, sin(TAU * t)) * 4.0, 0, 0)
 		_sway(p, t, 4.0)
-		return p)])
-	out.append([&"walk", _cycle(1.0, 8, func(t):
+		return p))
+	_add_clip(out, &"walk", 1.0, true, _cycle_keys(1.0, 8, func(t):
 		var p := {}
 		if root_id != &"": p[root_id] = Vector3(4.0, 0, sin(TAU * t) * 5.0)
 		if abdomen != &"": p[abdomen] = Vector3(-3.0, 0, -sin(TAU * t) * 5.0)
@@ -236,9 +313,9 @@ func base_clips() -> Array:
 		_sway(p, t, 10.0)
 		var bob := absf(sin(TAU * t)) * 0.03
 		p["$pos"] = Vector3(0, bob, 0)
-		return p)])
+		return p))
 	# 單腳：拖行跛步，身體往剩下的腿傾斜並上下頓挫
-	out.append([&"limp", _cycle(1.3, 8, func(t):
+	_add_clip(out, &"limp", 1.3, true, _cycle_keys(1.3, 8, func(t):
 		var p := {}
 		var hop := maxf(0.0, sin(TAU * t))
 		if root_id != &"": p[root_id] = Vector3(10.0, sin(TAU * t) * 8.0, 0)
@@ -247,7 +324,7 @@ func base_clips() -> Array:
 		for h in heads: p[h] = Vector3(8.0, 0, sin(TAU * t) * 6.0)
 		_sway(p, t, 12.0)
 		p["$pos"] = Vector3(0, -0.04 - hop * 0.06, 0)
-		return p)])
+		return p))
 	# 爬行：整個骨架往前倒成趴姿，手臂輪流往前拉
 	var prone := Vector3(-72.0, 0, 0)
 	var prone_pos := _prone_offset()
@@ -271,19 +348,39 @@ func base_clips() -> Array:
 		p["$rot"] = prone
 		p["$pos"] = prone_pos
 		return p)])
-	out.append([&"block", _clip(0.5, true, [[0.0, _block_pose()], [0.5, _block_pose()]])])
+	_add_clip(out, &"block", 0.5, true, [[0.0, _block_pose()], [0.5, _block_pose()]])
 	var neutral := {}
+	# 受擊：第一格就到位（12fps 下不會有「慢慢彎下去」的軟感），頭被打得往後甩、
+	# 軀幹扭開、手臂甩開，整個骨架被往後推，再分兩段回來。
 	var flinch := {}
-	if root_id != &"": flinch[root_id] = Vector3(-10.0, 0, 6.0)
-	for h in heads: flinch[h] = Vector3(-18.0, 0, 0)
-	for a in arms: flinch[a] = Vector3(-10.0, 18.0, 0)
-	out.append([&"hit", _clip(0.3, false, [[0.0, neutral], [0.08, flinch], [0.3, neutral]])])
+	if root_id != &"": flinch[root_id] = Vector3(-20.0, 6.0, 14.0)
+	for h in heads: flinch[h] = Vector3(-32.0, 0, -12.0)
+	for n in necks: flinch[n] = Vector3(-14.0, 0, 0)
+	for a in arms: flinch[a] = Vector3(-18.0, 34.0, 0)
+	for c in cradles: flinch[c] = Vector3(20.0, 25.0, 0)
+	if jaw != &"": flinch[jaw] = Vector3(22.0, 0, 0)
+	for l in legs: flinch[l] = Vector3(-8.0 if _is_left(l) else 6.0, 0, 0)
+	flinch["$pos"] = Vector3(0, -0.04, 0.12)
+	var flinch_half := {}
+	for k in flinch:
+		flinch_half[k] = (flinch[k] as Vector3) * 0.45
+	_add_clip(out, &"hit", 0.35, false, [[0.0, neutral], [0.03, flinch], [0.12, flinch], [0.22, flinch_half], [0.35, neutral]])
+	# 硬直：先被打得後仰，接著膝蓋一軟、彎腰抱住身體往下沉，最後才站穩
 	var reel := flinch.duplicate()
-	if root_id != &"": reel[root_id] = Vector3(-18.0, 8.0, 10.0)
-	for a in arms: reel[a] = Vector3(-25.0, 40.0, 0)
-	for l in legs: reel[l] = Vector3(-12.0 if _is_left(l) else 10.0, 0, 0)
-	reel["$pos"] = Vector3(0, -0.05, 0.12)
-	out.append([&"stagger", _clip(1.0, false, [[0.0, neutral], [0.2, reel], [0.75, reel], [1.0, neutral]])])
+	if root_id != &"": reel[root_id] = Vector3(-26.0, 10.0, 16.0)
+	for a in arms: reel[a] = Vector3(-30.0, 50.0, 0)
+	for l in legs: reel[l] = Vector3(-16.0 if _is_left(l) else 12.0, 0, 0)
+	reel["$pos"] = Vector3(0, -0.06, 0.2)
+	var buckle := {}
+	if root_id != &"": buckle[root_id] = Vector3(34.0, -6.0, -10.0)
+	for h in heads: buckle[h] = Vector3(24.0, 0, 18.0)
+	for n in necks: buckle[n] = Vector3(10.0, 0, 0)
+	for a in arms: buckle[a] = Vector3(40.0, -22.0, 0)
+	for c in cradles: buckle[c] = Vector3(60.0, -20.0, 0)
+	if jaw != &"": buckle[jaw] = Vector3(15.0, 0, 0)
+	for l in legs: buckle[l] = Vector3(38.0 if _is_left(l) else 18.0, 0, 0)
+	buckle["$pos"] = Vector3(0, -0.2, 0.24)
+	_add_clip(out, &"stagger", 1.0, false, [[0.0, neutral], [0.06, reel], [0.22, reel], [0.4, buckle], [0.8, buckle], [1.0, neutral]])
 	# 斷肢：劇烈後仰、手臂亂揮（失去的部位骨骼已縮為零，不受影響）
 	var shock := {}
 	if root_id != &"": shock[root_id] = Vector3(-25.0, 12.0, -20.0)
@@ -293,14 +390,14 @@ func base_clips() -> Array:
 	shock["$pos"] = Vector3(0, -0.08, 0.15)
 	var shock2 := shock.duplicate()
 	for a in arms: shock2[a] = Vector3(-20.0, 30.0, 0)
-	out.append([&"sever", _clip(0.6, false, [[0.0, neutral], [0.1, shock], [0.3, shock2], [0.6, neutral]])])
+	_add_clip(out, &"sever", 0.6, false, [[0.0, neutral], [0.05, shock], [0.3, shock2], [0.6, neutral]])
 	var duck := {}
 	if root_id != &"": duck[root_id] = Vector3(30.0, 0, 0)
 	for l in legs: duck[l] = Vector3(45.0 if _is_left(l) else -25.0, 0, 0)
 	for a in arms: duck[a] = Vector3(30.0, 25.0, 0)
 	for h in heads: duck[h] = Vector3(15.0, 0, 0)
 	duck["$pos"] = Vector3(0, -0.3, 0)
-	out.append([&"dodge", _clip(1.0, false, [[0.0, neutral], [0.2, duck], [0.7, duck], [1.0, neutral]])])
+	_add_clip(out, &"dodge", 1.0, false, [[0.0, neutral], [0.2, duck], [0.7, duck], [1.0, neutral]])
 	# 登場（Boss）：從蜷伏中站起、仰頭張口尖叫。劇本演出用（CreatureAnimator.play_override）。
 	var curl := {"$pos": Vector3(0, -_height() * 0.25, 0)}
 	if root_id != &"": curl[root_id] = Vector3(45.0, 0, 0)
@@ -338,7 +435,25 @@ func base_clips() -> Array:
 	end["$rot"] = Vector3(84.0, 0, 6.0)
 	end["$pos"] = Vector3(0, _height() * 0.08, 0.15)
 	var start := {"$rot": Vector3.ZERO, "$pos": Vector3.ZERO}
-	out.append([&"death", _clip(1.0, false, [[0.0, start], [0.35, mid], [0.75, end], [1.0, end]])])
+	_add_clip(out, &"death", 1.0, false, [[0.0, start], [0.35, mid], [0.75, end], [1.0, end]])
+	# 倒地中死亡：已經趴著，不會先站起來再往後倒 —— 抽搐一下後完全攤平
+	var flat := {}
+	for a in arms: flat[a] = Vector3(165.0, 50.0, 0)
+	for h in heads: flat[h] = Vector3(10.0, 0, 30.0)
+	for l in legs: flat[l] = Vector3(-8.0, 6.0, 0)
+	if jaw != &"": flat[jaw] = Vector3(25.0, 0, 0)
+	_sway(flat, 0.25, 20.0)
+	flat["$rot"] = Vector3(-86.0, 0, 8.0)
+	flat["$pos"] = _prone_offset() + Vector3(0, -_height() * 0.02, 0)
+	var twitch := _prone_pose({}, false)
+	for a in arms: twitch[a] = Vector3(120.0, 40.0, 0)
+	for h in heads: twitch[h] = Vector3(-50.0, 0, 0)
+	if jaw != &"": twitch[jaw] = Vector3(35.0, 0, 0)
+	var prone_start := _prone_pose({}, false)
+	for id in flat:
+		if not prone_start.has(id): prone_start[id] = Vector3.ZERO
+		if not twitch.has(id): twitch[id] = Vector3.ZERO
+	out.append([posture_clip(&"death", PRONE), _clip(1.0, false, [[0.0, prone_start], [0.2, twitch], [0.6, flat], [1.0, flat]])])
 	return out
 
 func _block_pose() -> Dictionary:
@@ -364,7 +479,7 @@ func _prone_offset() -> Vector3:
 # ---------- 攻擊 ----------
 
 ## 回傳 [[name, Animation] x3]；這個身體做不到該風格時回傳空陣列。
-func attack_clips(style: StringName, arm_id: StringName) -> Array:
+func attack_clips(style: StringName, arm_id: StringName, posture: StringName = &"") -> Array:
 	var poses := _attack_poses(style, arm_id)
 	if poses.is_empty():
 		return []
@@ -379,10 +494,16 @@ func attack_clips(style: StringName, arm_id: StringName) -> Array:
 	var over := _merge(r, {})
 	for k in r:
 		over[k] = (r[k] as Vector3) * 1.08  # 前搖最後再多拉一點（蓄力感）
+	if posture != &"":
+		neutral = _posture_pose(neutral, posture, false)
+		r = _posture_pose(r, posture, true)
+		over = _posture_pose(over, posture, true)
+		s = _posture_pose(s, posture, true)
+	# 出手：前 25% 就打到定位（快、狠），停在出手姿勢讓命中那一刻看得清楚
 	return [
-		[attack_clip_name(style, arm_id, "windup"), _clip(1.0, false, [[0.0, neutral], [0.6, r], [1.0, over]])],
-		[attack_clip_name(style, arm_id, "active"), _clip(1.0, false, [[0.0, over], [0.45, s], [1.0, s]])],
-		[attack_clip_name(style, arm_id, "recovery"), _clip(1.0, false, [[0.0, s], [0.3, s], [1.0, neutral]])],
+		[attack_clip_name(style, arm_id, "windup", posture), _clip(1.0, false, [[0.0, neutral], [0.6, r], [1.0, over]])],
+		[attack_clip_name(style, arm_id, "active", posture), _clip(1.0, false, [[0.0, over], [0.25, s], [1.0, s]])],
+		[attack_clip_name(style, arm_id, "recovery", posture), _clip(1.0, false, [[0.0, s], [0.3, s], [1.0, neutral]])],
 	]
 
 ## [蓄力姿勢, 出手姿勢]

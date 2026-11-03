@@ -108,6 +108,11 @@ static func build_creature(profile: AnatomyProfile, creature_id: StringName,
 	var animator := CreatureAnimator.new()
 	animator.name = "CreatureAnimator"
 	root.add_child(animator)
+
+	# 打擊感：受擊閃白、擊退、噴血、頓幀、鏡頭震動
+	var impact := ImpactFeedback.new()
+	impact.name = "ImpactFeedback"
+	root.add_child(impact)
 	return root
 
 static func build_body(profile: AnatomyProfile) -> Node3D:
