@@ -11,6 +11,7 @@ func _process(delta: float) -> bool:
 		started = true
 		g = load("res://game/prologue_game.gd").new()
 		g.autostart = false
+		g.play_opening = false
 		g.save_path = "user://sim_save.json"
 		root.add_child(g)
 		g.start_game("new")

@@ -6,15 +6,29 @@
    "branches": [
     {
      "if": {
-      "flag": "boss_defeated"
+      "flag": "boss_defeated",
+      "not_flag": "agnes_confessed"
      },
      "next": "after_boss"
+    },
+    {
+     "if": {
+      "flag": "boss_defeated"
+     },
+     "next": "after_boss_known"
     },
     {
      "if": {
       "mutation_gte": 75
      },
      "next": "afraid"
+    },
+    {
+     "if": {
+      "flag": "read_register",
+      "not_flag": "agnes_confessed"
+     },
+     "next": "confess"
     },
     {
      "if": {
@@ -133,6 +147,53 @@
   "after_boss": {
    "speaker": "阿格妮絲",
    "text": "她的聲音停了。……你去禮拜堂深處吧，胎房還在那裡跳。",
+   "next": ""
+  },
+  "confess": {
+   "speaker": "阿格妮絲",
+   "text": "……你看到名冊了。",
+   "next": "confess2",
+   "set": {
+    "agnes_confessed": true
+   }
+  },
+  "confess2": {
+   "speaker": "阿格妮絲",
+   "text": "那一頁是我寫的。七百三十一個孩子，每一針都是我縫的。我以為我在救他們。",
+   "next": "confess3"
+  },
+  "confess3": {
+   "speaker": "阿格妮絲",
+   "text": "我騙了你。你的心臟是院長的女兒，伊蓮的。院長把它冰了七年，只為了等一個『夠好』的身體。",
+   "next": "confess4"
+  },
+  "confess4": {
+   "speaker": "阿格妮絲",
+   "text": "所以母親一直在等你。她不是要殺你……她是要把女兒收回去。",
+   "choices": [
+    {
+     "text": "為什麼不早點告訴我？",
+     "next": "confess5"
+    },
+    {
+     "text": "這不改變什麼。我還是我。",
+     "next": "confess6"
+    }
+   ]
+  },
+  "confess5": {
+   "speaker": "阿格妮絲",
+   "text": "因為說了，你就會開始懷疑，醒來的到底是你，還是伊蓮。……就像現在這樣。",
+   "next": ""
+  },
+  "confess6": {
+   "speaker": "阿格妮絲",
+   "text": "……你說得對。對不起。去吧，在你還是你的時候。",
+   "next": ""
+  },
+  "after_boss_known": {
+   "speaker": "阿格妮絲",
+   "text": "她的聲音停了。……伊蓮的心臟，還在你胸口跳嗎？去胎房吧，做完最後一件事。",
    "next": ""
   }
  }

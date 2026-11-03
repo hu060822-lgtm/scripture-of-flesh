@@ -31,18 +31,98 @@
   "burn": {
    "speaker": "",
    "text": "火從胎房的中心燒起。你聞到自己身上的線也在焦。至少，不會再有第七百三十二個了。",
-   "next": "",
-   "action": "ending:burn"
+   "next": "burn_b"
   },
   "mother": {
    "speaker": "",
    "text": "你把手伸進溫熱的肉裡。細線一條一條接上你的神經。你聽見了所有孩子的心跳——現在，他們是你的了。",
-   "next": "",
-   "action": "ending:mother"
+   "next": "mother_b"
   },
   "escape": {
    "speaker": "",
    "text": "阿格妮絲握住你的手，那是一隻別人的手，但它是溫的。聖骸院的大門外，天空是灰色的。",
+   "next": "escape_b"
+  },
+  "burn_b": {
+   "branches": [
+    {
+     "if": {
+      "flag": "read_register"
+     },
+     "next": "burn_heart"
+    },
+    {
+     "next": "burn_end"
+    }
+   ]
+  },
+  "burn_heart": {
+   "speaker": "",
+   "text": "胸口那顆心猛烈地跳了一下，像在道別。你不知道它是在跟誰道別。",
+   "next": "burn_end"
+  },
+  "burn_end": {
+   "speaker": "",
+   "text": "聖骸院燒了三天三夜。後來的人說，火裡有很多孩子的聲音，但沒有一個在哭。",
+   "next": "",
+   "action": "ending:burn"
+  },
+  "mother_b": {
+   "branches": [
+    {
+     "if": {
+      "mutation_gte": 75
+     },
+     "next": "mother_lost"
+    },
+    {
+     "if": {
+      "flag": "knows_mother"
+     },
+     "next": "mother_ilene"
+    },
+    {
+     "next": "mother_end"
+    }
+   ]
+  },
+  "mother_lost": {
+   "speaker": "",
+   "text": "你試著想起自己被縫起來之前的名字。……不，你從來就沒有那種東西。七百三十一？那是誰？",
+   "next": "mother_end"
+  },
+  "mother_ilene": {
+   "speaker": "",
+   "text": "在所有心跳的最深處，有個七歲女孩的聲音說：媽媽，我回來了。你分不清那是她，還是你。",
+   "next": "mother_end"
+  },
+  "mother_end": {
+   "speaker": "",
+   "text": "聖骸院的產房再次亮起了燈。第七百三十二個孩子，正在你的身體裡成形。",
+   "next": "",
+   "action": "ending:mother"
+  },
+  "escape_b": {
+   "branches": [
+    {
+     "if": {
+      "flag": "agnes_confessed"
+     },
+     "next": "escape_sorry"
+    },
+    {
+     "next": "escape_end"
+    }
+   ]
+  },
+  "escape_sorry": {
+   "speaker": "阿格妮絲",
+   "text": "對不起。我縫了你，卻沒告訴你你是誰。……這一次，你自己決定要成為誰。",
+   "next": "escape_end"
+  },
+  "escape_end": {
+   "speaker": "",
+   "text": "你不知道這具身體會帶你走向哪裡。但走出去的這一步，是你自己選的。",
    "next": "",
    "action": "ending:escape"
   }
