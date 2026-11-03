@@ -44,6 +44,9 @@ const TABLE := {
 	&"boss_summon":       [&"Voice", -3.0, 0.95, 1.05, 2, 0.50, true],
 	&"cord_snap":         [&"SFX", -2.0, 0.95, 1.05, 3, 0.10, true],
 	&"boss_defeated":     [&"Voice", 0.0, 1.00, 1.00, 1, 2.00, false],
+	# 精英：連體修女
+	&"twin_hymn":         [&"Voice", -6.0, 0.98, 1.02, 1, 3.00, true],
+	&"twin_split":        [&"Voice", 0.0, 1.00, 1.00, 1, 1.00, true],
 	# ---- UI ----
 	&"ui_hover":          [&"UI", -14.0, 0.97, 1.03, 2, 0.05, false],
 	&"ui_confirm":        [&"UI", -8.0, 1.00, 1.00, 2, 0.05, false],

@@ -75,7 +75,7 @@ func _init(p: AnatomyProfile) -> void:
 	for d in p.parts:
 		if d.is_internal:
 			continue
-		var s := String(d.id)
+		var s := AnatomyTypes.base_part_id(d.id)  # 連體生物：head_a、neck_b… 視為 head、neck
 		if d.parent_id == &"":
 			root_id = d.id
 		elif d.functions.has("cradle"):
@@ -93,7 +93,8 @@ func _init(p: AnatomyProfile) -> void:
 		elif s == "neck":
 			necks.append(d.id)
 		elif s == "jaw":
-			jaw = d.id
+			if jaw == &"":
+				jaw = d.id
 		elif s == "abdomen":
 			abdomen = d.id
 		elif s == "womb":

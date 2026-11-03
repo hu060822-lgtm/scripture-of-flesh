@@ -28,6 +28,11 @@ const LOOKS := {
 	&"frozen_stitcher": {"skin": [Color("9aa4ac"), "stitched"], "cloth": [Color("d8dde0"), "cloth"], "trim": Color("4e1612"), "apron": true, "sutures": true},
 	# 阿格妮絲：產房的修女兼接生者。奶油黃頭巾、煤灰黑修女服、陳舊金念珠。
 	&"agnes": {"skin": [Color("d6bfb6"), "skin"], "cloth": [Color("2a2725"), "cloth"], "hood_cloth": [Color("e2d4a4"), "cloth"], "trim": Color("a8863f"), "clothed": true, "hood": true},
+	# 連體修女（主線精英）：灰粉色的皮膚、煤灰黑修女服、奶油黃頭巾，眼睛被一條沾血的布縫住。
+	&"conjoined_nun": {"skin": [Color("c8b0aa"), "skin"], "cloth": [Color("2a2725"), "cloth"], "hood_cloth": [Color("e2d4a4"), "cloth"], "trim": Color("a8863f"), "clothed": true, "hood": true, "blindfold": true},
+	# 分裂後的兩位修女：同一套衣服，但身體一側被撕開（torn = 原本連著對方的那一側，+1 左／-1 右）。
+	&"nun_sister_a": {"skin": [Color("c8b0aa"), "skin"], "cloth": [Color("2a2725"), "cloth"], "hood_cloth": [Color("e2d4a4"), "cloth"], "trim": Color("a8863f"), "clothed": true, "hood": true, "blindfold": true, "torn": -1.0},
+	&"nun_sister_b": {"skin": [Color("c8b0aa"), "skin"], "cloth": [Color("2a2725"), "cloth"], "hood_cloth": [Color("e2d4a4"), "cloth"], "trim": Color("a8863f"), "clothed": true, "hood": true, "blindfold": true, "torn": 1.0},
 	&"walking_mother": {"skin": [Color("e8e2d6"), "skin"], "cloth": [Color("efe2b0"), "cloth"], "trim": Color("a8863f"), "veil": true},
 }
 
@@ -84,7 +89,7 @@ static func build_segment(seg: MeshInstance3D, d: BodyPartDef, profile: AnatomyP
 
 ## 回傳 [主網格, 主材質, 細節陣列 [[mesh, material, Transform3D, name], ...]]
 static func _model_for(d: BodyPartDef, lay: Dictionary, look: StringName, lk: Dictionary, variant: StringName) -> Array:
-	var id := String(d.id)
+	var id := AnatomyTypes.base_part_id(d.id)  # 連體生物的 head_a、arm_l_b… 用一般部位的造型
 	var h := float(lay.get("h", 0.3))
 	var r := float(lay.get("r", 0.1))
 	match variant:
@@ -113,7 +118,8 @@ static func _model_for(d: BodyPartDef, lay: Dictionary, look: StringName, lk: Di
 		return _eye(r, false)
 	match id:
 		"chest", "torso": return _torso(h, r, lk, look)
-		"abdomen": return _abdomen(h, r, lk)
+		"abdomen", "pelvis": return _abdomen(h, r, lk)
+		"seam": return _seam(lay)
 		"neck": return _neck(h, r, lk, look)
 		"head": return _head(r, lk, look)
 		"jaw": return _jaw(h, r, lk)
@@ -322,6 +328,8 @@ static func _torso(h: float, r: float, lk: Dictionary, look: StringName) -> Arra
 	if lk.get("fetal", false):
 		# 未生者：臍帶殘端與透出的血管
 		dets.append(_det(S.cylinder(r * 0.12, r * 0.18, r * 1.2, 5), S.material(S.DRIED_RED.lightened(0.2), "flesh", S.DRIED_RED, 0.3), Vector3(0, -top + r * 0.4, -r * 0.7), Vector3(70, 0, 0), "Cord"))
+	if lk.has("torn"):
+		dets.append_array(_torn_side(float(lk["torn"]), r, h))
 	return [k.commit(), _skin(lk), dets]
 
 static func _abdomen(h: float, r: float, lk: Dictionary) -> Array:
@@ -337,6 +345,8 @@ static func _abdomen(h: float, r: float, lk: Dictionary) -> Array:
 		dets.append(_det(sk.commit(), _cloth(lk), Vector3.ZERO, Vector3.ZERO, "Skirt"))
 	elif lk.has("cloth"):
 		dets.append(_det(S.cylinder(r * 1.2, r * 1.3, r * 0.9, 7), _cloth(lk), Vector3(0, -top + r * 0.5, 0), Vector3.ZERO, "Loincloth", Vector3(1.2, 1, 0.85)))
+	if lk.has("torn"):
+		dets.append_array(_torn_side(float(lk["torn"]), r * 1.3, h))
 	return [k.commit(), _skin(lk), dets]
 
 static func _neck(h: float, r: float, lk: Dictionary, look: StringName) -> Array:
@@ -384,6 +394,15 @@ static func _head(r: float, lk: Dictionary, look: StringName) -> Array:
 		hk.lathe([Vector2(0.0, r * 1.25), Vector2(r * 0.9, r * 1.0), Vector2(r * 1.05, r * 0.2), Vector2(r * 1.0, -r * 0.9)], 7, MeshKit.at(Vector3(0, r * 0.05, r * 0.5)), Vector2(1.05, 0.9), false)
 		var hood_mat := S.material(lk["hood_cloth"][0], lk["hood_cloth"][1]) if lk.has("hood_cloth") else _cloth(lk)
 		dets.append(_det(hk.commit(), hood_mat, Vector3.ZERO, Vector3.ZERO, "Hood"))
+	if lk.get("blindfold", false):
+		# 連體修女：縫在眼睛上的奶油黃布條，眼睛的位置滲出兩塊乾涸的血，布邊一排粗縫線
+		var cloth := S.material(S.CREAM_YELLOW.darkened(0.1), "cloth")
+		dets.append(_det(S.box(Vector3(r * 2.0, r * 0.42, r * 0.2)), cloth, Vector3(0, r * 0.2, -r * 0.82), Vector3.ZERO, "Blindfold"))
+		for side in [-1.0, 1.0]:
+			dets.append(_det(S.box(Vector3(r * 0.3, r * 0.22, r * 0.05)), S.material(S.DRIED_RED, "flesh"), Vector3(side * r * 0.36, r * 0.18, -r * 0.93), Vector3.ZERO, "BloodTear"))
+			dets.append(_det(S.box(Vector3(r * 0.06, r * 0.5, r * 0.05)), S.material(S.DRIED_RED.darkened(0.3), "flesh"), Vector3(side * r * 0.36, -r * 0.25, -r * 0.9), Vector3.ZERO, "TearStreak"))
+		for i in 5:
+			dets.append(_det(S.box(Vector3(r * 0.04, r * 0.55, r * 0.04)), S.material(S.SOOT_BLACK, "plain"), Vector3((float(i) - 2.0) * r * 0.4, r * 0.2, -r * 0.95), Vector3(0, 0, 25.0 * (1 if i % 2 == 0 else -1)), "Stitch%d" % i))
 	if lk.get("sutures", false):
 		# 頭皮上一圈縫合、兩根固定針
 		dets.append(_det(S.cylinder(r * 0.97, r * 0.97, r * 0.08, 7), S.material(S.DRIED_RED, "flesh"), Vector3(0, r * 0.55, 0), Vector3(12, 0, 0), "ScalpSeam"))
@@ -444,6 +463,32 @@ static func _womb(r: float, exposed: bool) -> Array:
 	else:
 		dets.append(_det(S.box(Vector3(r * 0.1, r * 1.6, r * 0.1)), S.material(S.OLD_GOLD, "metal"), Vector3(0, 0, -r * 0.98), Vector3.ZERO, "Seam"))
 	return [k.commit(), flesh, dets]
+
+## 連體修女的縫線：兩個身體之間一道粗厚的肉橋，被陳舊金的粗線來回縫住（弱點，自發光）。
+static func _seam(lay: Dictionary) -> Array:
+	var size: Vector3 = lay.get("size", Vector3(0.12, 0.5, 0.14))
+	var flesh := S.material(S.DRIED_RED.lightened(0.15), "flesh", S.DRIED_RED, 0.25)
+	var k := MeshKit.new()
+	k.box(size, MeshKit.at(Vector3.ZERO))
+	var dets := []
+	var gold := S.material(S.OLD_GOLD, "metal", S.OLD_GOLD, 1.0)
+	for i in 6:
+		var y := size.y * (0.42 - float(i) * 0.17)
+		dets.append(_det(S.box(Vector3(size.x * 2.4, size.y * 0.035, size.z * 0.3)), gold, Vector3(0, y, -size.z * 0.55), Vector3(0, 0, 18.0 if i % 2 == 0 else -18.0), "Stitch%d" % i))
+	# 縫線兩側被拉扯起來的皮膚
+	for side in [-1.0, 1.0]:
+		dets.append(_det(S.box(Vector3(size.x * 0.3, size.y * 0.95, size.z * 0.9)), S.material(Color("c8b0aa").darkened(0.15), "skin"), Vector3(side * size.x * 0.6, 0, 0), Vector3(0, 0, side * 4.0), "PulledSkin"))
+	return [k.commit(), flesh, dets]
+
+## 分裂後撕開的身體側面：暴露的肉、斷掉的縫線、凸出的肋骨。side：+1 左、-1 右。
+static func _torn_side(side: float, r: float, h: float) -> Array:
+	var raw := S.material(S.DRIED_RED.lightened(0.1), "flesh", S.DRIED_RED, 0.15)
+	# 要露在衣服外面（修女服的外層在 r × 1.1 左右）
+	var out := [_det(S.box(Vector3(r * 0.3, h * 0.85, r * 1.25)), raw, Vector3(side * r * 1.08, 0, 0), Vector3.ZERO, "TornFlesh")]
+	for i in 3:
+		out.append(_det(S.box(Vector3(r * 0.45, r * 0.08, r * 0.08)), S.material(S.BONE_WHITE.darkened(0.05), "bone"), Vector3(side * r * 1.3, h * 0.25 - i * h * 0.2, -r * 0.3), Vector3(0, 0, side * 15.0), "TornRib%d" % i))
+		out.append(_det(S.box(Vector3(r * 0.4, r * 0.035, r * 0.035)), S.material(S.OLD_GOLD, "metal", S.OLD_GOLD, 0.6), Vector3(side * r * 1.28, h * 0.35 - i * h * 0.27, r * 0.35), Vector3(0, 0, side * -30.0), "BrokenStitch%d" % i))
+	return out
 
 ## 半身像（對話立繪用）：胸、頸、頭、眼、下顎，位置與遊戲中的模型相同。
 static func bust(look: StringName) -> Node3D:

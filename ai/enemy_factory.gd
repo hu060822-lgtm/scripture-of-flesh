@@ -28,6 +28,10 @@ static func create(def: EnemyDefinition, creature_id: StringName) -> CharacterBo
 	ai.name = "EnemyAI"
 	ai.definition = def
 	body.add_child(ai)
+	if def.special_behavior == &"conjoined":
+		var cs := ConjoinedSplit.new()
+		cs.name = "ConjoinedSplit"
+		body.add_child(cs)
 	var noise := NoiseEmitter.new()
 	noise.name = "NoiseEmitter"
 	body.add_child(noise)

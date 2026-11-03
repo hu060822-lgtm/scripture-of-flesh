@@ -38,6 +38,30 @@ const PROFILE_LAYOUTS := {
 		&"arm_l": {"pos": Vector3(0.28, 0.92, 0.04), "shape": "capsule", "r": 0.05, "h": 0.5},
 		&"arm_r": {"pos": Vector3(-0.28, 0.92, 0.04), "shape": "capsule", "r": 0.05, "h": 0.5},
 	},
+	# 連體修女（主線精英）：共用的骨盆與兩條腿，上面縫著兩個往外歪的上半身。
+	# 內側的兩隻手臂環抱在身前、擋住中間的縫線（正面自動瞄準會先打到手臂）。
+	&"conjoined": {
+		&"pelvis":  {"pos": Vector3(0, 1.00, 0), "shape": "capsule", "r": 0.27, "h": 0.36},
+		&"leg_l":   {"pos": Vector3(0.15, 0.45, 0), "shape": "capsule", "r": 0.09, "h": 0.90},
+		&"leg_r":   {"pos": Vector3(-0.15, 0.45, 0), "shape": "capsule", "r": 0.09, "h": 0.90},
+		&"seam":    {"pos": Vector3(0, 1.32, -0.02), "shape": "box", "size": Vector3(0.12, 0.52, 0.14), "color": Color("6e1f19")},
+		&"chest_a": {"pos": Vector3(0.22, 1.42, 0), "shape": "capsule", "r": 0.17, "h": 0.46},
+		&"heart_a": {"pos": Vector3(0.20, 1.45, 0), "shape": "sphere", "r": 0.05},
+		&"lungs_a": {"pos": Vector3(0.22, 1.48, 0), "shape": "sphere", "r": 0.08},
+		&"neck_a":  {"pos": Vector3(0.27, 1.71, 0), "shape": "capsule", "r": 0.06, "h": 0.14},
+		&"head_a":  {"pos": Vector3(0.31, 1.87, 0), "shape": "sphere", "r": 0.12},
+		&"jaw_a":   {"pos": Vector3(0.31, 1.78, 0.05), "shape": "capsule", "r": 0.045, "h": 0.12},
+		&"arm_l_a": {"pos": Vector3(0.48, 1.22, 0), "shape": "capsule", "r": 0.06, "h": 0.68},
+		&"arm_r_a": {"pos": Vector3(0.09, 1.20, -0.17), "shape": "capsule", "r": 0.05, "h": 0.60},
+		&"chest_b": {"pos": Vector3(-0.22, 1.42, 0), "shape": "capsule", "r": 0.17, "h": 0.46},
+		&"heart_b": {"pos": Vector3(-0.20, 1.45, 0), "shape": "sphere", "r": 0.05},
+		&"lungs_b": {"pos": Vector3(-0.22, 1.48, 0), "shape": "sphere", "r": 0.08},
+		&"neck_b":  {"pos": Vector3(-0.27, 1.71, 0), "shape": "capsule", "r": 0.06, "h": 0.14},
+		&"head_b":  {"pos": Vector3(-0.31, 1.87, 0), "shape": "sphere", "r": 0.12},
+		&"jaw_b":   {"pos": Vector3(-0.31, 1.78, 0.05), "shape": "capsule", "r": 0.045, "h": 0.12},
+		&"arm_r_b": {"pos": Vector3(-0.48, 1.22, 0), "shape": "capsule", "r": 0.06, "h": 0.68},
+		&"arm_l_b": {"pos": Vector3(-0.09, 1.20, -0.17), "shape": "capsule", "r": 0.05, "h": 0.60},
+	},
 	# 行走的母親（Boss）：四根高蹺腿撐起的巨大身軀，臍帶從子宮垂到地面。
 	&"walking_mother": {
 		&"torso":    {"pos": Vector3(0, 2.90, 0), "shape": "capsule", "r": 0.36, "h": 0.95},
