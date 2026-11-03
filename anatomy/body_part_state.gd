@@ -10,6 +10,10 @@ var injuries := {}
 var bleed_rate: float = 0.0
 ## 部位異化值 0–100。
 var mutation: float = 0.0
+## 傷口已包紮（外觀顯示繃帶）。修復部位時清除。
+var bandaged: bool = false
+## 曾經斷離、被縫回（外觀顯示一圈縫線疤）。永久保留。
+var sutured: bool = false
 var severed: bool = false
 ## 自身造成的失效（HP 歸零、骨折）。
 var own_disabled: bool = false

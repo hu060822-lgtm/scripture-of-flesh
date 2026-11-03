@@ -1,6 +1,6 @@
 class_name CombatHud
 extends CanvasLayer
-## 戰鬥 HUD：HP／ST／AP、武器、可用攻擊、自身受損部位。
+## 戰鬥 HUD：HP／ST／AP、異常狀態圖標列、人體剪影（自身傷殘部位）、武器與可用攻擊。
 
 var player: CombatComponent
 var controller: PlayerController
@@ -8,6 +8,8 @@ var _hp: ProgressBar
 var _st: ProgressBar
 var _ap: ProgressBar
 var _info: Label
+var status_bar: StatusIconBar
+var body_doll: BodyDoll
 
 func _ready() -> void:
 	var box := VBoxContainer.new()
@@ -17,6 +19,13 @@ func _ready() -> void:
 	_hp = _bar(box, "HP", Color("8b2a20"))
 	_st = _bar(box, "ST", Color("b9b09a"))
 	_ap = _bar(box, "AP", Color("8c7a4b"))
+	status_bar = StatusIconBar.new()
+	status_bar.name = "StatusIcons"
+	box.add_child(status_bar)
+	body_doll = BodyDoll.new()
+	body_doll.name = "BodyDoll"
+	body_doll.position = Vector2(16 + 320 + 20, 20)
+	add_child(body_doll)
 	_info = Label.new()
 	_info.add_theme_font_size_override("font_size", 14)
 	box.add_child(_info)
@@ -51,27 +60,16 @@ func _process(_delta: float) -> void:
 	for a in player.available_attacks():
 		names.append(a.display_name + ("（AP %d）" % a.ap_cost if a.ap_cost > 0 else ""))
 	lines.append("可用攻擊：" + "、".join(names))
-	var hurt := PackedStringArray()
+	# 異常狀態與傷殘部位改由圖標列與人體剪影顯示
 	var st := player.anatomy.state
-	for pid in st.part_ids():
-		var s := st.status_of(pid)
-		if s != AnatomyTypes.PartStatus.INTACT:
-			hurt.append("%s:%s" % [st.get_part(pid).def.display_name, AnatomyTypes.status_name(s)])
-	if not hurt.is_empty():
-		lines.append("受損：" + "、".join(hurt))
-	if st.total_bleed_rate() > 0.0:
-		lines.append("出血 %.1f/s" % st.total_bleed_rate())
-	if player.vital_timer >= 0.0:
-		lines.append("窒息倒數 %.1f 秒" % player.vital_timer)
+	status_bar.set_effects(StatusEffects.collect(player))
+	body_doll.anatomy = st
 	var mut: MutationComponent = player.body().get_node_or_null("MutationComponent")
 	if mut != null:
-		var stage := mut.current_stage()
-		lines.append("異化 %d%s" % [int(mut.value), ("　【%s】" % stage.display_name) if stage != null else ""])
+		lines.append("異化 %d" % int(mut.value))
 	var data: PlayerData = player.body().get_node_or_null("PlayerData")
 	if data != null:
-		lines.append("縫合包 ×%d（F）" % data.inventory.count("suture_kit"))
-		if data.is_suturing():
-			lines.append("縫合中：%s……" % st.get_part(data.suturing_part).def.display_name)
+		lines.append("縫合包 ×%d（F：縫合／止血）" % data.inventory.count("suture_kit"))
 	if controller != null:
 		var it := Interactable.nearest(controller.get_tree(), player.body())
 		if it != null:

@@ -198,7 +198,9 @@ func test_bleeding_drains_body_hp() -> void:
 	e.anatomy.receive(H.no_sever(&"leg_l", {T.CUT: 10.0}))  # 出血 1.0/s
 	var before := e.pools.hp
 	_run(e, 2.0, 0.1)
-	assert_near(e.pools.hp, before - 2.0 * CombatComponent.BLEED_HP_FACTOR, 0.01)
+	# 自然凝血：2 秒內流出 ∫ 1.0 × 0.5^(t/半衰期) dt
+	var k := log(2.0) / e.bleed_half_life
+	assert_near(e.pools.hp, before - (1.0 - exp(-k * 2.0)) / k * CombatComponent.BLEED_HP_FACTOR, 0.01)
 
 func test_decapitation_kills_immediately() -> void:
 	var cs := _duel()

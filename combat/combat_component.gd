@@ -40,6 +40,11 @@ const AP_PER_HIT := 4.0
 @export var dodge_speed: float = 7.0
 ## 致命部位為 COUNTDOWN（肺）時，失效後幾秒死亡。
 @export var vital_countdown: float = 8.0
+## 自然凝血半衰期（秒）：出血每隔這麼久減半，最後自己止住。0 = 不凝血。
+@export var bleed_half_life: float = 16.0
+## 失血保底：單靠失血最多扣到最大 HP 的這個比例（玩家 0.1；敵人 0 = 可以失血而死）。
+## 其他傷害（命中、窒息、壞死）不受影響。
+@export var bleed_floor_ratio: float = 0.0
 
 var pools := ResourcePools.new()
 ## 由成長系統設定：Callable(attack: AttackDefinition, weapon: WeaponDefinition) -> float
@@ -56,6 +61,8 @@ var current_attack: AttackDefinition
 var current_target_part: StringName = &""
 var dodge_direction := Vector3.ZERO
 var vital_timer := -1.0
+## 這一格的失血被保底擋下（HUD 顯示「失血昏沉」）。
+var bleed_floored := false
 var _timer := 0.0
 var _elapsed_in_dodge := 0.0
 var _cooldowns := {}  # attack id -> 剩餘秒數
@@ -178,12 +185,20 @@ func advance(delta: float) -> void:
 	# 未生者的心臟：體力回復 ×1.35
 	pools.st_regen_scale = 1.35 if caps().has("restless_heart") else 1.0
 	pools.tick(delta, action == Action.IDLE and not blocking)
+	anatomy.state.bleed_half_life = bleed_half_life  # 讀檔會換掉 state，每格同步
 	var blood := anatomy.state.tick(delta)
+	bleed_floored = false
 	if blood > 0.0:
 		var organ_scale := 0.7 if caps().has("strong_heart") else 1.0
 		if caps().has("cold_blood"):
 			organ_scale *= 0.6
-		pools.damage_hp(blood * BLEED_HP_FACTOR * bleed_scale * organ_scale, "bleeding")
+		var loss := blood * BLEED_HP_FACTOR * bleed_scale * organ_scale
+		var floor_hp := pools.max_hp * bleed_floor_ratio
+		if bleed_floor_ratio > 0.0:
+			if loss >= pools.hp - floor_hp:
+				loss = maxf(0.0, pools.hp - floor_hp)
+				bleed_floored = true
+		pools.damage_hp(loss, "bleeding")
 	if vital_timer >= 0.0 and not is_dead():
 		vital_timer -= delta
 		if vital_timer <= 0.0:
