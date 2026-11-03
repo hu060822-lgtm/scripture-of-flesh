@@ -22,6 +22,9 @@ static func create(weapon_paths: Array = WEAPONS, class_path: String = DEFAULT_C
 	var combat: CombatComponent = body.get_node("CombatComponent")
 	combat.max_hp = 160.0
 	combat.max_st = 110.0
+	# 失血：小傷約 8 秒減半、自己止住；單靠失血最多扣到剩 10% HP（luz 2026-11-03）
+	combat.bleed_half_life = 8.0
+	combat.bleed_floor_ratio = 0.1
 	var ctrl := PlayerController.new()
 	ctrl.name = "PlayerController"
 	var cls: ClassDefinition = load(class_path)

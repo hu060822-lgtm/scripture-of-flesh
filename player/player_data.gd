@@ -5,12 +5,23 @@ extends Node
 signal suture_started(part_id: StringName, duration: float)
 signal suture_finished(part_id: StringName)
 signal suture_interrupted
+## 壓迫止血（不需縫合包）。
+signal bandage_started(duration: float)
+signal bandage_finished(parts: Array)
 signal harvested(organ: OrganDefinition)
 signal message(text: String)
 
 ## 緊急縫合：花時間把一個斷離或失效的部位粗糙地接回，代價是異化。
 const SUTURE_SECONDS := 2.5
 const SUTURE_MUTATION := 6.0
+## 壓迫止血：沒有可縫的部位或沒有縫合包時，按 F 撕布條綁住傷口。
+const BANDAGE_SECONDS := 1.5
+## 包紮讓每個出血部位的出血速率降低這個比例。
+const BANDAGE_REDUCTION := 0.8
+## 總出血速率低於此值就不需要包紮。
+const BANDAGE_MIN_BLEED := 0.05
+## suturing_part 的特殊值：正在包紮，不是在縫某個部位。
+const BANDAGE := &"__bandage"
 const HARVEST_RADIUS := 1.8
 ## 捐贈部位 HP 比例達到此值 = 完好摘下（移植相容性提高）。
 const FRESH_RATIO := 0.6
@@ -54,23 +65,39 @@ func suture_duration() -> float:
 func start_suture() -> bool:
 	if suturing_part != &"" or combat.is_dead() or combat.action != CombatComponent.Action.IDLE:
 		return false
-	if inventory.count("suture_kit") <= 0:
-		message.emit("沒有縫合包")
-		return false
 	var target := next_suture_target()
-	if target == &"":
-		message.emit("沒有需要縫合的部位")
+	var has_kit := inventory.count("suture_kit") > 0
+	if target == &"" or not has_kit:
+		if combat.anatomy.state.total_bleed_rate() >= BANDAGE_MIN_BLEED:
+			return start_bandage()
+		message.emit("沒有縫合包" if target != &"" else "沒有需要縫合的部位")
 		return false
 	suturing_part = target
 	_suture_left = suture_duration()
 	suture_started.emit(target, _suture_left)
 	return true
 
+## 壓迫止血：不消耗物品，1.5 秒，被打中或行動就中斷。
+func start_bandage() -> bool:
+	if suturing_part != &"" or combat.is_dead() or combat.action != CombatComponent.Action.IDLE:
+		return false
+	if combat.anatomy.state.total_bleed_rate() < BANDAGE_MIN_BLEED:
+		message.emit("沒有在流血")
+		return false
+	suturing_part = BANDAGE
+	_suture_left = BANDAGE_SECONDS
+	bandage_started.emit(_suture_left)
+	return true
+
+func is_bandaging() -> bool:
+	return suturing_part == BANDAGE
+
 func _interrupt() -> void:
 	if suturing_part != &"":
+		var was_bandage := suturing_part == BANDAGE
 		suturing_part = &""
 		suture_interrupted.emit()
-		message.emit("縫合被打斷")
+		message.emit("包紮被打斷" if was_bandage else "縫合被打斷")
 
 func _physics_process(delta: float) -> void:
 	advance(TimeScale.scaled(delta))
@@ -85,15 +112,23 @@ func advance(delta: float) -> void:
 	if _suture_left <= 0.0:
 		var part := suturing_part
 		suturing_part = &""
+		if part == BANDAGE:
+			var parts := combat.anatomy.state.stanch(BANDAGE_REDUCTION)
+			bandage_finished.emit(parts)
+			message.emit("用布條壓住了傷口" if not parts.is_empty() else "血已經止住了")
+			return
 		inventory.remove("suture_kit")
 		combat.anatomy.state.restore_part(part)
+		# 縫回斷肢後，父部位斷面的出血也一併縫住
+		combat.anatomy.state.stanch(BANDAGE_REDUCTION)
 		if mutation != null:
 			mutation.add(SUTURE_MUTATION * (1.0 - _effect("suture_mutation")), "suture")
 		suture_finished.emit(part)
 		message.emit("縫回了%s" % combat.anatomy.state.get_part(part).def.display_name)
 
+## 正在縫合（不含包紮）。
 func is_suturing() -> bool:
-	return suturing_part != &""
+	return suturing_part != &"" and suturing_part != BANDAGE
 
 ## 從附近的屍體摘取器官（捐贈部位必須完好；每具屍體每種器官只能摘一次）。
 func try_harvest() -> bool:

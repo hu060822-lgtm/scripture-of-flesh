@@ -54,6 +54,10 @@ static func apply(creature: Node3D, look: StringName) -> int:
 		var skinner := ModelSkinner.new()
 		skinner.name = "ModelSkinner"
 		creature.add_child(skinner)
+	if creature.get_node_or_null("InjuryVisuals") == null:
+		var iv := InjuryVisuals.new()
+		iv.name = "InjuryVisuals"
+		creature.add_child(iv)
 	return n
 
 ## 重建一個分段的外觀（清掉舊的細節子網格）。

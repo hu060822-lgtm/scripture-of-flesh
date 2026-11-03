@@ -95,6 +95,9 @@ func _hook(n: Node) -> void:
 		pd.suture_started.connect(func(_p, _d): _cue(&"suture_start", b))
 		pd.suture_finished.connect(func(_p): _cue(&"stitch_done", b))
 		pd.suture_interrupted.connect(func(): _cue(&"suture_break", b))
+		# 包紮暫用縫合的音效（尚未合成專屬的撕布聲）
+		pd.bandage_started.connect(func(_d): _cue(&"suture_start", b))
+		pd.bandage_finished.connect(func(_p): _cue(&"stitch_done", b))
 	elif n is StitchingAltar:
 		(n as StitchingAltar).rested.connect(func(_p): _cue(&"altar_rest"))
 	elif n is ItemPickup or n is WeaponPedestal:

@@ -21,6 +21,13 @@ signal died(cause_part_id: StringName)
 const SAVE_VERSION := 1
 ## 斷離時，父部位斷面增加的出血速率 = 斷離部位最大 HP × 此係數。
 const STUMP_BLEED_RATIO := 0.05
+## 出血速率低於此值時視為止住。
+const BLEED_STOP_RATE := 0.03
+const LN2 := 0.6931471805599453
+
+## 自然凝血：出血速率的半衰期（秒）。0 = 不會自己止血（純資料測試的預設）。
+## CombatComponent 依角色設定（玩家較快、敵人較慢，讓流血武器仍然有用）。
+var bleed_half_life: float = 0.0
 
 var profile: AnatomyProfile
 var is_dead: bool = false
@@ -142,9 +149,12 @@ func restore_part(part_id: StringName, include_children: bool = true) -> bool:
 		targets.append_array(descendants_of(part_id))
 	for pid in targets:
 		var t: BodyPartState = _parts[pid]
+		if t.severed:
+			t.sutured = true
 		t.hp = t.def.max_hp
 		t.injuries.clear()
 		t.bleed_rate = 0.0
+		t.bandaged = false
 		t.severed = false
 		t.own_disabled = false
 		_vital_reported.erase(pid)
@@ -169,17 +179,44 @@ func tick(delta: float) -> float:
 		return 0.0
 	var before := _snapshot()
 	var blood := 0.0
+	# 指數衰減的精確積分：這段時間流出的量 = rate × (1 - f) / k
+	var k := LN2 / bleed_half_life if bleed_half_life > 0.0 else 0.0
+	var f := exp(-k * delta)
 	for pid in _order:
 		var p: BodyPartState = _parts[pid]
 		if p.severed:
 			continue
-		blood += p.bleed_rate * delta
+		if p.bleed_rate > 0.0:
+			if k > 0.0:
+				blood += p.bleed_rate * (1.0 - f) / k
+				p.bleed_rate *= f
+				if p.bleed_rate < BLEED_STOP_RATE:
+					p.bleed_rate = 0.0
+			else:
+				blood += p.bleed_rate * delta
 		var nec := p.injury(DamageTypes.Type.NECROSIS)
 		if nec > 0.0 and p.hp > 0.0:
 			p.hp = maxf(0.0, p.hp - nec * DamageTypes.NECROSIS_HP_PER_SEC * delta)
 			_update_own_disabled(p)
 	_refresh(before, [])
 	return blood
+
+## 止血（壓迫包紮、縫合後）：所有出血部位的出血速率 ×(1 - reduction)，並標記為已包紮。
+## 回傳被包紮的部位。
+func stanch(reduction: float) -> Array[StringName]:
+	var out: Array[StringName] = []
+	if is_dead:
+		return out
+	for pid in _order:
+		var p: BodyPartState = _parts[pid]
+		if p.severed or p.bleed_rate <= 0.0:
+			continue
+		p.bleed_rate *= clampf(1.0 - reduction, 0.0, 1.0)
+		if p.bleed_rate < BLEED_STOP_RATE:
+			p.bleed_rate = 0.0
+		p.bandaged = true
+		out.append(pid)
+	return out
 
 ## 以新的部位定義取代現有部位（器官移植、機械義肢）。ID、父部位與依賴關係必須維持，
 ## 以免破壞身體結構；新定義的功能、HP、護甲、抗性會生效，部位恢復為完整狀態。
@@ -215,6 +252,7 @@ func to_save() -> Dictionary:
 		parts[String(pid)] = {
 			"hp": p.hp, "injuries": inj, "bleed": p.bleed_rate, "mutation": p.mutation,
 			"severed": p.severed, "own_disabled": p.own_disabled,
+			"bandaged": p.bandaged, "sutured": p.sutured,
 		}
 	var organ_ids := {}
 	for k in organs:
@@ -245,6 +283,8 @@ static func from_save(p: AnatomyProfile, data: Dictionary, organ_lookup: Callabl
 		st.mutation = float(d.get("mutation", 0.0))
 		st.severed = bool(d.get("severed", false))
 		st.own_disabled = bool(d.get("own_disabled", false))
+		st.bandaged = bool(d.get("bandaged", false))
+		st.sutured = bool(d.get("sutured", false))
 		var inj: Dictionary = d.get("injuries", {})
 		for tname in inj:
 			var t := DamageTypes.Type.keys().find(String(tname))
