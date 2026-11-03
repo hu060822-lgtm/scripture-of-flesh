@@ -11,6 +11,7 @@ const ITEM_NAMES := {
 	"relic_hand": "多手人的斷手",
 	"relic_eye": "觀察者的眼柄",
 	"relic_leg": "反足者的斷腿",
+	"first_suture": "最初的縫線",
 }
 
 var items := {}  # id(String) -> count

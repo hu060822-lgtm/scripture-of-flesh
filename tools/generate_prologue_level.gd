@@ -7,6 +7,8 @@ extends SceneTree
 ##   白色產房 → 縫合迴廊（轉角、往上的坡道）→ 庭院南側的高台迴廊（祭壇、伊格納、阿格妮絲留下的手臂）
 ##   → 走坡道或從欄杆缺口跳下 → 反足者庭院
 ##     ├─ 西：觀察者藏書室（書架走道；觀察者之眼看得見的經文 → 隱藏書庫）
+##     │      ├─ 南牆的坡道往下：冷藏室（冰櫃之間的蛇行走道、裝死的屍體、靜默區）→ 伊蓮的冰櫃
+##     │      │    （伊格納要的「最初的縫線」、瑪德蓮的生日信、祭壇、冰封的縫屍者）
 ##     │      └─ 北側走道的坡道往下：水室（選配強敵「長子」）
 ##     ├─ 東：狹長通道 → 多手人聖器室（掌紋鎖、臍帶鑰匙 → 母親從東牆後破牆追出來）
 ##     │      逃回庭院後，從庭院側拉開高台東側坡道的捷徑門 → 直通祭壇
@@ -35,6 +37,9 @@ var ShortcutGate: GDScript
 var PalmLock: GDScript
 var HiddenScripture: GDScript
 var SecretWall: GDScript
+var ScareTrigger: GDScript
+var SilenceZone: GDScript
+var ScripturePage: GDScript
 var _done := false
 
 func _process(_delta: float) -> bool:
@@ -58,6 +63,9 @@ func _run() -> void:
 	PalmLock = load("res://world/palm_lock.gd")
 	HiddenScripture = load("res://world/hidden_scripture.gd")
 	SecretWall = load("res://world/secret_wall.gd")
+	ScareTrigger = load("res://world/scare_trigger.gd")
+	SilenceZone = load("res://world/silence_zone.gd")
+	ScripturePage = load("res://world/scripture_page.gd")
 	level = Node3D.new()
 	level.name = "PrologueLevel"
 	geo = _group("Geometry")
@@ -175,8 +183,9 @@ func _altar(id: StringName, pos: Vector3) -> void:
 	a.position = pos
 	level.get_node("Altars").add_child(a)
 
-func _spawn(id: StringName, enemy: String, pos: Vector3, facing: float = 0.0) -> void:
+func _spawn(id: StringName, enemy: String, pos: Vector3, facing: float = 0.0, mode: String = "alive") -> void:
 	var s = EnemySpawn.new()
+	s.mode = mode
 	s.name = "Spawn_%s" % id
 	s.spawn_id = id
 	s.enemy_path = E % enemy
@@ -271,6 +280,8 @@ func _build() -> void:
 	_build_cistern()
 	_build_sacristy()
 	_build_chapel()
+	_build_cold_storage()
+	_build_horror()
 
 # 1. 白色產房（起點）：x -6..6，z 6..-6
 func _build_delivery() -> void:
@@ -362,7 +373,7 @@ func _build_courtyard() -> void:
 	priest.object_id = &"npc_ignatius"
 	priest.kind = "npc"
 	priest.dialogue_id = "ignatius_talk"
-	priest.repeat_dialogue_id = "ignatius_dead"
+	priest.repeat_dialogue_id = "ignatius_return"
 	priest.first_done_flag = &"met_ignatius"
 	priest.prompt_text = "E：靠近垂死的司祭"
 	priest.position = Vector3(2.2, 2.0, -27.0)
@@ -382,7 +393,8 @@ func _build_archive() -> void:
 	var g := _area("Archive")
 	var c := Color("7a6a58")
 	Kit.floor_rect(g, "Floor", -24, -10, -29, -43)
-	Kit.wall(g, "WallS", Vector2(-24, -29), Vector2(-10, -29), 0, 4, [], c)
+	# 南牆的門（x -20）：坡道往下通往冷藏室
+	Kit.wall(g, "WallS", Vector2(-24, -29), Vector2(-10, -29), 0, 4, [[4.0, 2.5]], c)
 	Kit.wall(g, "WallN", Vector2(-24, -43), Vector2(-10, -43), 0, 4, [[11.0, 2.5]], c)
 	Kit.wall(g, "WallW", Vector2(-24, -29), Vector2(-24, -43), 0, 4, [[12.5, 2.0]], c)
 	_gprop(g, "ShelfRow_A", Vector3(-19, 0, -33), Vector3(10.0, 3.0, 0.6), SHELF)
@@ -508,3 +520,96 @@ func _build_chapel() -> void:
 	level.get_node("Interactables").add_child(womb)
 	_light("Light_Chapel_1", Vector3(-6, 4.0, -66), Color("c04030"), 1.1, 12.0)
 	_light("Light_Chapel_2", Vector3(6, 4.0, -76), Color("c04030"), 1.1, 12.0)
+
+# 8. 冷藏室（序章擴充）：藏書室南牆往下 2.5m。伊蓮的心臟被冰了七年的地方。
+#    冰櫃排成兩道矮牆，隔出三條蛇行走道（看得過去、走不過去）；整個大廳是靜默區。
+#    躺在地上的有些是真屍體、有些在裝死。最深處的冰櫃室：最初的縫線、生日信、祭壇。
+const ICE := Color("b8c8d0")
+const FROST_WALL := Color("8a98a4")
+
+func _build_cold_storage() -> void:
+	var y := -2.5
+	var g := _area("ColdStorage")
+	Kit.ramp(g, "Ramp", Vector3(-20, y, -22.5), Vector3(-20, 0, -29), 2.5)
+	Kit.wall(g, "RampWallW", Vector2(-21.25, -29), Vector2(-21.25, -22.5), y, 1.0, [], FROST_WALL)
+	Kit.wall(g, "RampWallE", Vector2(-18.75, -29), Vector2(-18.75, -22.5), y, 1.0, [], FROST_WALL)
+	_box_room(g, -27, -13, -8, -22.5, y, 3.2, {"n": [[7.0, 2.5]], "e": [[2.25, 2.0]]}, FROST_WALL)
+	# 冰櫃排成的矮牆（1.3m 高）：東側、西側輪流留缺口
+	Kit.wall(g, "IceRowA", Vector2(-27, -18.5), Vector2(-16, -18.5), y, y + 1.3, [], ICE, 1.0)
+	Kit.wall(g, "IceRowB", Vector2(-24, -13.5), Vector2(-13, -13.5), y, y + 1.3, [], ICE, 1.0)
+	for i in 4:
+		_gprop(g, "IceCradle_%d" % i, Vector3(-25.5 + i * 2.6, y, -9.0), Vector3(1.0, 0.7, 1.4), ICE)
+	# 走道 1：裝死的縫屍者、真屍體、結冰的殘頁
+	_spawn(&"cold_dormant_stitcher", "stitcher", Vector3(-16.5, y, -20.6), 90.0, "dormant")
+	_spawn(&"cold_corpse_1", "stitcher", Vector3(-23.0, y, -20.4), 270.0, "corpse")
+	_page(3, Vector3(-26.0, y, -21.6))
+	# 走道 2：從冰櫃爬出來的未生者（裝死）、一具真屍體
+	_spawn(&"cold_unborn_1", "unborn", Vector3(-18.0, y, -16.0), 0.0, "dormant")
+	_spawn(&"cold_unborn_2", "unborn", Vector3(-22.5, y, -15.6), 180.0, "dormant")
+	_spawn(&"cold_corpse_2", "stitcher", Vector3(-15.2, y, -16.2), 0.0, "corpse")
+	# 走道 3：冰封的縫屍者守在冰櫃室門口
+	_spawn(&"cold_frozen_stitcher", "frozen_stitcher", Vector3(-16.5, y, -10.5), 270.0)
+	_spawn(&"cold_corpse_3", "unborn", Vector3(-21.0, y, -9.9), 90.0, "corpse")
+	var sz = SilenceZone.new()
+	sz.name = "Silence_ColdStorage"
+	sz.half_extents = Vector2(7.0, 7.25)
+	sz.position = Vector3(-20, y, -15.25)
+	level.get_node("Triggers").add_child(sz)
+	_inscription("inscription_cold_storage", Vector3(-17.8, 0, -29.6), 180.0)
+	_trigger(&"enter_cold_storage", Vector3(-20, y, -21.8), 1.8, "冷藏室", "cold_storage_thought")
+	_light("Light_Cold_1", Vector3(-20, 0.3, -20.5), Color("8098b0"), 0.5, 8.0)
+	_light("Light_Cold_2", Vector3(-20, 0.3, -11.0), Color("8098b0"), 0.45, 8.0)
+	# 伊蓮的冰櫃室（東側）
+	var v := _area("IleneVault")
+	_box_room(v, -13, -8, -8.5, -12.5, y, 3.0, {}, Color("d0d8dc"), ["w"])
+	_gprop(v, "EmptyIceBox", Vector3(-10.4, y, -11.7), Vector3(1.2, 1.0, 0.8), Color("e4ecf0"))
+	_item("item_first_suture", "first_suture", 1, Vector3(-9.0, y, -11.6), "伊格納要的東西。回到庭院的高台交給他")
+	_note("note_ilene", Vector3(-10.4, y, -10.9))
+	_item("item_cold_suture", "suture_kit", 2, Vector3(-8.8, y, -9.1))
+	_altar(&"altar_cold_storage", Vector3(-12.0, y, -9.3))
+	_light("Light_Vault", Vector3(-10.5, 0.2, -10.5), Color("d0e0f0"), 0.8, 6.0)
+
+func _page(n: int, pos: Vector3) -> void:
+	var p = ScripturePage.new()
+	p.name = "ScripturePage_%d" % n
+	p.object_id = StringName("scripture_page_%d" % n)
+	p.page = n
+	p.dialogue_id = "scripture_page_%d" % n
+	p.position = pos
+	level.get_node("Interactables").add_child(p)
+
+func _scare(id: StringName, kind: String, pos: Vector3, radius: float, target: Vector3) -> void:
+	var t = ScareTrigger.new()
+	t.name = "Scare_%s" % id
+	t.trigger_id = id
+	t.kind = kind
+	t.position = pos
+	t.radius = radius
+	t.target_offset = target
+	level.get_node("Triggers").add_child(t)
+
+# 9. 恐怖橋段（序章擴充）：一次性驚嚇（約每 5–6 分鐘一次）、其他區域的裝死敵人、聖典殘頁。
+func _build_horror() -> void:
+	# 縫合迴廊：背後傳來小孩的腳步聲，在你身後兩公尺停下
+	_scare(&"scare_corridor_steps", "footsteps", Vector3(0, 0, -11.5), 1.6, Vector3(0, 0, 8))
+	# 庭院：從高台跳下的缺口，遠處禮拜堂方向傳來嬰兒哭聲
+	_scare(&"scare_courtyard_cry", "distant_cry", Vector3(2, 2.0, -29.0), 1.5, Vector3(-2, -2, -40))
+	# 藏書室：燈熄滅，再亮起時有個高大的人影站在書架盡頭
+	_scare(&"scare_archive_blackout", "blackout", Vector3(-13.5, 0, -36), 1.6, Vector3(-8, 0, -4.5))
+	# 往聖器室的通道：一具屍體從天花板掉在你面前
+	_scare(&"scare_passage_drop", "body_drop", Vector3(12.5, 0, -40), 1.4, Vector3(2.5, 0, 0))
+	# 禮拜堂前廳：小女孩站在禮拜堂門口
+	_scare(&"scare_antechamber_girl", "girl_glimpse", Vector3(0, 0, -48.5), 2.0, Vector3(0, 0, -8.5))
+	# 冷藏室：走道盡頭的小女孩、慢慢轉過來的吊屍、燈滅後站在冰櫃室門口的人影
+	_scare(&"scare_cold_girl", "girl_glimpse", Vector3(-19.0, -2.5, -20.5), 1.6, Vector3(4.5, 0, 0))
+	_scare(&"scare_cold_hanging", "hanging_turn", Vector3(-16.0, -2.5, -16.0), 2.2, Vector3(-4.5, 3.2, 0))
+	_scare(&"scare_cold_blackout", "blackout", Vector3(-25.5, -2.5, -11.0), 1.6, Vector3(11.0, 0, 0.75))
+	# 庭院裡的裝死反足者與一具真屍體
+	_spawn(&"courtyard_dormant_reverse", "reverse_legged", Vector3(-7.5, 0, -43.5), 90.0, "dormant")
+	_spawn(&"courtyard_corpse", "stitcher", Vector3(6.5, 0, -43.0), 200.0, "corpse")
+	# 聖典殘頁 6 頁（第 3 頁在冷藏室）
+	_page(1, Vector3(8.5, 0, -15.0))
+	_page(2, Vector3(0.9, 0, -39.3))
+	_page(4, Vector3(-26.0, 0, -42.5))
+	_page(5, Vector3(19.0, 0, -34.8))
+	_page(6, Vector3(-11.5, -2, -56.5))

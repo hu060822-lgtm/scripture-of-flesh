@@ -10,6 +10,7 @@ const LABELS := {
 }
 
 var sliders := {}
+var flashes: CheckButton
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(420, 0)
@@ -38,6 +39,11 @@ func _ready() -> void:
 		row.add_child(s)
 		sliders[bus] = s
 		v.add_child(row)
+	flashes = CheckButton.new()
+	flashes.text = "瀕死畫面的閃爍效果（剪影、雙重影像）"
+	flashes.button_pressed = InjuryOverlay.load_flashes_setting(AudioManager.settings_path)
+	flashes.toggled.connect(func(on): InjuryOverlay.save_flashes_setting(AudioManager.settings_path, on))
+	v.add_child(flashes)
 	var back := Button.new()
 	back.text = "返回"
 	back.pressed.connect(close)

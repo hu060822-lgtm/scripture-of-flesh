@@ -64,6 +64,11 @@ var _initial_locomotion := 0
 var _home_set := false
 ## 正被目標看著而定住（freeze_when_watched）。給動畫、除錯與測試讀取。
 var frozen_by_gaze := false
+## 裝死（序章恐怖橋段 C2）：躺在地上一動也不動，玩家靠近或打到它時才爬起來。
+var dormant := false
+const DORMANT_WAKE_RADIUS := 2.2
+const DORMANT_RISE_SECONDS := 0.7
+signal woke
 
 func _ready() -> void:
 	combat = body().get_node("CombatComponent")
@@ -75,6 +80,7 @@ func _ready() -> void:
 	anatomy.state.part_severed.connect(_on_part_severed)
 	combat.hit_received.connect(_on_hit_received)
 	combat.died.connect(func(_c): force_state(&"dead"))
+	combat.hit_received.connect(func(_r, _a): if dormant: wake())
 	combat.attack_started.connect(func(a: AttackDefinition): telegraph.emit(a, a.windup))
 	EventBus.noise_emitted.connect(_on_noise)
 	_states[runtime.state_name].enter(self)
@@ -86,6 +92,11 @@ func state() -> StringName:
 	return runtime.state_name
 
 func _physics_process(delta: float) -> void:
+	if dormant:
+		if _player_within(DORMANT_WAKE_RADIUS):
+			wake()
+		else:
+			return
 	var sd := TimeScale.scaled(delta)
 	var yaw_before := body().rotation.y
 	advance(sd)
@@ -120,6 +131,38 @@ func _update_locomotion(speed: float) -> void:
 	if mode != locomotion_mode:
 		locomotion_mode = mode
 		locomotion_changed.emit(mode)
+
+## 裝死：把外觀放倒在地上（碰撞體不變）。
+func set_dormant(on: bool) -> void:
+	dormant = on
+	var vis := body().get_node_or_null("Body") as Node3D
+	if vis != null:
+		vis.rotation.x = -PI * 0.5 if on else 0.0
+		vis.position.y = 0.18 if on else 0.0
+
+## 爬起來：外觀在 0.7 秒內站起，並立刻注意到玩家。
+func wake() -> void:
+	if not dormant:
+		return
+	dormant = false
+	var vis := body().get_node_or_null("Body") as Node3D
+	if vis != null and vis.is_inside_tree():
+		var tw := vis.create_tween()
+		tw.tween_property(vis, "rotation:x", 0.0, DORMANT_RISE_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(vis, "position:y", 0.0, DORMANT_RISE_SECONDS)
+	elif vis != null:
+		vis.rotation.x = 0.0
+		vis.position.y = 0.0
+	runtime.decision_timer = 0.0
+	woke.emit()
+
+func _player_within(r: float) -> bool:
+	for n in get_tree().get_nodes_in_group(CombatComponent.GROUP):
+		var c: CombatComponent = n.get_node_or_null("CombatComponent")
+		if c != null and c.faction == &"player" and not c.is_dead():
+			if (n as Node3D).global_position.distance_to(body().global_position) <= r:
+				return true
+	return false
 
 ## 推進 AI 決策（不移動身體；移動在 _physics_process）。測試直接呼叫。
 func advance(delta: float) -> void:

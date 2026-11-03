@@ -1,6 +1,6 @@
 {
  "id": "ending",
- "start": "b",
+ "start": "pre",
  "nodes": {
   "b": {
    "speaker": "",
@@ -125,6 +125,24 @@
    "text": "你不知道這具身體會帶你走向哪裡。但走出去的這一步，是你自己選的。",
    "next": "",
    "action": "ending:escape"
+  },
+  "pre": {
+   "branches": [
+    {
+     "if": {
+      "flag": "scripture_complete"
+     },
+     "next": "scripture"
+    },
+    {
+     "next": "b"
+    }
+   ]
+  },
+  "scripture": {
+   "speaker": "",
+   "text": "懷裡的六張殘頁同時發燙。拼起來的空白處，浮出最後一行字：「你不是被縫起來的人。你是那本書。」",
+   "next": "b"
   }
  }
 }

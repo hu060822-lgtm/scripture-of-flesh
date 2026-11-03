@@ -39,7 +39,7 @@ func test_level_contains_required_content() -> void:
 			dialogue_ids.append(n.locked_dialogue_id)
 			dialogue_ids.append(n.open_dialogue_id)
 	for n in lvl.get_node("Triggers").get_children():
-		if n.dialogue_id != "":
+		if n is AreaTrigger and n.dialogue_id != "":
 			dialogue_ids.append(n.dialogue_id)
 	weapons.sort()
 	assert_eq(weapons, ["anatomist_rapier", "bone_saw_cleaver", "reliquary_hammer"], "all three weapons obtainable")
@@ -99,7 +99,10 @@ func test_new_game_starts_unarmed_and_class_choice_through_agnes() -> void:
 	assert_true(g.boss != null, "boss spawned")
 	assert_eq(g.boss.get_node("EnemyAI").process_mode, Node.PROCESS_MODE_DISABLED, "boss dormant")
 	var spawned := g.level.get_children().filter(func(n): return n.has_meta(&"spawn_id"))
-	assert_eq(spawned.size(), g.level.get_node("Spawns").get_child_count())
+	var live_spawns := g.level.get_node("Spawns").get_children().filter(func(s): return s.mode != "corpse")
+	assert_eq(spawned.size(), live_spawns.size())
+	var corpses := g.level.get_children().filter(func(n): return n.has_meta(EnemySpawn.CORPSE_META))
+	assert_eq(corpses.size(), g.level.get_node("Spawns").get_child_count() - live_spawns.size(), "decor corpses lie dead")
 	assert_true(SaveSystem.exists(SAVE), "initial save")
 	var agnes: DialogueInteractable = _find(g, "Interactables/NPC_Agnes")
 	assert_eq(agnes.current_dialogue(), "agnes_intro")

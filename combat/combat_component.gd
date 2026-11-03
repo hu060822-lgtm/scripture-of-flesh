@@ -175,10 +175,14 @@ func advance(delta: float) -> void:
 		return
 	for k in _cooldowns.keys():
 		_cooldowns[k] = float(_cooldowns[k]) - delta
+	# 未生者的心臟：體力回復 ×1.35
+	pools.st_regen_scale = 1.35 if caps().has("restless_heart") else 1.0
 	pools.tick(delta, action == Action.IDLE and not blocking)
 	var blood := anatomy.state.tick(delta)
 	if blood > 0.0:
 		var organ_scale := 0.7 if caps().has("strong_heart") else 1.0
+		if caps().has("cold_blood"):
+			organ_scale *= 0.6
 		pools.damage_hp(blood * BLEED_HP_FACTOR * bleed_scale * organ_scale, "bleeding")
 	if vital_timer >= 0.0 and not is_dead():
 		vital_timer -= delta

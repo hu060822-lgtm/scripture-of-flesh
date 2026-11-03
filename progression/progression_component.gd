@@ -119,6 +119,15 @@ func unlock_skill(id: StringName) -> bool:
 	skill_unlocked.emit(id)
 	return true
 
+## 劇情給予的技能：不花技能點、不檢查前置條件。
+func grant_skill(id: StringName) -> bool:
+	if skill(id) == null or id in unlocked:
+		return false
+	unlocked.append(id)
+	apply_to_combat()
+	skill_unlocked.emit(id)
+	return true
+
 func _on_attack_landed(_target: CombatComponent, _result: DamageResult) -> void:
 	var w := combat.weapon()
 	var t: StringName = w.weapon_type if w != null else &"unarmed"

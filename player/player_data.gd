@@ -12,6 +12,8 @@ signal message(text: String)
 const SUTURE_SECONDS := 2.5
 const SUTURE_MUTATION := 6.0
 const HARVEST_RADIUS := 1.8
+## 捐贈部位 HP 比例達到此值 = 完好摘下（移植相容性提高）。
+const FRESH_RATIO := 0.6
 ## 修復優先順序：手（能拿武器）> 腿（能移動）> 眼 > 下顎 > 其他。
 const PRIORITY := ["arm_r", "arm_l", "leg_l", "leg_r", "eye_l", "eye_r", "jaw"]
 
@@ -86,7 +88,7 @@ func advance(delta: float) -> void:
 		inventory.remove("suture_kit")
 		combat.anatomy.state.restore_part(part)
 		if mutation != null:
-			mutation.add(SUTURE_MUTATION, "suture")
+			mutation.add(SUTURE_MUTATION * (1.0 - _effect("suture_mutation")), "suture")
 		suture_finished.emit(part)
 		message.emit("縫回了%s" % combat.anatomy.state.get_part(part).def.display_name)
 
@@ -108,17 +110,42 @@ func try_harvest() -> bool:
 			var organ := o as OrganDefinition
 			if organ == null or organ.id in taken:
 				continue
-			if organ.harvest_part != &"":
-				var donor := c.anatomy.state.get_part(organ.harvest_part)
-				if donor == null or donor.severed or donor.hp <= 0.0:
-					continue
+			var quality := harvest_quality(c.anatomy.state, organ)
+			if quality == &"ruined":
+				# 殺法太粗暴：器官在戰鬥中毀了。每具屍體只提示一次，教玩家下次避開它。
+				var told: Array = n.get_meta(&"harvest_ruined", [])
+				if not organ.id in told:
+					told.append(organ.id)
+					n.set_meta(&"harvest_ruined", told)
+					message.emit("%s在戰鬥中毀了——下次避開它再下手" % organ.display_name)
+					return true
+				continue
 			taken.append(organ.id)
 			n.set_meta(&"harvested", taken)
 			inventory.add("organ:%s" % organ.id)
+			if quality == &"fresh":
+				inventory.add(fresh_key(organ.id))
+				message.emit("完好地摘下了%s（移植相容性 +%d%%）" % [organ.display_name, int(TransplantService.FRESH_BONUS * 100)])
+			else:
+				message.emit("摘取了受損的%s" % organ.display_name)
 			harvested.emit(organ)
-			message.emit("摘取了%s" % organ.display_name)
 			return true
 	return false
+
+## 器官摘取品質：fresh（捐贈部位 HP ≥ 60%）、damaged（還在但受損）、ruined（斷離或 HP 歸零）。
+static func harvest_quality(state: AnatomyState, organ: OrganDefinition) -> StringName:
+	if organ.harvest_part == &"":
+		return &"fresh"
+	var donor := state.get_part(organ.harvest_part)
+	if donor == null or donor.severed or donor.hp <= 0.0:
+		return &"ruined"
+	return &"fresh" if donor.hp_ratio() >= FRESH_RATIO else &"damaged"
+
+func _effect(key: String) -> float:
+	return progression.effect_total(key) if progression != null else 0.0
+
+static func fresh_key(organ_id: StringName) -> String:
+	return "fresh:%s" % organ_id
 
 func to_save() -> Dictionary:
 	return {"inventory": inventory.to_save()}

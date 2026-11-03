@@ -15,6 +15,7 @@
 - hum：母親哼唱同一首搖籃曲（共振峰合成）；hum_broken：第二階段，音高下垂、走音、斷續。
 - boss_low：更深的不協和低音群。death_sting：死亡時的一次性低鳴。
 - tinnitus：自己的肢體被斷時的耳鳴；whispers：異化越高越常出現的低語（A4）。
+- heartbeat（單次）與 child_hum：瀕死畫面效果用（只產生這兩個：加 --injury）。
 - 環境音（30 秒循環）：ward、corridor、courtyard、library、sacristy、chapel。
 所有濾波用 FFT（循環），因此每個循環的頭尾無縫。
 """
@@ -384,6 +385,30 @@ def whisper(seed):
     return normalize(fft_filter(x, lo=300, hi=6000), 0.5)
 
 
+def heartbeat_single():
+    """瀕死畫面：單次「撲通—通」心跳（不循環），由 InjuryOverlay 依 HP 決定播放間隔。"""
+    x = np.zeros(int(0.7 * SR))
+    a = heartbeat_hit(1.0)
+    b = heartbeat_hit(0.6)
+    x[:len(a)] += a
+    i = int(0.22 * SR)
+    x[i:i + len(b)] += b
+    return normalize(fft_filter(x, hi=380), 0.9)
+
+
+def child_hum():
+    """瀕死畫面：心臟垂危時混進心跳裡的小女孩哼聲（伊蓮）。搖籃曲開頭三個音，高、細、後半倒放。"""
+    out = np.zeros(int(2.8 * SR))
+    for k, (m, start) in enumerate([(88, 0.0), (86, 0.55), (84, 1.1)]):
+        v = vowel_voice(midi_hz(m), 0.5, OO, vibrato=5.5, vib_cents=22, attack=0.06, release=0.25,
+                        breath=0.12, partials=10)
+        i = int(start * SR)
+        out[i:i + len(v)] += v * (1.0 - 0.2 * k)
+    half = len(out) // 2
+    out[half:] = out[half:][::-1] * np.linspace(1.0, 0.0, len(out) - half)
+    return normalize(fft_filter(out, lo=250, hi=5000), 0.5)
+
+
 # ---------------- 環境音（30 秒循環） ----------------
 AMB_LEN = 30.0
 
@@ -491,7 +516,20 @@ def write(path_noext, x, use_ogg):
         os.remove(wav_path)
 
 
+def main_injury(out, use_ogg):
+    """只產生瀕死畫面用的聲音（不重新產生其他音檔）：--injury"""
+    os.makedirs(os.path.join(out, "stingers"), exist_ok=True)
+    write(os.path.join(out, "stingers", "heartbeat"), heartbeat_single(), use_ogg)
+    write(os.path.join(out, "stingers", "child_hum"), child_hum(), use_ogg)
+    print("injury: heartbeat + child_hum")
+
+
 def main():
+    if "--injury" in sys.argv:
+        sys.argv.remove("--injury")
+        out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "..", "audio", "music")
+        main_injury(os.path.abspath(out), subprocess.run(["which", "ffmpeg"], capture_output=True).returncode == 0)
+        return
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "..", "audio", "music")
     out = os.path.abspath(out)
     os.makedirs(os.path.join(out, "stems"), exist_ok=True)
@@ -524,6 +562,7 @@ def main():
     for i in range(4):
         write(os.path.join(out, "whispers", "whisper_%d" % i), whisper(100 + i), use_ogg)
     print("stingers + whispers")
+    main_injury(out, use_ogg)
 
 
 if __name__ == "__main__":

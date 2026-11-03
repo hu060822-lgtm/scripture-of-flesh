@@ -29,6 +29,8 @@ var rig: CameraRig
 var boss_intro: BossIntro
 var mother_chase: MotherChase
 var hud: CombatHud
+var injury: InjuryOverlay
+var hallucinations: HallucinationDirector
 var dialogue: DialogueBox
 var boss_bar: BossBar
 var transplant: TransplantScreen
@@ -225,6 +227,14 @@ func _on_dialogue_action(action: StringName, arg: String) -> void:
 			var parts := arg.split(":")
 			var data: PlayerData = player.get_node("PlayerData")
 			data.inventory.add(parts[0], int(parts[1]) if parts.size() > 1 else 1)
+		"learn_skill":
+			var prog: ProgressionComponent = player.get_node("ProgressionComponent")
+			if prog.grant_skill(StringName(arg)):
+				show_toast("習得技能：%s" % prog.skill(StringName(arg)).display_name)
+		"take_item":
+			var parts := arg.split(":")
+			var data: PlayerData = player.get_node("PlayerData")
+			data.inventory.remove(parts[0], int(parts[1]) if parts.size() > 1 else 1)
 		"start_boss":
 			# 對話結束後才播放登場演出（對話關閉時會恢復戰鬥時間，避免互相覆蓋）
 			if dialogue.is_open():
@@ -268,6 +278,14 @@ func _build_ui() -> void:
 	hud.player = player.get_node("CombatComponent")
 	hud.controller = ctrl
 	add_child(hud)
+	injury = InjuryOverlay.new()
+	injury.name = "InjuryOverlay"
+	injury.player = player.get_node("CombatComponent")
+	add_child(injury)
+	hallucinations = HallucinationDirector.new()
+	hallucinations.name = "Hallucinations"
+	add_child(hallucinations)
+	hallucinations.setup(player)
 	var tac: TacticalController = player.get_node("TacticalController")
 	tac.camera = rig.camera
 	tac.toggled.connect(func(on): rig.in_combat = on)

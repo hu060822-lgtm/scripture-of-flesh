@@ -1,5 +1,6 @@
 extends SceneTree
 ## 手動模擬（真實物理）：沿序章的線性路線走一遍，確認坡道、高台、跳下缺口、水室坡道、捷徑門都走得通，
+## 冷藏室的蛇行走道與冰櫃室也走一遍，
 ## 再拿鑰匙觸發母親追逐，看她能不能沿通道追到庭院。不屬於自動測試。
 ## 執行：godot --headless --path . -s tests/sim/sim_route.gd
 var g: Node
@@ -21,6 +22,8 @@ const ROUTE := [
 	["courtyard_to_west_stairs", [Vector3(-4.5, 0, -37.5), Vector3(-4.5, 2, -29.0)]],
 	["terrace_back_down", [Vector3(-4.5, 2, -29.0), Vector3(-4.5, 0, -37.5)]],
 	["archive", [Vector3(-11, 0, -36), Vector3(-22, 0, -36), Vector3(-22, 0, -41), Vector3(-13, 0, -41)]],
+	["cold_storage", [Vector3(-22, 0, -41), Vector3(-22, 0, -36), Vector3(-11.5, 0, -36), Vector3(-12, 0, -31.4), Vector3(-20, 0, -31.4), Vector3(-20, 0, -28.5), Vector3(-20, -2.5, -21), Vector3(-14.5, -2.5, -20.5), Vector3(-14.5, -2.5, -16), Vector3(-25.5, -2.5, -16), Vector3(-25.5, -2.5, -11), Vector3(-14, -2.5, -10.3), Vector3(-10.5, -2.5, -10.3)]],
+	["cold_storage_back", [Vector3(-14, -2.5, -10.3), Vector3(-25.5, -2.5, -11), Vector3(-25.5, -2.5, -16), Vector3(-14.5, -2.5, -16), Vector3(-14.5, -2.5, -20.5), Vector3(-20, -2.5, -21), Vector3(-20, 0, -28.5), Vector3(-20, 0, -31.4), Vector3(-12, 0, -31.4), Vector3(-11.5, 0, -36), Vector3(-22, 0, -36), Vector3(-22, 0, -41), Vector3(-13, 0, -41)]],
 	["cistern", [Vector3(-13, 0, -42.5), Vector3(-13, -2, -50.5), Vector3(-18, -2, -51)]],
 	["cistern_back", [Vector3(-13, -2, -50.5), Vector3(-13, 0, -42), Vector3(-22, 0, -41), Vector3(-22, 0, -36), Vector3(-11, 0, -36)]],
 	["to_shortcut", [Vector3(0, 0, -36.5), Vector3(8.5, 0, -37.5)]],

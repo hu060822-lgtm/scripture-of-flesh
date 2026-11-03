@@ -1,0 +1,11 @@
+{
+ "id": "inscription_cold_storage",
+ "start": "n1",
+ "nodes": {
+  "n1": {
+   "speaker": "",
+   "text": "門楣上刻著：「冷藏室——保存待用之器。溫度不得高於……」後面的字被霜蓋住了。",
+   "next": ""
+  }
+ }
+}

@@ -16,6 +16,8 @@ var ap := 0.0
 ## 每秒體力回復，花費後延遲一段時間才開始回復。
 var st_regen := 22.0
 var st_regen_delay := 0.6
+## 器官造成的體力回復倍率。
+var st_regen_scale := 1.0
 var _st_cooldown := 0.0
 
 func setup(hp_max: float, st_max: float, ap_max: float, ap_start: float = 0.0) -> void:
@@ -73,7 +75,7 @@ func tick(delta: float, regen_allowed: bool = true) -> void:
 	if _st_cooldown > 0.0:
 		_st_cooldown -= delta
 	elif regen_allowed and st < max_st:
-		st = minf(max_st, st + st_regen * delta)
+		st = minf(max_st, st + st_regen * st_regen_scale * delta)
 		st_changed.emit(st, max_st)
 
 func to_save() -> Dictionary:

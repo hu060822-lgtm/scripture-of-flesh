@@ -82,7 +82,15 @@ static func text_for(p: Node3D) -> String:
 	lines.append("")
 	lines.append("[b]物品[/b]")
 	for k in data.inventory.items:
-		lines.append("%s ×%d" % [Inventory.display_name(String(k)), data.inventory.items[k]])
+		var key := String(k)
+		if key.begins_with("fresh:"):
+			continue  # 併在器官那一行顯示
+		var line := "%s ×%d" % [Inventory.display_name(key), data.inventory.items[k]]
+		if key.begins_with("organ:"):
+			var fresh := data.inventory.count(PlayerData.fresh_key(StringName(key.substr(6))))
+			if fresh > 0:
+				line += "（其中完好 %d）" % fresh
+		lines.append(line)
 	var profs := PackedStringArray()
 	for wt in prog.proficiency:
 		profs.append("%s Lv%d" % [wt, prog.proficiency_level(wt)])

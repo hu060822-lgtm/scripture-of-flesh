@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://progression/skill_definition.gd" id="1_ccrmr"]
+
+[resource]
+script = ExtResource("1_ccrmr")
+id = &"first_suture"
+display_name = "最初的縫線"
+description = "伊格納解開的那卷線。緊急縫合增加的異化減半。（劇情獎勵，不能用技能點學）"
+cost = 0
+prerequisites = Array[StringName]([&"granted_by_story"])
+effects = {
+"suture_mutation": 0.5
+}
