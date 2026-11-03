@@ -33,6 +33,11 @@ var rect: ColorRect
 var mat: ShaderMaterial
 var heart_player: AudioStreamPlayer
 var hum_player: AudioStreamPlayer
+## 外部壓迫感（追逐戰：MotherChase.dread()）：黑色暗角往內收、顏色褪掉。由 PrologueGame 每格設定。
+var dread := 0.0
+## 威脅方向提示：畫面邊緣朝 threat_dir（螢幕座標，y 向下）的那一側泛紅。0 = 不顯示。
+var threat := 0.0
+var threat_dir := Vector2.RIGHT
 ## 最近一次計算的效果值（測試與除錯用）。
 var fx := {}
 var beats := 0
@@ -166,7 +171,11 @@ func _apply(_delta: float) -> void:
 		&"double_vision": dv,
 		&"sew": sew,
 		&"ghost": 1.0 if _ghost_left > 0.0 else 0.0,
+		&"dread": clampf(dread, 0.0, 1.0),
+		# 關閉閃爍時方向提示不隨重踏脈動，只保留穩定的紅邊
+		&"threat": clampf(threat, 0.0, 1.0) if flashes_enabled else minf(clampf(threat, 0.0, 1.0), 0.5),
 	}
+	mat.set_shader_parameter(&"threat_dir", threat_dir.normalized() if threat_dir != Vector2.ZERO else Vector2.RIGHT)
 	var any := false
 	for k in params:
 		mat.set_shader_parameter(k, params[k])

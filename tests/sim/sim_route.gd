@@ -1,8 +1,9 @@
 extends SceneTree
 ## 手動模擬（真實物理）：沿序章的線性路線走一遍，確認坡道、高台、跳下缺口、水室坡道、捷徑門都走得通，
 ## 冷藏室的蛇行走道與冰櫃室也走一遍，
-## 再拿鑰匙觸發母親追逐，看她能不能沿通道追到庭院。不屬於自動測試。
-## 執行：godot --headless --path . -s tests/sim/sim_route.gd
+## 再拿鑰匙觸發母親追逐：玩家穿過通道、繞過被肉封住的東梯、從西梯逃上高台。不屬於自動測試。
+## 執行：godot --headless --path . -s tests/sim/sim_route.gd [-- nododge]
+##   預設：看到她預備撲擊就翻滾；nododge：從不翻滾（被抓時會狂按 E）。
 var g: Node
 var started := false
 var t := 0.0
@@ -13,6 +14,11 @@ var last_pos := Vector3.ZERO
 var phase := "route"
 var chase_t := 0.0
 var min_gap := INF
+var dodge := true
+var lunges := 0
+var near_s := 0.0
+const ESCAPE := [Vector3(18, 0, -40), Vector3(9.5, 0, -40), Vector3(-1.5, 0, -39.6), Vector3(-4.5, 0, -37.5), Vector3(-4.5, 2, -29.0)]
+var esc_i := 0
 
 const ROUTE := [
 	["corridor", [Vector3(0, 0, -8), Vector3(0, 0, -15.7), Vector3(7.75, 0, -15.7), Vector3(7.75, 0, -17.8)]],
@@ -31,7 +37,7 @@ const ROUTE := [
 ]
 
 func _initialize() -> void:
-	pass
+	dodge = not "nododge" in OS.get_cmdline_user_args()
 
 func _physics_process(delta: float) -> bool:
 	if not started:
@@ -107,17 +113,36 @@ func _route(p: CharacterBody3D, delta: float) -> void:
 func _chase(p: CharacterBody3D, delta: float) -> void:
 	chase_t += delta
 	var mc = g.mother_chase
+	var pc = p.get_node("CombatComponent")
 	if mc.mother != null and is_instance_valid(mc.mother) and mc.active:
-		var gap: float = mc.mother.global_position.distance_to(p.global_position)
+		var gap: float = mc.gap()
 		min_gap = minf(min_gap, gap)
+		if gap < 4.0:
+			near_s += delta
 		if int(chase_t * 60) % 30 == 0:
-			print("chase t=%.1f player=(%.1f,%.1f) mother=(%.1f,%.1f) gap=%.1f" % [chase_t, p.global_position.x, p.global_position.z, mc.mother.global_position.x, mc.mother.global_position.z, gap])
+			print("chase t=%.1f player=(%.1f,%.1f,%.1f) mother=(%.1f,%.1f) gap=%.1f phase=%d music=%s dread=%.2f dark=%d flesh=%d" % [chase_t, p.global_position.x, p.global_position.y, p.global_position.z,
+				mc.mother.global_position.x, mc.mother.global_position.z, gap, mc.phase, mc.music_state(), mc.dread(), mc.dark_lights(), mc.flesh.size()])
+		if mc.phase == 3 and mc._phase_t < delta * 1.5:
+			lunges += 1
+			print("  LUNGE windup #%d at t=%.1f gap=%.1f" % [lunges, chase_t, gap])
+		# 會翻滾的玩家：預備快結束時往逃跑方向翻滾
+		if dodge and mc.phase == 3 and mc._phase_t > 0.3 and pc.action == 0:
+			var d: Vector3 = (ESCAPE[esc_i] - p.global_position)
+			d.y = 0
+			pc.dodge(d.normalized())
+		if mc.phase == 6:
+			if int(chase_t * 60) % 9 == 0:
+				mc.struggle()  # 狂按 E：約每 0.15 秒一下
+	if pc.is_dead():
+		print("PLAYER DIED t=%.1f catches=%d lunges=%d" % [chase_t, mc.catches, lunges])
+		quit(0)
+		return
 	# 等她出來 1 秒再逃
-	if chase_t > 1.0 and mc.active:
-		var target: Vector3 = Vector3(18, 0, -40) if p.global_position.x > 18.5 else Vector3(5, 0, -40)
-		_walk(p, target, delta)
+	if chase_t > 1.0 and mc.active and mc.phase != 6 and pc.action != 4:
+		if _walk(p, ESCAPE[esc_i], delta) and esc_i < ESCAPE.size() - 1:
+			esc_i += 1
 	if not mc.active and chase_t > 0.5:
-		print("CHASE ENDED t=%.1f done=%s min_gap=%.2f arms=%s/%s" % [chase_t, root.get_node("GameState").has_flag(&"mother_chase_done"), min_gap,
-			not p.get_node("CombatComponent").anatomy.state.get_part(&"arm_l").severed,
-			not p.get_node("CombatComponent").anatomy.state.get_part(&"arm_r").severed])
+		print("CHASE ENDED t=%.1f reason=%s done=%s min_gap=%.2f near(<4m)=%.1fs lunges=%d catches=%d arms=%s/%s" % [chase_t, mc.end_reason, root.get_node("GameState").has_flag(&"mother_chase_done"), min_gap, near_s, lunges, mc.catches,
+			not pc.anatomy.state.get_part(&"arm_l").severed,
+			not pc.anatomy.state.get_part(&"arm_r").severed])
 		quit(0)

@@ -148,7 +148,7 @@ func _on_boss_defeated() -> void:
 	show_toast(boss_line(&"defeated"))
 	save_now()
 
-## 序章提案 E：拿到臍帶鑰匙時母親破牆追出來（只發生一次）。
+## 序章提案 E：拿到臍帶鑰匙時母親破牆追出來（只發生一次；死掉會從最後的祭壇重來）。
 func _setup_mother_chase() -> void:
 	if GameState.has_flag(MotherChase.DONE_FLAG) or level.get_node_or_null("Markers/MotherChaseSpawn") == null:
 		return
@@ -159,15 +159,59 @@ func _setup_mother_chase() -> void:
 	mother_chase.setup(level, player)
 	mother_chase.started.connect(_on_mother_chase_started)
 	mother_chase.ended.connect(_on_mother_chase_ended)
+	mother_chase.caught.connect(_on_mother_chase_caught)
+	mother_chase.released.connect(func(_part): show_toast("她扯走了你的一條手臂。快跑！"))
+	mother_chase.windup_started.connect(func():
+		if not _chase_dodge_hinted:
+			_chase_dodge_hinted = true
+			show_toast("她要撲過來了——按空白鍵翻滾閃開！"))
+	mother_chase.stomped.connect(func(s): if rig != null: rig.add_shake(s * 0.6))
+
+var _chase_dodge_hinted := false
 
 func _on_mother_chase_started() -> void:
-	show_toast("牆後傳來搖籃曲……她來了。逃回庭院！")
+	show_toast("她撞破了牆。東側樓梯被肉封死了——繞到西側樓梯，逃上高台的祭壇！")
 
-func _on_mother_chase_ended(reason: StringName) -> void:
-	if reason == &"caught":
-		show_toast("母親扯走了你的一條手臂，然後被臍帶拉回了牆後")
+func _on_mother_chase_caught(count: int, lethal: bool) -> void:
+	if lethal:
+		show_toast("她不會再放手了……" if count > 1 else "她抓住你了……")
 	else:
-		show_toast("臍帶繃緊，把母親拉回了黑暗裡")
+		show_toast("她抓住你了——狂按 E 掙脫！")
+
+func _on_mother_chase_ended(_reason: StringName) -> void:
+	show_toast("臍帶繃緊，把母親拖回了黑暗裡")
+	if rig != null:
+		rig.bias = Vector3.ZERO
+	if injury != null:
+		injury.dread = 0.0
+		injury.threat = 0.0
+
+## 追逐中每格：畫面壓迫、威脅方向、鏡頭往她那一側偏。
+func _update_chase_fx() -> void:
+	if mother_chase == null or not is_instance_valid(mother_chase) or not mother_chase.active:
+		return
+	var m := mother_chase.mother
+	if m == null or not is_instance_valid(m) or player == null or not is_instance_valid(player):
+		return
+	var dr := mother_chase.dread()
+	if injury != null:
+		injury.dread = dr
+		var cam := rig.camera if rig != null else null
+		if cam != null and cam.is_inside_tree():
+			var vp := cam.get_viewport().get_visible_rect().size
+			var target := m.global_position + Vector3(0, 1.5, 0)
+			var behind := cam.is_position_behind(target)
+			var sp := cam.unproject_position(target)
+			var off := behind or sp.x < 0.0 or sp.y < 0.0 or sp.x > vp.x or sp.y > vp.y
+			var dir := sp - vp * 0.5
+			if behind:
+				dir = -dir
+			injury.threat_dir = dir if dir.length() > 1.0 else Vector2.RIGHT
+			injury.threat = dr * (1.0 if off else 0.4)
+	if rig != null:
+		var to := m.global_position - player.global_position
+		to.y = 0.0
+		rig.bias = to.limit_length(6.0) * 0.3
 
 # ---------- 玩家 ----------
 
@@ -353,6 +397,7 @@ func _process(delta: float) -> void:
 		_toast_left -= delta
 		toast.modulate.a = clampf(_toast_left / 0.6, 0.0, 1.0)
 	_esc_armed = maxf(0.0, _esc_armed - delta)
+	_update_chase_fx()
 	if _death_left > 0.0:
 		_death_left -= delta
 		if _death_left <= 0.0:

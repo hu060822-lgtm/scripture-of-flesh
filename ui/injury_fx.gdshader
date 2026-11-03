@@ -22,6 +22,11 @@ uniform float sew : hint_range(0.0, 1.0) = 0.0;
 uniform float ghost : hint_range(0.0, 1.0) = 0.0;
 uniform vec2 ghost_pos = vec2(0.7, 0.55);
 uniform float aspect = 1.7778;
+// 追逐戰的壓迫感：黑色暗角往內收、顏色褪掉（0–1）。
+uniform float dread : hint_range(0.0, 1.0) = 0.0;
+// 威脅方向：畫面邊緣朝 threat_dir（螢幕座標，y 向下）的那一側泛紅。
+uniform float threat : hint_range(0.0, 1.0) = 0.0;
+uniform vec2 threat_dir = vec2(1.0, 0.0);
 
 const float BAYER[16] = float[16](
 	0.0, 8.0, 2.0, 10.0,
@@ -93,6 +98,22 @@ void fragment() {
 	float r_out = 1.05 - 0.45 * intensity - 0.07 * pulse * intensity;
 	float vig = smoothstep(r_out - 0.55, r_out, d) * step(0.001, intensity);
 	col = mix(col, EDGE_RED, vig * (0.4 + 0.55 * intensity));
+	// 追逐戰：黑暗從四周收進來，顏色流走
+	if (dread > 0.0) {
+		float lum2 = dot(col, vec3(0.299, 0.587, 0.114));
+		col = mix(col, lum2 * GREY_PINK, dread * 0.35);
+		float r_d = 1.1 - 0.5 * dread;
+		float vig_d = smoothstep(r_d - 0.6, r_d, d);
+		col = mix(col, vec3(0.01, 0.0, 0.005), vig_d * (0.35 + 0.55 * dread));
+	}
+	// 威脅方向：那一側的邊緣泛起暗紅
+	if (threat > 0.0) {
+		vec2 p = (SCREEN_UV - 0.5) * vec2(aspect, 1.0);
+		vec2 dir_n = p / max(length(p), 1e-4);
+		float edge = smoothstep(0.3, 0.85, length(p));
+		float facing = smoothstep(0.25, 1.0, dot(dir_n, normalize(threat_dir)));
+		col = mix(col, vec3(0.42, 0.02, 0.03), edge * facing * threat * 0.85);
+	}
 	// 失去的眼睛：一側變暗
 	col *= 1.0 - 0.85 * max(side_l, side_r);
 	// 剪影

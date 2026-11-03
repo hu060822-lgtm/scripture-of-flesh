@@ -2,7 +2,7 @@ class_name AudioDirector
 extends Node
 ## 把遊戲事件轉成聲音：監聽場景樹中新加入的節點，自動接上它們的 signal。
 ## 不需要修改戰鬥、AI、Boss、UI 的程式碼（模型與 AI 由其他工作負責，這裡只「聽」）。
-## 也負責決定音樂狀態：menu／explore／tension／combat／boss_1／boss_2／death／ending_*。
+## 也負責決定音樂狀態：menu／explore／tension／combat／chase*／boss_1／boss_2／death／ending_*。
 
 const T := DamageTypes.Type
 ## 特定攻擊用專屬的聲音（其餘用 attack_swing）。
@@ -40,6 +40,7 @@ var _alert := {}        # instance id -> {ai, level}
 var _bosses: Array = []
 var _blocked_frame := {}  # CombatComponent instance id -> physics frame
 var _menus: Array = []
+var _chases: Array = []  # MotherChase：追逐中由它決定音樂（chase／chase_near／chase_hush）
 var _areas: Array = []
 var _ending := &""
 var _combat_hold := 0.0
@@ -69,7 +70,7 @@ func _on_node_added(n: Node) -> void:
 	if n is CombatComponent or n is EnemyAI or n is BossPhaseComponent or n is PlayerData \
 			or n is StitchingAltar or n is ItemPickup or n is WeaponPedestal or n is BossGate \
 			or n is TransplantScreen or n is DialogueBox or n is BaseButton or n is MainMenu \
-			or n is PrologueGame or n is AreaTrigger:
+			or n is PrologueGame or n is AreaTrigger or n is MotherChase:
 		n.set_meta(&"_audio_hooked", true)
 		if n.is_node_ready():
 			_hook(n)
@@ -119,6 +120,8 @@ func _hook(n: Node) -> void:
 				_cue(&"ui_hover"))
 	elif n is MainMenu:
 		_menus.append(n)
+	elif n is MotherChase:
+		_chases.append(n)
 	elif n is AreaTrigger:
 		if AREA_AMBIENCE.has((n as AreaTrigger).trigger_id):
 			_areas.append(n)
@@ -305,6 +308,11 @@ func compute_music_state() -> StringName:
 			player = info.c
 	if player != null and player.is_dead():
 		return &"death"
+	for mc in _chases:
+		if _live(mc):
+			var cs: StringName = mc.music_state()
+			if cs != &"":
+				return cs
 	for bp in _bosses:
 		if _live(bp) and bp.engaged and not bp.combat.is_dead():
 			return &"boss_2" if bp.phase >= 2 else &"boss_1"
