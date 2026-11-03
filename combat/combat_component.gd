@@ -388,6 +388,15 @@ func _on_part_restored(_part: StringName) -> void:
 			return
 	vital_timer = -1.0
 
+## 屍體不再擋路：死後退出「生物本體」碰撞層，活人可以直接跨過去（luz 2026-11-03：屍體卡住窄門把人卡死）。
+## 仍然跟場景碰撞（不會穿地）；受擊判定（Hurtbox）在另一層，不受影響。
+func _make_corpse_passable() -> void:
+	var b := get_parent() as CollisionObject3D
+	if b == null:
+		return
+	b.collision_layer &= ~PlaceholderBodyBuilder.CREATURE_LAYER
+	b.collision_mask &= ~PlaceholderBodyBuilder.CREATURE_LAYER
+
 func _die(cause: String) -> void:
 	if is_dead():
 		return
@@ -397,6 +406,7 @@ func _die(cause: String) -> void:
 		pools.hp = 0.0
 		pools.hp_changed.emit(0.0, pools.max_hp)
 	_set_action(Action.DEAD, 0.0)
+	_make_corpse_passable()
 	died.emit(cause)
 	if is_inside_tree():
 		EventBus.creature_killed.emit(self, last_attacker)

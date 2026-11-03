@@ -56,6 +56,10 @@ static func create(weapon_paths: Array = WEAPONS, class_path: String = DEFAULT_C
 	var mv := MutationVisuals.new()
 	mv.name = "MutationVisuals"
 	body.add_child(mv)
+	# 牆後透視：被牆擋住時畫出剪影（luz 2026-11-03）
+	var xray := PlayerXray.new()
+	xray.name = "PlayerXray"
+	body.add_child(xray)
 	return body
 
 ## 遊戲中途決定職業（序章中透過阿格妮絲的對話）。重設屬性與起始技能，給予職業武器與起始物品。

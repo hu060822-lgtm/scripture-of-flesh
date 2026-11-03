@@ -15,6 +15,9 @@ const CHARS_PER_SECOND := 38.0
 const PUNCT_PAUSE := {"，": 0.12, "、": 0.1, "。": 0.28, "……": 0.35, "？": 0.25, "！": 0.25, "：": 0.12}
 ## 說話者名稱 -> 立繪外觀（CreatureModels.LOOKS）。旁白（空名稱）沒有立繪。
 const PORTRAITS := {"阿格妮絲": &"agnes", "行走的母親": &"walking_mother"}
+const PANEL_WIDTH := 860.0
+## 面板底邊離畫面底部的距離（luz 2026-11-03：原本太下面，選項被吃掉）。
+const BOTTOM_MARGIN := 96.0
 
 var runner := DialogueRunner.new()
 var player: Node3D
@@ -31,9 +34,18 @@ func _ready() -> void:
 	layer = 12
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_panel = PanelContainer.new()
-	_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_panel.custom_minimum_size = Vector2(860, 210)
-	_panel.position = Vector2(-430, -240)
+	# 錨在畫面底部中央、往上長：選項變多時面板往上撐高，底邊固定留 BOTTOM_MARGIN，不會被畫面切掉。
+	_panel.anchor_left = 0.5
+	_panel.anchor_right = 0.5
+	_panel.anchor_top = 1.0
+	_panel.anchor_bottom = 1.0
+	_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_panel.custom_minimum_size = Vector2(PANEL_WIDTH, 190)
+	_panel.offset_left = -PANEL_WIDTH * 0.5
+	_panel.offset_right = PANEL_WIDTH * 0.5
+	_panel.offset_bottom = -BOTTOM_MARGIN
+	_panel.offset_top = -BOTTOM_MARGIN - 190.0
 	add_child(_panel)
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 14)
