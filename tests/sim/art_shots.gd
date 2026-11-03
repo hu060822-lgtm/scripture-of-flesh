@@ -46,7 +46,7 @@ func _process(_d):
 		scene.screen.toggle_effects()
 		scene.screen.cycle_resolution()
 	elif f == 170:
-		_shot("06_360p")
+		_shot("06_%dp" % scene.screen.target_height())
 		quit()
 	return false
 
