@@ -44,6 +44,14 @@ const TABLE := {
 	&"boss_summon":       [&"Voice", -3.0, 0.95, 1.05, 2, 0.50, true],
 	&"cord_snap":         [&"SFX", -2.0, 0.95, 1.05, 3, 0.10, true],
 	&"boss_defeated":     [&"Voice", 0.0, 1.00, 1.00, 1, 2.00, false],
+	# ---- 追逐戰：母親破牆 ----
+	&"mother_wall_burst": [&"SFX", 0.0, 0.97, 1.03, 1, 1.00, true],
+	&"mother_stomp":      [&"SFX", -3.0, 0.90, 1.08, 3, 0.15, true],
+	&"mother_shriek":     [&"Voice", -1.0, 0.95, 1.05, 1, 0.60, true],
+	&"mother_breath":     [&"Voice", -4.0, 0.92, 1.05, 1, 0.80, true],
+	&"body_drag":         [&"SFX", -5.0, 0.90, 1.10, 2, 0.30, true],
+	&"flesh_grow":        [&"SFX", -8.0, 0.85, 1.15, 3, 0.30, true],
+	&"light_die":         [&"SFX", -6.0, 0.90, 1.10, 2, 0.15, true],
 	# ---- UI ----
 	&"ui_hover":          [&"UI", -14.0, 0.97, 1.03, 2, 0.05, false],
 	&"ui_confirm":        [&"UI", -8.0, 1.00, 1.00, 2, 0.05, false],

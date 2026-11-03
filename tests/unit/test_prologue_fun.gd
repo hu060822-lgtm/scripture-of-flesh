@@ -343,46 +343,7 @@ func test_shortcut_gate_only_opens_from_the_courtyard_side() -> void:
 	assert_true(GameState.taken.has(&"shortcut_courtyard"), "remembered")
 	_cleanup_save()
 
-func test_mother_bursts_out_when_the_key_is_taken_and_gives_up_in_the_courtyard() -> void:
-	var g := _game()
-	var mc := g.mother_chase
-	assert_true(mc != null)
-	var wall: SecretWall = g.level.get_node("Secrets/SecretWall_MotherNook")
-	mc.advance(0.1)
-	assert_false(mc.active, "nothing before the key")
-	var key: ItemPickup = g.level.get_node("Interactables/Item_item_umbilical_key")
-	g.player.global_position = key.global_position
-	assert_true(key.interact(g.player))
-	mc.advance(0.1)
-	assert_true(mc.active, "chase starts")
-	assert_true(mc.mother != null and is_instance_valid(mc.mother))
-	assert_false(mc.mother.has_node("BossPhase"), "apparition is not the real boss")
-	wall._physics_process(0.016)
-	assert_true(wall.is_open, "nook wall breaks open")
-	g.player.global_position = Vector3(5, 0, -40)
-	mc.advance(0.1)
-	assert_false(mc.active)
-	assert_true(GameState.has_flag(MotherChase.DONE_FLAG))
-	mc.advance(MotherChase.RETREAT_SECONDS + 0.1)
-	assert_eq(mc.mother, null, "pulled back and gone")
-	assert_false(g.boss == null, "the real boss still waits in the chapel")
-	_cleanup_save()
-
-func test_mother_grabs_an_arm_but_does_not_kill() -> void:
-	var g := _game()
-	var mc := g.mother_chase
-	(g.player.get_node("PlayerData") as PlayerData).inventory.add("umbilical_key")
-	g.player.global_position = Vector3(26, 0, -40)
-	mc.advance(0.1)
-	assert_true(mc.active)
-	mc.advance(MotherChase.STARTUP_SECONDS)
-	mc.mother.global_position = g.player.global_position + Vector3(1.0, 0, 0)
-	mc.advance(0.05)
-	assert_false(mc.active, "caught")
-	var st := (g.player.get_node("CombatComponent") as CombatComponent).anatomy.state
-	assert_true(st.get_part(&"arm_l").severed or st.get_part(&"arm_r").severed, "lost an arm")
-	assert_false((g.player.get_node("CombatComponent") as CombatComponent).is_dead())
-	_cleanup_save()
+# 母親追逐戰的測試在 test_mother_chase.gd。
 
 func test_chase_happens_only_once() -> void:
 	var g := _game()

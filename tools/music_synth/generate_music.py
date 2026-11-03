@@ -524,7 +524,66 @@ def main_injury(out, use_ogg):
     print("injury: heartbeat + child_hum")
 
 
+# ---------------- 追逐戰（母親破牆） ----------------
+# 用自己的亂數種子，不影響其他 stem（重新產生全部時舊檔案不變）。
+CRNG = np.random.default_rng(1137)
+
+
+def stem_chase_lullaby():
+    """同一首搖籃曲加速成兩倍（一個循環唱兩遍），每一遍越唱越走音；加一個偏高 35 音分的分身，像生病的合唱。"""
+    x = buf()
+    for rep in range(2):
+        base = rep * LOOP / 2
+        for start, dur, m in notes():
+            frac = start / LOOP  # 0..1：這一遍唱到哪
+            det = frac * 55.0 + CRNG.normal(0, 10)  # 越唱越高、越不準
+            st = base + start / 2
+            add(x, st, 0.45 * music_box_note(midi_hz(m), dur / 2, det))
+            add(x, st + 0.012, 0.25 * music_box_note(midi_hz(m), dur / 2, det + 35.0))
+        for bi, ch in enumerate(CHORDS):
+            if ch is None:
+                continue
+            add(x, base + bi * 1.5 * BEAT, 0.25 * music_box_note(midi_hz(ch[0] - 12), BEAT, CRNG.normal(0, 12)))
+    y = wow(fold(x), depth_cents=38.0, flutter_cents=12.0)
+    y = fft_filter(y, lo=160, hi=5000)
+    return normalize(y, 0.7)
+
+
+def stem_chase_pulse():
+    """兩倍速（144 BPM）的悶擊：每拍一下低沉的撞擊，每小節加重，每兩小節一聲金屬刮擦，每四小節一次往上衝的噪音。"""
+    x = buf(2.0)
+    half = BEAT / 2
+    for k in range(BARS * BEATS_PER_BAR * 2):
+        accent = 1.0 if k % 6 == 0 else 0.55
+        add(x, k * half, accent * thud())
+        if k % 6 == 3:
+            add(x, k * half + half * 0.5, 0.3 * thud())
+    for bar in range(0, BARS, 2):
+        add(x, bar * 3 * BEAT + 2.5 * BEAT, 0.25 * metal(1.2))
+    t = t_axis(N)
+    swell = fft_filter(CRNG.standard_normal(N), lo=400, hi=3000)
+    swell = swell / np.max(np.abs(swell))
+    ramp = (t % (4 * 3 * BEAT)) / (4 * 3 * BEAT)  # 每四小節 0→1 後截斷
+    y = fold(x) + swell * ramp ** 3 * 0.35
+    return normalize(fft_filter(y, hi=4500), 0.85)
+
+
+def main_chase(out, use_ogg):
+    """只產生追逐戰的 stem（不重新產生其他音檔）：--chase"""
+    os.makedirs(os.path.join(out, "stems"), exist_ok=True)
+    for name, fn in [("chase_lullaby", stem_chase_lullaby), ("chase_pulse", stem_chase_pulse)]:
+        x = fn()
+        assert len(x) == N, (name, len(x))
+        write(os.path.join(out, "stems", name), x, use_ogg)
+        print("stem", name)
+
+
 def main():
+    if "--chase" in sys.argv:
+        sys.argv.remove("--chase")
+        out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "..", "audio", "music")
+        main_chase(os.path.abspath(out), subprocess.run(["which", "ffmpeg"], capture_output=True).returncode == 0)
+        return
     if "--injury" in sys.argv:
         sys.argv.remove("--injury")
         out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "..", "audio", "music")
@@ -563,6 +622,7 @@ def main():
         write(os.path.join(out, "whispers", "whisper_%d" % i), whisper(100 + i), use_ogg)
     print("stingers + whispers")
     main_injury(out, use_ogg)
+    main_chase(out, use_ogg)
 
 
 if __name__ == "__main__":

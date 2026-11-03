@@ -324,6 +324,7 @@ func base_clips() -> Array:
 	for a in arms: slump[a] = Vector3(35.0, 25.0, 0)
 	for c in cradles: slump[c] = Vector3(70.0, -10.0, 0)
 	out.append([&"kneel", _clip(1.0, false, [[0.0, neutral], [0.25, shock], [0.6, slump], [1.0, slump]])])
+	out.append_array(chase_clips(neutral))
 	# 死亡：往後倒地（整個骨架旋轉，受擊區域與網格一起倒下），停在最後一格
 	var fall := {}
 	for h in heads: fall[h] = Vector3(-30.0, 0, 20.0)
@@ -339,6 +340,55 @@ func base_clips() -> Array:
 	end["$pos"] = Vector3(0, _height() * 0.08, 0.15)
 	var start := {"$rot": Vector3.ZERO, "$pos": Vector3.ZERO}
 	out.append([&"death", _clip(1.0, false, [[0.0, start], [0.35, mid], [0.75, end], [1.0, end]])])
+	return out
+
+## 追逐戰（MotherChase，劇本演出用 play_override）：
+##   chase_run    前傾到幾乎四肢著地的狂奔，手臂輪流往前抓地，頭歪成不自然的角度（短循環，12fps 下很抽）
+##   lunge_windup 往後仰、雙臂大張高舉、嘴張開（撲擊預備；也用於破牆的那一刻）
+##   lunge        整個人往前撲出，雙臂直直伸向前方
+##   grab_hold    彎身抓住獵物，手臂收在身前，頭左右抽動
+func chase_clips(neutral: Dictionary) -> Array:
+	var out := []
+	var h := _height()
+	out.append([&"chase_run", _cycle(0.5, 6, func(t):
+		var p := {}
+		if root_id != &"": p[root_id] = Vector3(52.0, sin(TAU * t) * 6.0, sin(TAU * t) * 10.0)
+		if abdomen != &"": p[abdomen] = Vector3(-20.0, 0, -sin(TAU * t) * 8.0)
+		for hd in heads: p[hd] = Vector3(-42.0, 18.0, 62.0 + sin(TAU * t * 2.0) * 14.0)
+		for a in arms:
+			var ph := 0.5 if _is_left(a) else 0.0
+			p[a] = Vector3(118.0 + sin(TAU * (t + ph)) * 48.0, 22.0, 0)
+		for c in cradles: p[c] = Vector3(55.0, -15.0, 0)
+		for l in legs: p[l] = Vector3(sin(TAU * (t + _leg_phase(l))) * 36.0, 0, 0)
+		if jaw != &"": p[jaw] = Vector3(25.0 + maxf(0.0, sin(TAU * t)) * 20.0, 0, 0)
+		_sway(p, t, 22.0)
+		p["$pos"] = Vector3(0, -h * 0.12 + absf(sin(TAU * t)) * 0.06, 0)
+		return p)])
+	var rear := {"$pos": Vector3(0, 0.08, 0.2)}
+	if root_id != &"": rear[root_id] = Vector3(-22.0, 0, 0)
+	for hd in heads: rear[hd] = Vector3(-50.0, 0, 38.0)
+	for a in arms: rear[a] = Vector3(150.0, 70.0, 0)
+	for c in cradles: rear[c] = Vector3(20.0, 30.0, 0)
+	if jaw != &"": rear[jaw] = Vector3(60.0, 0, 0)
+	_sway(rear, 0.3, 20.0)
+	out.append([&"lunge_windup", _clip(0.5, false, [[0.0, neutral], [0.3, rear], [0.5, rear]])])
+	var throw := {"$pos": Vector3(0, -h * 0.15, -0.4)}
+	if root_id != &"": throw[root_id] = Vector3(70.0, 0, 0)
+	for hd in heads: throw[hd] = Vector3(-60.0, 0, 20.0)
+	for a in arms: throw[a] = Vector3(95.0, 10.0, 0)
+	for c in cradles: throw[c] = Vector3(80.0, 10.0, 0)
+	if jaw != &"": throw[jaw] = Vector3(70.0, 0, 0)
+	_sway(throw, 0.7, 25.0)
+	out.append([&"lunge", _clip(0.35, false, [[0.0, rear], [0.12, throw], [0.35, throw]])])
+	out.append([&"grab_hold", _cycle(0.8, 4, func(t):
+		var p := {"$pos": Vector3(0, -0.1, 0)}
+		if root_id != &"": p[root_id] = Vector3(45.0, 0, sin(TAU * t) * 6.0)
+		for hd in heads: p[hd] = Vector3(-30.0, 0, sin(TAU * t * 2.0) * 25.0)
+		for a in arms: p[a] = Vector3(80.0, -15.0, 0)
+		for c in cradles: p[c] = Vector3(60.0, -25.0, 0)
+		if jaw != &"": p[jaw] = Vector3(40.0 + sin(TAU * t) * 20.0, 0, 0)
+		_sway(p, t, 10.0)
+		return p)])
 	return out
 
 func _block_pose() -> Dictionary:

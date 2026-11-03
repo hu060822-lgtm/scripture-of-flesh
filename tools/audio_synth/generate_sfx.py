@@ -395,6 +395,78 @@ def boss_defeated(rng, v):
     return finish(dsp.reverb(x, rng, 2.5, 0.45, 2500, 0.05), -1.0)
 
 
+# ======================================================================== 追逐戰：母親破牆
+
+@cue(2, "破牆：石牆被撞碎的巨響——低頻轟擊、碎石崩落的喀擦串、肉被扯開的濕黏聲")
+def mother_wall_burst(rng, v):
+    d = 2.6
+    boom = thump(1.6, 90, 30, 0.5, rng, click=1.2)
+    crash = crackle(1.2, rng, [(0, 400), (0.4, 120), (1.2, 10)], (600, 3500)) * env_exp(1.2, 0.45)
+    rubble = lowpass(white(1.8, rng), 900) * env_points(1.8, [(0, 0), (0.05, 1), (0.6, 0.5), (1.8, 0)])
+    rip = squelch(0.8, rng, 420, bubbles=18) * env_exp(0.8, 0.3)
+    x = mix((boom, 0, 1.0), (crash, 0.01, 0.8), (norm(rubble), 0.02, 0.6), (rip, 0.25, 0.7))
+    return finish(dsp.reverb(softclip(norm(x), 2.0), rng, 2.0, 0.4, 1800)[:n_samples(d)], -0.5)
+
+
+@cue(3, "重踏：高蹺般的腿砸在石地上——沉重悶擊、骨頭咯吱、一點碎石")
+def mother_stomp(rng, v):
+    hit = thump(0.5, U(rng, 75, 95), 34, 0.18, rng, click=0.9)
+    creak = stick_slip(0.18, rng, [(0, 40), (0.18, 15)], U(rng, 350, 520), q=7) * env_exp(0.18, 0.06)
+    grit = bandpass(white(0.15, rng), U(rng, 2200, 3500), 1.4) * env_exp(0.15, 0.04)
+    x = mix((hit, 0, 1.0), (creak, 0.03, 0.35), (norm(grit), 0.01, 0.25))
+    return finish(dsp.reverb(softclip(norm(x), 1.6), rng, 0.8, 0.25, 1600), -1.0)
+
+
+@cue(2, "尖嚎：撲擊前的尖叫——共振峰人聲急升到破音，夾著低八度的嘶吼【暫代】")
+def mother_shriek(rng, v):
+    d = 1.1
+    f0 = [(0, 300), (0.25, 780), (0.7, 860), (d, 520)]
+    vow = [(0, VOWELS["a"]), (0.4, VOWELS["ae"]), (0.8, VOWELS["e"]), (d, VOWELS["i"])]
+    main = _voice(d, f0, vow, rng, vib_rate=9.0, vib_depth=0.04, breath=0.35, jitter=0.06)
+    low = _voice(d, [(t, f * 0.5 * 1.02) for t, f in f0], vow, rng, vib_rate=7.0, vib_depth=0.05, breath=0.5, jitter=0.08)
+    env = env_points(d, [(0, 0), (0.08, 1), (0.8, 0.85), (d, 0)])
+    x = softclip((main + 0.6 * low) * env, 2.5)
+    return finish(dsp.reverb(x, rng, 1.4, 0.35, 3500, 0.03), -1.0)
+
+
+@cue(3, "呼吸：貼在背後的濕重吸氣與吐氣，喉嚨裡有痰的咯咯聲")
+def mother_breath(rng, v):
+    d = 1.4
+    inh = formant_filter(pink(0.6, rng), [(0, VOWELS["o"]), (0.6, VOWELS["u"])]) * env_points(0.6, [(0, 0), (0.45, 1), (0.6, 0.2)])
+    exh = formant_filter(pink(0.8, rng), [(0, VOWELS["a"]), (0.8, VOWELS["o"])]) * env_points(0.8, [(0, 0), (0.1, 1), (0.8, 0)])
+    gurgle = squelch(0.5, rng, U(rng, 180, 260), bubbles=14) * env_exp(0.5, 0.2)
+    x = mix((norm(inh), 0, 0.7), (norm(exh), 0.6, 1.0), (gurgle, 0.62, 0.35))
+    return finish(lowpass(x, 3200)[:n_samples(d)], -2.0)
+
+
+@cue(2, "拖行：身體被拖過石地——長長的摩擦、布料與皮膚的吱嘎、指甲刮地")
+def body_drag(rng, v):
+    d = 1.0
+    scrape = bandpass(pink(d, rng), U(rng, 500, 800), 1.2) * env_points(d, [(0, 0), (0.15, 1), (0.8, 0.8), (d, 0)])
+    squeak = stick_slip(d, rng, [(0, 30), (d, 60)], [(0, 900), (d, 1300)], q=5) * 0.3
+    nails = stick_slip(0.4, rng, 90, U(rng, 2500, 3500), q=9) * env_exp(0.4, 0.15)
+    x = mix((norm(scrape), 0, 1.0), (squeak, 0, 0.5), (nails, U(rng, 0.2, 0.5), 0.25))
+    return finish(x, -3.0)
+
+
+@cue(3, "肉在長：濕黏的蠕動、細小的肉芽爆開聲")
+def flesh_grow(rng, v):
+    d = 0.9
+    wet = squelch(d, rng, U(rng, 300, 600), wobble=0.9, bubbles=int(U(rng, 18, 30))) * env_points(d, [(0, 0), (0.2, 1), (d, 0)])
+    pops = crackle(d, rng, 25, (700, 1800)) * env_exp(d, 0.35)
+    x = mix((wet, 0, 1.0), (pops, 0.05, 0.4))
+    return finish(lowpass(x, 4000), -3.0)
+
+
+@cue(2, "燈熄滅：燭火被掐滅的嘶聲與一下小小的爆裂")
+def light_die(rng, v):
+    hiss = highpass(white(0.35, rng), 2500) * env_exp(0.35, 0.1)
+    pop = impulse_burst(0.03, rng, U(rng, 1500, 2500), 0.004)
+    puff = lowpass(white(0.2, rng), 600) * env_exp(0.2, 0.06)
+    x = mix((norm(pop), 0, 0.8), (norm(hiss), 0.01, 0.5), (norm(puff), 0.0, 0.4))
+    return finish(dsp.reverb(x, rng, 0.5, 0.15, 3000), -4.0)
+
+
 # ======================================================================== UI
 
 @cue(2, "滑過選項：很小的骨頭輕敲聲")

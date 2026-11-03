@@ -360,6 +360,8 @@ func _build_courtyard() -> void:
 	gate.gate_size = Vector3(3.0, 3.2, 0.4)
 	gate.position = Vector3(8.5, 0, -36.4)
 	level.get_node("Interactables").add_child(gate)
+	# 追逐戰：東側樓梯口被長出來的肉封住，只能繞到西側樓梯逃上高台（MotherChase 在此生成肉牆）
+	_marker("ChaseFleshBarrier", Vector3(8.5, 0, -37.0), 0.0)
 	_prop("Obelisk", Vector3(0, 0, -38), Vector3(1.2, 3.0, 1.2), Color("5a524a"))
 	_prop("Pillar_1", Vector3(-6, 0, -41), Vector3(0.8, 4.0, 0.8), Color("8a8070"))
 	_prop("Pillar_2", Vector3(5, 0, -41), Vector3(0.8, 4.0, 0.8), Color("8a8070"))
@@ -467,6 +469,14 @@ func _build_sacristy() -> void:
 	mw.position = Vector3(30, 0, -40)
 	level.get_node("Secrets").add_child(mw)
 	_marker("MotherChaseSpawn", Vector3(32, 0, -40), 90.0)
+	# 追逐路線上的蠟燭：母親經過時一盞盞熄滅（MotherChase 以名稱前綴 ChaseCandle_ 找到它們）
+	var candles := [Vector3(26.5, 0, -34.6), Vector3(21.5, 0, -45.4), Vector3(17.0, 0, -38.6), Vector3(13.0, 0, -41.4),
+		Vector3(9.4, 0, -43.0), Vector3(6.0, 0, -45.4), Vector3(-3.4, 0, -45.4), Vector3(-9.4, 0, -40.0), Vector3(-6.6, 0, -33.0)]
+	for i in candles.size():
+		var cp: Vector3 = candles[i]
+		_prop("ChaseCandleStand_%d" % i, cp, Vector3(0.18, 0.9, 0.18), Color("3a2a22"), false)
+		_prop("ChaseCandleWax_%d" % i, cp + Vector3(0, 0.9, 0), Vector3(0.1, 0.2, 0.1), Color("efe6c8"), false)
+		_light("ChaseCandle_%d" % i, cp + Vector3(0, 1.25, 0), Color("e8b070"), 0.55, 4.5)
 	_prop("Altar_Table", Vector3(25.5, 0, -44.9), Vector3(2.4, 1.0, 1.0), Color("cfc8b8"))
 	_spawn(&"sacristy_many_hands", "many_hands", Vector3(24, 0, -41), 270.0)
 	_pedestal("reliquary_hammer", Vector3(28.4, 0, -35.5))

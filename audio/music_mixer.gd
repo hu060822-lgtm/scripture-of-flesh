@@ -17,6 +17,12 @@ const MIXES := {
 	&"tension": {&"lullaby": 0.15, &"pad": 0.1, &"drone": 0.6, &"breath": 0.6},
 	# 戰鬥：搖籃曲消失，只剩心跳、悶擊與低鳴
 	&"combat": {&"drone": 0.7, &"heartbeat": 0.9, &"perc": 0.75, &"breath": 0.2},
+	# 追逐（母親破牆）：搖籃曲被加速、變調、走音，底下是急促的悶擊與心跳
+	&"chase": {&"chase_lullaby": 0.75, &"chase_pulse": 0.7, &"drone": 0.45, &"heartbeat": 0.5},
+	# 她越來越近：搖籃曲退後，悶擊、心跳與崩壞的哼唱湧上來
+	&"chase_near": {&"chase_lullaby": 0.35, &"chase_pulse": 1.0, &"heartbeat": 1.0, &"drone": 0.7, &"hum_broken": 0.35},
+	# 她就在背後：音樂全斷，只剩她的呼吸與哼唱（3D 定位，由 MotherChase 播放）
+	&"chase_hush": {},
 	# Boss 第一階段：母親哼唱同一首搖籃曲
 	&"boss_1": {&"hum": 0.8, &"drone": 0.45, &"boss_low": 0.6, &"heartbeat": 0.5, &"perc": 0.55},
 	# 第二階段（跪伏）：哼唱崩壞
@@ -33,7 +39,7 @@ const STINGERS := {&"death": &"death"}
 ## 淡入淡出秒數（進入戰鬥較快）。
 const FADE := 2.5
 const FADE_FAST := 0.8
-const FAST_STATES := [&"combat", &"boss_1", &"boss_2", &"death"]
+const FAST_STATES := [&"combat", &"boss_1", &"boss_2", &"death", &"chase", &"chase_near", &"chase_hush"]
 
 var players := {}  # stem -> AudioStreamPlayer
 var levels := {}   # stem -> 目前線性音量
